@@ -30,6 +30,8 @@ void	HTTPServer::Communication(const ListenSocket& lsocket) const
 	while (1)
 	{
 		recv_msg = ssocket.RecvRequest();
+		if (recv_msg.size() == 0)
+			break;
 		MyPrint("[recv_msg]\n" + recv_msg);
 		// ParseRequest();
 		// CreateResponse();

@@ -16,11 +16,12 @@ ServerSocket::~ServerSocket()
 std::string ServerSocket::RecvRequest() const
 {
 	const ssize_t	kSize = 1048576;     // 1MiB バイト
-    char 			request_msg[kSize];
+    char 			request_msg[kSize + 1];
 
 	int recv_size = recv(fd_, request_msg, kSize, 0);
     if (recv_size == -1)
 		throw std::runtime_error("recv error");
+	request_msg[recv_size] = '\0';
 	return (std::string(request_msg));
 }
 
