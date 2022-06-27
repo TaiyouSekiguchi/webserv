@@ -11,7 +11,7 @@ class ListenSocket
 
 		void	ListenConnection(const int backlog = 3) const;
 		int		AcceptConnection() const;
-		int		GetFileDiscriptor() const;
+		int		GetFd() const;
 
 	private:
 		int		fd_;

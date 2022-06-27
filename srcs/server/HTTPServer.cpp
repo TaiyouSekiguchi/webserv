@@ -31,7 +31,7 @@ void	HTTPServer::Start() const
 	if (kq == -1)
 		throw std::runtime_error("kqueue error");
 
-	EV_SET(&kev, lsocket.GetFileDiscriptor(), EVFILT_READ, EV_ADD, 0, 0, NULL);
+	EV_SET(&kev, lsocket.GetFd(), EVFILT_READ, EV_ADD, 0, 0, NULL);
 
 	int ret = kevent(kq, &kev, 1, NULL, 0, NULL);
 	if (ret == -1)
@@ -50,7 +50,7 @@ void	HTTPServer::Start() const
 			throw std::runtime_error("kevent error");
 		else if (n > 0)
 		{
-			if ( kev.ident == (uintptr_t)lsocket.GetFileDiscriptor() )
+			if ( kev.ident == (uintptr_t)lsocket.GetFd() )
 			{
 				int		connected_sock;
 

@@ -53,7 +53,7 @@ int		ListenSocket::AcceptConnection() const
 	return (sockfd);
 }
 
-int		ListenSocket::GetFileDiscriptor() const
+int		ListenSocket::GetFd() const
 {
 	return (fd_);
 }
