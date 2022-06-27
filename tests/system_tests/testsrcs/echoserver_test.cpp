@@ -1,11 +1,6 @@
 #include <gtest/gtest.h>
 #include "ClientSocket.hpp"
 
-TEST(sample_test_case, sample_test)
-{
-	EXPECT_EQ(1, 1);
-}
-
 TEST(echo_server, basic)
 {
 	ClientSocket	csocket;
