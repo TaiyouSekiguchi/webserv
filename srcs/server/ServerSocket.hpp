@@ -1,6 +1,8 @@
 #ifndef SERVERSOCKET_HPP
 #define SERVERSOCKET_HPP
 
+#include <string>
+
 class ServerSocket
 {
 	public:

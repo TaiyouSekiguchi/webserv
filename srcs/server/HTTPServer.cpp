@@ -4,71 +4,70 @@
 #include <sys/socket.h>  // kqueue
 #include <unistd.h>  // kqueue
 #include <iostream>  // kqueue
-
 #include <string>
 
 #include "HTTPServer.hpp"
 #include "debug.hpp"
 
-
 HTTPServer::HTTPServer()
 {
+	waitspec_.tv_sec = 2;
+	waitspec_.tv_nsec = 500000;
 }
 
 HTTPServer::~HTTPServer()
 {
 }
 
-void	HTTPServer::Start() const
+void	HTTPServer::Start()
 {
-	ListenSocket lsocket;
+	ListenSocket	lsocket;
 	lsocket.ListenConnection();
 
-	int				kq;
-	struct kevent	kev;
+	CreateKqueue();
+	RegisterKevent(lsocket.GetFd());
+	KeventWaitLoop(lsocket);
+}
 
-	kq = kqueue();
-	if (kq == -1)
+void	HTTPServer::CreateKqueue(void)
+{
+	kq_ = kqueue();
+	if (kq_ == -1)
 		throw std::runtime_error("kqueue error");
+}
 
-	EV_SET(&kev, lsocket.GetFd(), EVFILT_READ, EV_ADD, 0, 0, NULL);
+void	HTTPServer::RegisterKevent(int sock)
+{
+	struct kevent	kev;
+	int				ret;
 
-	int ret = kevent(kq, &kev, 1, NULL, 0, NULL);
+	EV_SET(&kev, sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
+
+	ret = kevent(kq_, &kev, 1, NULL, 0, NULL);
 	if (ret == -1)
 		throw std::runtime_error("kevent error");
+}
 
+void	HTTPServer::KeventWaitLoop(ListenSocket const & lsocket)
+{
 	while (1)
 	{
-		int					n;
-		struct timespec		waitspec;
+		int				n;
+		struct kevent	kev;
 
-		waitspec.tv_sec = 2;
-		waitspec.tv_nsec = 500000;
+		n = kevent(kq_, NULL, 0, &kev, 1, &waitspec_);
 
-		n = kevent(kq, NULL, 0, &kev, 1, &waitspec);
 		if (n == -1)
 			throw std::runtime_error("kevent error");
 		else if (n > 0)
 		{
-			if ( kev.ident == (uintptr_t)lsocket.GetFd() )
+			if (kev.ident == (uintptr_t)lsocket.GetFd())
 			{
-				int		connected_sock;
+				int		accept_sock;
 
-				connected_sock = accept(kev.ident, NULL, NULL);
-				if (connected_sock == -1)
-					throw std::runtime_error("accept error");
-				else
-				{
-					std::cout << "fd : " << kev.ident << " Connected!!" << std::endl;
-
-					EV_SET(&kev, connected_sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
-
-					n = kevent(kq, &kev, 1, NULL, 0, NULL);
-					if (n == -1)
-					{
-						throw std::runtime_error("kevent error");
-					}
-				}
+				accept_sock = lsocket.AcceptConnection();
+				std::cout << "Accept!!" << std::endl;
+				RegisterKevent(accept_sock);
 			}
 			else
 			{
