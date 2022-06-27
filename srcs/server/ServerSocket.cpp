@@ -1,6 +1,6 @@
-#include <string>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <string>
 #include "ServerSocket.hpp"
 
 ServerSocket::ServerSocket(const int fd) :

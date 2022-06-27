@@ -12,7 +12,8 @@ class HTTPServer
 		void	Start() const;
 
 	private:
-		void	Communication(const ListenSocket& lsocket) const;
+		void	Communication(int event_sock) const;
+		// void	Communication(const ListenSocket& lsocket) const;
 };
 
 #endif  // HTTPSERVER_HPP
