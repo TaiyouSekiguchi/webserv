@@ -13,8 +13,8 @@ class HTTPServer
 		void	Start();
 
 	private:
-		void	MainLoop(ListenSocket const & lsocket, EventQueue * equeue);
-		void	Communication(int event_sock) const;
+		void	MainLoop(ListenSocket const & lsocket, EventQueue const & equeue);
+		void	Communication(int event_fd) const;
 		// void	Communication(const ListenSocket& lsocket) const;
 };
 

@@ -14,13 +14,11 @@ class EventQueue
 		EventQueue();
 		~EventQueue();
 
-		void	CreateQueue(void);
-		void	RegisterEvent(int sock);
-		int		WaitEvent(struct kevent * kev);
+		void	RegisterEvent(int sock) const;
+		int		WaitEvent(void) const;
 
 	private:
 		int					kq_;
-		struct timespec		waitspec_;
 };
 
 #endif  // LISTENSOCKET_HPP

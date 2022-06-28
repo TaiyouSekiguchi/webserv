@@ -10,7 +10,7 @@
 #include "ListenSocket.hpp"
 
 
-ListenSocket::ListenSocket(const int port, const char *ip)
+ListenSocket::ListenSocket(const int port)
 {
 	fd_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_ == -1)
@@ -25,8 +25,6 @@ ListenSocket::ListenSocket(const int port, const char *ip)
     memset(&addr_info, 0, sizeof(struct sockaddr_in));
     addr_info.sin_family = AF_INET;
     addr_info.sin_port = htons(port);
-    // addr_info.sin_addr.s_addr = inet_addr(ip);
-	inet_addr(ip);  // 削除予定
 	addr_info.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(fd_, (const struct sockaddr *)&addr_info, sizeof(addr_info)) == -1)

@@ -2,22 +2,16 @@
 
 EventQueue::EventQueue()
 {
-	waitspec_.tv_sec = 2;
-	waitspec_.tv_nsec = 500000;
+	kq_ = kqueue();
+	if (kq_ == -1)
+		throw std::runtime_error("kqueue error");
 }
 
 EventQueue::~EventQueue()
 {
 }
 
-void	EventQueue::CreateQueue(void)
-{
-	kq_ = kqueue();
-	if (kq_ == -1)
-		throw std::runtime_error("kqueue error");
-}
-
-void	EventQueue::RegisterEvent(int sock)
+void	EventQueue::RegisterEvent(int sock) const
 {
 	struct kevent	kev;
 	int				ret;
@@ -29,13 +23,20 @@ void	EventQueue::RegisterEvent(int sock)
 		throw std::runtime_error("kevent error");
 }
 
-int		EventQueue::WaitEvent(struct kevent * kev)
+int		EventQueue::WaitEvent(void) const
 {
-	int		n;
+	struct kevent		kev;
+	struct timespec		waitspec = { 2, 500000 };
+	int					n;
 
-	n = kevent(kq_, NULL, 0, kev, 1, &waitspec_);
-	if (n == -1)
-		throw std::runtime_error("kevent error");
+	while (1)
+	{
+		n = kevent(kq_, NULL, 0, &kev, 1, &waitspec);
+		if (n == -1)
+			throw std::runtime_error("kevent error");
+		else if (n != 0)
+			break;
+	}
 
-	return (n);
+	return (kev.ident);
 }

@@ -6,7 +6,7 @@
 class ListenSocket
 {
 	public:
-		explicit ListenSocket(const int port = 8080, const char *ip = "127.0.0.1");
+		explicit ListenSocket(const int port = 8080);
 		~ListenSocket();
 
 		void	ListenConnection(const int backlog = 3) const;
