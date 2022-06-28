@@ -1,18 +1,9 @@
-#include <sys/types.h>  // kqueue
-#include <sys/event.h>  // kqueue
-#include <sys/time.h>  // kqueue
-#include <sys/socket.h>  // kqueue
-#include <unistd.h>  // kqueue
-#include <iostream>  // kqueue
 #include <string>
-
 #include "HTTPServer.hpp"
 #include "debug.hpp"
 
 HTTPServer::HTTPServer()
 {
-	waitspec_.tv_sec = 2;
-	waitspec_.tv_nsec = 500000;
 }
 
 HTTPServer::~HTTPServer()
@@ -22,59 +13,33 @@ HTTPServer::~HTTPServer()
 void	HTTPServer::Start()
 {
 	ListenSocket	lsocket;
+	EventQueue		equeue;
+
 	lsocket.ListenConnection();
 
-	CreateKqueue();
-	RegisterKevent(lsocket.GetFd());
-	KeventWaitLoop(lsocket);
+	equeue.CreateQueue();
+	equeue.RegisterEvent(lsocket.GetFd());
+
+	MainLoop(lsocket, &equeue);
 }
 
-void	HTTPServer::CreateKqueue(void)
-{
-	kq_ = kqueue();
-	if (kq_ == -1)
-		throw std::runtime_error("kqueue error");
-}
-
-void	HTTPServer::RegisterKevent(int sock)
-{
-	struct kevent	kev;
-	int				ret;
-
-	EV_SET(&kev, sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
-
-	ret = kevent(kq_, &kev, 1, NULL, 0, NULL);
-	if (ret == -1)
-		throw std::runtime_error("kevent error");
-}
-
-void	HTTPServer::KeventWaitLoop(ListenSocket const & lsocket)
+void	HTTPServer::MainLoop(ListenSocket const & lsocket, EventQueue * equeue)
 {
 	while (1)
 	{
-		int				n;
 		struct kevent	kev;
+		int				n;
 
-		n = kevent(kq_, NULL, 0, &kev, 1, &waitspec_);
-
-		if (n == -1)
-			throw std::runtime_error("kevent error");
-		else if (n > 0)
+		n = equeue->WaitEvent(&kev);
+		if (n > 0)
 		{
 			if (kev.ident == (uintptr_t)lsocket.GetFd())
 			{
-				int		accept_sock;
-
-				accept_sock = lsocket.AcceptConnection();
 				std::cout << "Accept!!" << std::endl;
-				RegisterKevent(accept_sock);
+				equeue->RegisterEvent(lsocket.AcceptConnection());
 			}
 			else
-			{
-				int		event_sock = kev.ident;
-
-				Communication(event_sock);
-			}
+				Communication(kev.ident);
 		}
 	}
 }

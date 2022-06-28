@@ -1,5 +1,9 @@
 vpath	%.cpp srcs:srcs/server
-SRCS	=	main.cpp HTTPServer.cpp ListenSocket.cpp ServerSocket.cpp
+SRCS	=	main.cpp\
+			HTTPServer.cpp\
+			ListenSocket.cpp\
+			ServerSocket.cpp\
+			EventQueue.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))

@@ -2,6 +2,7 @@
 #define HTTPSERVER_HPP
 
 # include "ListenSocket.hpp"
+# include "EventQueue.hpp"
 
 class HTTPServer
 {
@@ -12,12 +13,7 @@ class HTTPServer
 		void	Start();
 
 	private:
-		int					kq_;
-		struct timespec		waitspec_;
-
-		void	CreateKqueue(void);
-		void	RegisterKevent(int sock);
-		void	KeventWaitLoop(ListenSocket const & lsocket);
+		void	MainLoop(ListenSocket const & lsocket, EventQueue * equeue);
 		void	Communication(int event_sock) const;
 		// void	Communication(const ListenSocket& lsocket) const;
 };
