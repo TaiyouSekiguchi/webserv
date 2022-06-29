@@ -11,19 +11,18 @@ EventQueue::~EventQueue()
 {
 }
 
-void	EventQueue::RegisterEvent(int sock) const
+void	EventQueue::RegisterEvent(const int fd, void *udata) const
 {
 	struct kevent	kev;
 	int				ret;
 
-	EV_SET(&kev, sock, EVFILT_READ, EV_ADD, 0, 0, NULL);
-
+	EV_SET(&kev, fd, EVFILT_READ, EV_ADD, 0, 0, udata);
 	ret = kevent(kq_, &kev, 1, NULL, 0, NULL);
 	if (ret == -1)
 		throw std::runtime_error("kevent error");
 }
 
-int		EventQueue::WaitEvent(void) const
+void	*EventQueue::WaitEvent() const
 {
 	struct kevent		kev;
 	struct timespec		waitspec = { 2, 500000 };
@@ -37,6 +36,5 @@ int		EventQueue::WaitEvent(void) const
 		else if (n != 0)
 			break;
 	}
-
-	return (kev.ident);
+	return (kev.udata);
 }

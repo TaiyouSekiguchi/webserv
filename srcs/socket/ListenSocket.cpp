@@ -1,16 +1,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-
-#include <iostream>  // kqueue
-
+#include <iostream>
 #include <cstring>
 #include <stdexcept>
 #include "ListenSocket.hpp"
 
-
-ListenSocket::ListenSocket(const int port)
+ListenSocket::ListenSocket(const int port) :
+	ASocket(-1)
 {
 	fd_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_ == -1)
@@ -21,19 +18,16 @@ ListenSocket::ListenSocket(const int port)
 		throw std::runtime_error("setsockopt error");
 
 	struct sockaddr_in	addr_info;
-
-    memset(&addr_info, 0, sizeof(struct sockaddr_in));
-    addr_info.sin_family = AF_INET;
-    addr_info.sin_port = htons(port);
+	memset(&addr_info, 0, sizeof(struct sockaddr_in));
+	addr_info.sin_family = AF_INET;
+	addr_info.sin_port = htons(port);
 	addr_info.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (bind(fd_, (const struct sockaddr *)&addr_info, sizeof(addr_info)) == -1)
+	if (bind(fd_, (const struct sockaddr *)&addr_info, sizeof(addr_info)) == -1)
 		throw std::runtime_error("bind error");
 }
 
 ListenSocket::~ListenSocket()
 {
-	close(fd_);
 }
 
 void	ListenSocket::ListenConnection(const int backlog) const
@@ -49,9 +43,4 @@ int		ListenSocket::AcceptConnection() const
 	if (sockfd == -1)
 		throw std::runtime_error("accept error");
 	return (sockfd);
-}
-
-int		ListenSocket::GetFd() const
-{
-	return (fd_);
 }

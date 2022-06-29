@@ -1,5 +1,6 @@
 #include <string>
 #include "HTTPServer.hpp"
+#include "ListenSocket.hpp"
 #include "debug.hpp"
 
 HTTPServer::HTTPServer()
@@ -10,73 +11,58 @@ HTTPServer::~HTTPServer()
 {
 }
 
-void	HTTPServer::Start()
+void	HTTPServer::Start() const
 {
-	ListenSocket	lsocket;
+	ListenSocket	*lsocket = new ListenSocket();
 	EventQueue		equeue;
 
-	lsocket.ListenConnection();
-
-	equeue.RegisterEvent(lsocket.GetFd());
-
-	MainLoop(lsocket, equeue);
+	lsocket->ListenConnection();
+	equeue.RegisterEvent(lsocket->GetFd(), lsocket);
+	MainLoop(equeue);
+	delete lsocket;
 }
 
-void	HTTPServer::MainLoop(ListenSocket const & lsocket, EventQueue const & equeue)
+void	HTTPServer::MainLoop(EventQueue const & equeue) const
 {
+	void			*udata;
+	ASocket			*asocket;
+	ListenSocket	*lsocket;
+	ServerSocket	*ssocket;
+	ServerSocket 	*new_ssocket;
+
 	while (1)
 	{
-		int		fd;
-
-		fd = equeue.WaitEvent();
-		if (fd == lsocket.GetFd())
+		udata = equeue.WaitEvent();
+		asocket = static_cast<ASocket*>(udata);
+		lsocket = dynamic_cast<ListenSocket*>(asocket);
+		ssocket = dynamic_cast<ServerSocket*>(asocket);
+		if (lsocket)
 		{
 			std::cout << "Accept!!" << std::endl;
-			equeue.RegisterEvent(lsocket.AcceptConnection());
+			new_ssocket = new ServerSocket(lsocket->AcceptConnection());
+			equeue.RegisterEvent(new_ssocket->GetFd(), new_ssocket);
 		}
 		else
-			Communication(fd);
+			Communication(ssocket);
 	}
 }
 
-void	HTTPServer::Communication(int event_fd) const
-{
-	const ssize_t	kSize = 1048576;     // 1MiB バイト
-	char 			request_msg[kSize];
-	int				ret;
-
-	int recv_size = recv(event_fd, request_msg, kSize, 0);
-	if (recv_size == -1)
-		throw std::runtime_error("recv error");
-	else if (recv_size == 0)
-	{
-		std::cout << "event_fd (" << event_fd << ") is disconnected." << std::endl;
-		ret = close(event_fd);
-		if (ret == -1)
-			throw std::runtime_error("close error");
-	}
-	else
-	{
-		int send_size = send(event_fd, request_msg, recv_size, 0);
-		if (send_size == -1)
-			throw std::runtime_error("send error");
-	}
-}
-
-/*
-void	HTTPServer::Communication(const ListenSocket& lsocket) const
+void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
 	std::string		recv_msg;
-	ServerSocket	ssocket(lsocket.AcceptConnection());
+	// std::string		send_msg;
+	// HTTPRequest		req;
+	// HTTPResponse		res;
 
-	MyPrint("Connected");
-	while (1)
+	recv_msg = ssocket->RecvRequest();
+	if (recv_msg.size() == 0)
+		delete ssocket;
+	else
 	{
-		recv_msg = ssocket.RecvRequest();
-		MyPrint("[recv_msg]\n" + recv_msg);
-		// ParseRequest();
-		// CreateResponse();
-		ssocket.SendResponse(recv_msg);
+		std::cout << "[recv_msg]\n" << recv_msg << std::endl;
+		// req.ParseRequest();
+		// send_msg = res.CreateResponse(req);
+		// ssocket->SendResponse(send_msg);
+		ssocket->SendResponse(recv_msg);
 	}
 }
-*/
