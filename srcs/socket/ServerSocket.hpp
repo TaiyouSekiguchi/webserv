@@ -1,7 +1,10 @@
 #ifndef SERVERSOCKET_HPP
-#define SERVERSOCKET_HPP
+# define SERVERSOCKET_HPP
 
-class ServerSocket
+# include <string>
+# include "ASocket.hpp"
+
+class ServerSocket : public ASocket
 {
 	public:
 		explicit ServerSocket(const int fd);
@@ -9,9 +12,6 @@ class ServerSocket
 
 		std::string RecvRequest() const;
 		void		SendResponse(const std::string& response_msg) const;
-
-	private:
-		int		fd_;
 };
 
 #endif  // SERVERSOCKET_HPP
