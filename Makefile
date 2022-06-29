@@ -1,11 +1,16 @@
-vpath	%.cpp srcs:srcs/server
-SRCS	=	main.cpp HTTPServer.cpp ListenSocket.cpp ServerSocket.cpp
+vpath	%.cpp srcs:srcs/server:srcs/socket
+SRCS	=	main.cpp \
+			HTTPServer.cpp \
+			EventQueue.cpp \
+			ASocket.cpp \
+			ListenSocket.cpp \
+			ServerSocket.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I ./srcs/server -I ./srcs/utils
+INCLUDE =	-I ./srcs/server -I ./srcs/utils -I srcs/socket
 NAME	=	webserv
 
 CC		=	c++

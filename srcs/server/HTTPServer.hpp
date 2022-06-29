@@ -1,7 +1,8 @@
 #ifndef HTTPSERVER_HPP
-#define HTTPSERVER_HPP
+# define HTTPSERVER_HPP
 
-# include "ListenSocket.hpp"
+# include "ServerSocket.hpp"
+# include "EventQueue.hpp"
 
 class HTTPServer
 {
@@ -12,7 +13,8 @@ class HTTPServer
 		void	Start() const;
 
 	private:
-		void	Communication(const ListenSocket& lsocket) const;
+		void	MainLoop(EventQueue const & equeue) const;
+		void	Communication(ServerSocket *ssocket) const;
 };
 
 #endif  // HTTPSERVER_HPP
