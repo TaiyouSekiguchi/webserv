@@ -17,6 +17,7 @@ class LocationDirective
 		std::string					root_;
 		bool						autoindex_;
 		std::vector<std::string>	indexes_;
+		std::vector<std::string>	allowed_methods_;
 };
 
 #endif  // LOCATIONDIRECTIVE_HPP
