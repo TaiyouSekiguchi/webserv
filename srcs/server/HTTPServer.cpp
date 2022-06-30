@@ -49,20 +49,40 @@ void	HTTPServer::MainLoop(EventQueue const & equeue) const
 
 void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
+	HTTPRequest		req;
+	// HTTPResponse		res;
 	std::string		recv_msg;
 	// std::string		send_msg;
-	// HTTPRequest		req;
-	// HTTPResponse		res;
 
+	while (1)
+	{
+		recv_msg = ssocket->RecvRequest();
+		//std::cout << "[recv_msg]\n" << recv_msg << std::endl;
+		req.ParseRequest(recv_msg);
+	}
+	req.RequestDisplay();
+	// send_msg = res.CreateResponse(req);
+	// ssocket->SendResponse(send_msg);
+	//ssocket->SendResponse(recv_msg);
+	delete ssocket;
+	
+	return;
+
+	/*
 	recv_msg = ssocket->RecvRequest();
 	if (recv_msg.size() == 0)
 		delete ssocket;
 	else
 	{
 		std::cout << "[recv_msg]\n" << recv_msg << std::endl;
-		// req.ParseRequest();
-		// send_msg = res.CreateResponse(req);
-		// ssocket->SendResponse(send_msg);
-		ssocket->SendResponse(recv_msg);
+		ssocket->GetHTTPRequest()->ParseRequest();
+		if ( ssocket->GetHTTPRequest()->GetRequestStatus() != 0 )
+		{
+			ssocket->GetHTTPRequest()->RequestDisplay();
+			// send_msg = res.CreateResponse(req);
+			// ssocket->SendResponse(send_msg);
+			//ssocket->SendResponse(recv_msg);
+		}
 	}
+	*/
 }

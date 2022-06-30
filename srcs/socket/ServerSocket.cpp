@@ -29,4 +29,3 @@ void	ServerSocket::SendResponse(const std::string& response_msg) const
 	if (send_size == -1)
 		throw std::runtime_error("send error");
 }
-
