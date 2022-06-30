@@ -1,5 +1,6 @@
-all			:	unit_test empty_line system_test
+all			:	test
 
+test		:	unit_test empty_line system_test
 unit_test:
 	make test -C unit_tests
 
@@ -9,4 +10,4 @@ system_test:
 empty_line:
 	@echo
 
-.PHONY		:	unit_test system_test empty_line
+.PHONY		:	all test unit_test system_test empty_line
