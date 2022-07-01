@@ -27,7 +27,7 @@ std::string ServerSocket::RecvRequest() const
 
 		tmp = std::string(buf);
 		ret += tmp;
-		if (ret.find("\r\n") != std::string::npos)
+		if (ret.find("\r\n\r\n") != std::string::npos)
 			break;
 	}
 
