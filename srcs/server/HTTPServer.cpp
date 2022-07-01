@@ -59,6 +59,8 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 		recv_msg = ssocket->RecvRequest();
 		//std::cout << "[recv_msg]\n" << recv_msg << std::endl;
 		req.ParseRequest(recv_msg);
+		if (req.GetParseStatus())
+			break;
 	}
 	req.RequestDisplay();
 	// send_msg = res.CreateResponse(req);

@@ -3,6 +3,7 @@
 
 # include "ServerSocket.hpp"
 # include "EventQueue.hpp"
+# include "HTTPRequest.hpp"
 
 class HTTPServer
 {

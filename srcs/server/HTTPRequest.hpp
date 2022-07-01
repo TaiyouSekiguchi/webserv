@@ -1,6 +1,10 @@
 #ifndef HTTPREQUEST_HPP
 # define HTTPREQUEST_HPP
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 class HTTPRequest
 {
 	public:
@@ -8,6 +12,8 @@ class HTTPRequest
 		~HTTPRequest();
 
 		void	ParseRequest( std::string const & recv_msg);
+		void	RequestDisplay(void) const;
+		bool	GetParseStatus(void) const;
 
 	private:
 		enum	e_status
@@ -15,6 +21,7 @@ class HTTPRequest
 			REQUEST,
 			HEADER,
 			BODY,
+			PARSE,
 			OK,
 			BAD,
 		};
@@ -28,9 +35,19 @@ class HTTPRequest
 
 		e_status		request_status_;
 		e_status		line_status_;
+
+		//request line
 		e_method		method_;
 		std::string		target_;
 		std::string		version_;
+
+		//header
+		std::string		host_;
+
+		void	RequestPart(std::string const & line);
+		void	HeaderPart(std::string const & line);
+		void	DoParse(std::string const & line);
+
 };
 
 #endif
