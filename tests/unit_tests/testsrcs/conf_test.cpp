@@ -25,7 +25,7 @@ TEST_F(ConfigTest, LexSimple)
 		 "html", ";", "index", "index.html", ";", "}", "}"};
 	const std::vector<std::string>	expected_tokens(expected, &expected[16]);
 
-	EXPECT_EQ(tokens.size(), (size_t)16);
+	EXPECT_EQ(tokens.size(), expected_tokens.size());
 	EXPECT_EQ(tokens, expected_tokens);
 }
 
@@ -39,6 +39,6 @@ TEST_F(ConfigTest, LexComplex)
 		 "html", ";", "index", "\"index.html\n\"", ";", "}", "}"};
 	const std::vector<std::string>	expected_tokens(expected, &expected[16]);
 
-	EXPECT_EQ(tokens.size(), (size_t)16);
+	EXPECT_EQ(tokens.size(), expected_tokens.size());
 	EXPECT_EQ(tokens, expected_tokens);
 }
