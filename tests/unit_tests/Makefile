@@ -1,17 +1,26 @@
 SRCSDIR	= ../../srcs
-vpath	%.cpp testsrcs:$(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket
+vpath	%.cpp	testsrcs: \
+				$(SRCSDIR): \
+				$(SRCSDIR)/server: \
+				$(SRCSDIR)/socket: \
+				$(SRCSDIR)/config
 SRCS	=	HTTPServer.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
 			ASocket.cpp \
-			EventQueue.cpp
-SRCS	+=	listensocket_test.cpp
+			EventQueue.cpp \
+			Config.cpp
+SRCS	+=	listensocket_test.cpp \
+			conf_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils
+INCLUDE =	-I $(SRCSDIR)/server \
+			-I $(SRCSDIR)/socket \
+			-I $(SRCSDIR)/utils \
+			-I$(SRCSDIR)/config
 NAME	=	unit_test
 
 CC		=	c++
@@ -34,7 +43,7 @@ $(OBJSDIR)/%.o	:	%.cpp
 
 test		:	all
 				@echo
-				@./$(NAME)
+				@./$(NAME) || :
 
 clean		:
 				-$(RM) $(OBJS) $(DEPS)
