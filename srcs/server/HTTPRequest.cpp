@@ -1,6 +1,6 @@
 #include "HTTPRequest.hpp"
 
-HTTPRequest::HTTPRequest() : request_status_(PARSE), line_status_(REQUEST)
+HTTPRequest::HTTPRequest() : line_status_(REQUEST), method_(NONE)
 {
 }
 
@@ -8,7 +8,7 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
-std::vector<std::string>	my_split(std::string const & str, std::string const & separator)
+static std::vector<std::string>	my_split(std::string const & str, std::string const & separator)
 {
 	std::vector<std::string>	list;
 	std::string::size_type		sep_len;
@@ -43,27 +43,26 @@ std::vector<std::string>	my_split(std::string const & str, std::string const & s
 void	HTTPRequest::RequestPart(std::string const & line)
 {
 	std::vector<std::string>	list;
+	const std::string			methods[3] = { "GET", "POST", "DELETE" };
 
 	list = my_split(line, " ");
 	if (list.size() != 3)
-	{
-		request_status_ = BAD;
-		return ;
-	}
-	
-	std::string		tmp;
+		throw std::exception();
 
-	tmp = list.at(0);
-	if (tmp == "GET")
-		method_ = GET;
-	else
+	for (int i = 0; i < 3; i++)
 	{
-		request_status_ = BAD;
-		return ;
+		if (list.at(0) == methods[i])
+			method_ = static_cast<HTTPRequest::e_method>(i);
 	}
+	if (method_ == NONE)
+		throw std::exception();
 
 	target_ = list.at(1);
-	version_ = list.at(2);
+
+	if (list.at(2) == "HTTP/1.0" || list.at(2) == "HTTP/1.1")
+		version_ = list.at(2);
+	else
+		throw std::exception();
 
 	line_status_ = HEADER;
 
@@ -76,10 +75,7 @@ void	HTTPRequest::HeaderPart(std::string const & line)
 
 	list = my_split(line, " ");
 	if (list.size() != 2)
-	{
-		request_status_ = BAD;
-		return ;
-	}
+		throw std::exception();
 
 	std::string		field;
 
@@ -87,7 +83,7 @@ void	HTTPRequest::HeaderPart(std::string const & line)
 	if (field == "Host:")
 		host_ = list.at(1);
 	else
-		request_status_ = BAD;
+		throw std::exception();
 
 	return;
 }
@@ -126,7 +122,7 @@ void	HTTPRequest::ParseRequest(ServerSocket & ssocket)
 		data = ssocket.RecvData();
 		if (data.size() == 0)
 		{
-			//delete ssocket;
+			ssocket.DisconnectSocket();
 			break ;
 		}
 		save += data;
@@ -147,16 +143,10 @@ void	HTTPRequest::ParseRequest(ServerSocket & ssocket)
 
 void	HTTPRequest::RequestDisplay(void) const
 {
-	std::cout << "Parse status [ " << request_status_ << " ]" << std::endl;
 	std::cout << "method  : " << method_ << std::endl;
 	std::cout << "target  : " << target_ << std::endl;
 	std::cout << "version : " << version_ << std::endl;
 	std::cout << "host    : " << host_ << std::endl;
 
 	return ;
-}
-
-bool	HTTPRequest::GetParseStatus(void) const
-{
-	return (request_status_ != PARSE);
 }

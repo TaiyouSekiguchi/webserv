@@ -14,7 +14,6 @@ class HTTPRequest
 
 		void	ParseRequest(ServerSocket & ssocket);
 		void	RequestDisplay(void) const;
-		bool	GetParseStatus(void) const;
 
 	private:
 		enum	e_status
@@ -22,9 +21,6 @@ class HTTPRequest
 			REQUEST,
 			HEADER,
 			BODY,
-			PARSE,
-			OK,
-			BAD,
 		};
 
 		enum	e_method
@@ -32,9 +28,9 @@ class HTTPRequest
 			GET = 0,
 			POST,
 			DELETE,
+			NONE,
 		};
 
-		e_status		request_status_;
 		e_status		line_status_;
 
 		//request line

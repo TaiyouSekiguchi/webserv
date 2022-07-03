@@ -53,11 +53,20 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 	// HTTPResponse		res;
 	// std::string		send_msg;
 
-	req.ParseRequest(*ssocket);
-	req.RequestDisplay();
-	// send_msg = res.CreateResponse(req);
-	// ssocket->SendResponse(send_msg);
-	//ssocket->SendResponse(recv_msg);
+	try
+	{
+		req.ParseRequest(*ssocket);
+		if (ssocket->GetSocketStatus() == ServerSocket::DISCONNECT)
+		{
+			delete ssocket;
+			return;
+		}
+		req.RequestDisplay();
+	}
+	catch (std::exception & e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 	
 	return;
 
