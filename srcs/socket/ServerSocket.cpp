@@ -14,24 +14,27 @@ ServerSocket::~ServerSocket()
 std::string ServerSocket::RecvRequest() const
 {
 	const ssize_t	kSize = 1048576;     // 1MiB バイト
-	char 			buf[kSize + 1];
-	std::string		ret;
-	std::string		tmp;
+	char 			request_msg[kSize + 1];
 
-	while (1)
-	{
-		ssize_t recv_size = recv(fd_, buf, kSize, 0);
-		if (recv_size == -1)
-			throw std::runtime_error("recv error");
-		buf[recv_size] = '\0';
+	ssize_t recv_size = recv(fd_, request_msg, kSize, 0);
+	if (recv_size == -1)
+		throw std::runtime_error("recv error");
+	request_msg[recv_size] = '\0';
 
-		tmp = std::string(buf);
-		ret += tmp;
-		if (ret.find("\r\n\r\n") != std::string::npos)
-			break;
-	}
+	return (std::string(request_msg));
+}
 
-	return (ret);
+std::string ServerSocket::RecvData() const
+{
+	char 		buf[BUF_SIZE + 1];
+	ssize_t		recv_size;
+
+	recv_size = recv(fd_, buf, BUF_SIZE, 0);
+	if (recv_size == -1)
+		throw std::runtime_error("recv error");
+	buf[recv_size] = '\0';
+
+	return (std::string(buf));
 }
 
 void	ServerSocket::SendResponse(const std::string& response_msg) const

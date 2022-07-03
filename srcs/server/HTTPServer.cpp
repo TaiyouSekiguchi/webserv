@@ -51,22 +51,13 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
 	HTTPRequest		req;
 	// HTTPResponse		res;
-	std::string		recv_msg;
 	// std::string		send_msg;
 
-	while (1)
-	{
-		recv_msg = ssocket->RecvRequest();
-		//std::cout << "[recv_msg]\n" << recv_msg << std::endl;
-		req.ParseRequest(recv_msg);
-		if (req.GetParseStatus())
-			break;
-	}
+	req.ParseRequest(*ssocket);
 	req.RequestDisplay();
 	// send_msg = res.CreateResponse(req);
 	// ssocket->SendResponse(send_msg);
 	//ssocket->SendResponse(recv_msg);
-	delete ssocket;
 	
 	return;
 

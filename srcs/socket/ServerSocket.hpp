@@ -4,6 +4,9 @@
 # include <string>
 # include "ASocket.hpp"
 
+
+# define BUF_SIZE	1024
+
 class ServerSocket : public ASocket
 {
 	public:
@@ -11,6 +14,7 @@ class ServerSocket : public ASocket
 		~ServerSocket();
 
 		std::string		RecvRequest() const;
+		std::string		RecvData() const;
 		void			SendResponse(const std::string& response_msg) const;
 };
 

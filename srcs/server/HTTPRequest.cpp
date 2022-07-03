@@ -11,27 +11,29 @@ HTTPRequest::~HTTPRequest()
 std::vector<std::string>	my_split(std::string const & str, std::string const & separator)
 {
 	std::vector<std::string>	list;
-	std::string::size_type		separator_length;
+	std::string::size_type		sep_len;
+	std::string::size_type		offset;
+	std::string::size_type		pos;
 
-	separator_length = separator.length();
+	sep_len = separator.length();
 
-	if (separator_length == 0)
+	if (sep_len == 0)
 		list.push_back(str);
 	else
 	{
-		std::string::size_type	offset;
-
 		offset = 0;
 		while (1)
 		{
-			std::string::size_type pos = str.find(separator, offset);
+			pos = str.find(separator, offset);
 			if (pos == std::string::npos)
 			{
 				list.push_back(str.substr(offset));
 				break;
 			}
 			list.push_back(str.substr(offset, pos - offset));
-			offset = pos + separator_length;
+			offset = pos + sep_len;
+			while (str.substr(offset, sep_len) == separator)
+				offset += sep_len;
 		}
 	}
 
@@ -92,45 +94,53 @@ void	HTTPRequest::HeaderPart(std::string const & line)
 
 void	HTTPRequest::DoParse(std::string const & line)
 {
-	if (line == "")
-		request_status_ = OK;
-	else
+	if (line_status_ == REQUEST)
 	{
-		if (line_status_ == REQUEST)
+		if (line != "")
 			RequestPart(line);
-		else if (line_status_ == HEADER)
+	}
+	else if (line_status_ == HEADER)
+	{
+		if (line == "")
+			line_status_ = BODY;
+		else
 			HeaderPart(line);
-		//else if (line_status_ == BODY)
-			//BodyPart(recv_msg);
 	}
 
 	return ;
 }
 
-void	HTTPRequest::ParseRequest(std::string const & recv_msg)
+void	HTTPRequest::ParseRequest(ServerSocket & ssocket)
 {
-	std::string				line;
+	std::string				data;
+	std::string				save;
 	std::string				separator;
 	std::string::size_type	separator_length;
-	std::string::size_type	offset;
+	std::string::size_type	pos;
 
-	separator = std::string("\r\n");
+	separator = "\r\n";
 	separator_length = separator.length();
 
-	offset = 0;
-	while (1)
+	while(line_status_ != BODY)
 	{
-		std::string::size_type	pos;
-
-		pos = recv_msg.find(separator, offset);
-		if (pos == std::string::npos)
-			break;
-		line = recv_msg.substr(offset, pos - offset);
-		DoParse(line);
-		if (request_status_ != PARSE)
-			break;
-		offset = pos + separator_length;
+		data = ssocket.RecvData();
+		if (data.size() == 0)
+		{
+			//delete ssocket;
+			break ;
+		}
+		save += data;
+		while (line_status_ != BODY)
+		{
+			pos = save.find(separator);
+			if (pos == std::string::npos)
+				break;
+			DoParse(save.substr(0, pos));
+			save = save.substr(pos + separator_length, save.size());
+		}
 	}
+
+	//Body part
 
 	return ;
 }

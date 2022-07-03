@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "ServerSocket.hpp"
 
 class HTTPRequest
 {
@@ -11,7 +12,7 @@ class HTTPRequest
 		HTTPRequest();
 		~HTTPRequest();
 
-		void	ParseRequest( std::string const & recv_msg);
+		void	ParseRequest(ServerSocket & ssocket);
 		void	RequestDisplay(void) const;
 		bool	GetParseStatus(void) const;
 
@@ -43,6 +44,9 @@ class HTTPRequest
 
 		//header
 		std::string		host_;
+
+		//body
+		std::string		body_;
 
 		void	RequestPart(std::string const & line);
 		void	HeaderPart(std::string const & line);
