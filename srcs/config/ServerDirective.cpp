@@ -9,12 +9,12 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr server_end)
 	};
 	const std::map<std::string, SetFunc>			set_funcs(p, &p[3]);
 	std::map<std::string, SetFunc>::const_iterator	found;
-
-	Tokens::citr	itr = begin;
-	int				advanced_len;
+	Tokens::citr									itr;
+	int												advanced_len;
 
 	InitDirectives();
 
+	itr = begin;
 	while (itr != server_end)
 	{
 		found = set_funcs.find(*itr);

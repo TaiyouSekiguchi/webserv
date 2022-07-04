@@ -11,12 +11,12 @@ LocationDirective::LocationDirective(
 	};
 	const std::map<std::string, SetFunc>			set_funcs(p, &p[2]);
 	std::map<std::string, SetFunc>::const_iterator	found;
-
-	Tokens::citr	itr = begin;
-	int				advanced_len;
+	Tokens::citr									itr;
+	int												advanced_len;
 
 	InitDirectives();
 
+	itr = begin;
 	while (itr != location_end)
 	{
 		found = set_funcs.find(*itr);
