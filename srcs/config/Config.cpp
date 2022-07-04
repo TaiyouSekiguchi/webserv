@@ -3,75 +3,38 @@
 #include "Config.hpp"
 
 Config::Config(const std::string& file_path)
+	: tokens_(file_path)
 {
-	LexConfigFile(file_path);
+	Tokens::citr	itr = tokens_.begin();
+	Tokens::citr	tokens_end = tokens_.end();
+	int				advanced_len;
+
+	while (itr != tokens_end)
+	{
+		if (*itr == "server")
+			SetServer(++itr, tokens_end, &advanced_len);
+		else
+			throw std::runtime_error("conf syntax error");
+		itr += advanced_len;
+	}
 }
 
 Config::~Config()
 {
-	// std::vector<ServerDirective*>::iterator	it = servers_.begin();
-	// std::vector<ServerDirective*>::iterator	end = servers_.end();
-	// while (it != end)
-	// {
-	// 	delete *it;
-	// 	++it;
-	// }
 }
 
-const std::vector<std::string>&	Config::GetTokens() const { return (tokens_); }
+const std::vector<ServerDirective>&	Config::GetServers() const { return (servers_); }
 
-std::string	Config::GetFileContent(const std::string& file_path)
+void	Config::SetServer(Tokens::citr begin, Tokens::citr tokens_end, int *advaced_len)
 {
-	std::ifstream ifs(file_path);
-	if (ifs.fail())
-		std::runtime_error("open error");
-	std::istreambuf_iterator<char> it(ifs);
-	std::istreambuf_iterator<char> last;
-	std::string content(it, last);
-	return (content);
-}
+	if (begin == tokens_end || *begin != "{")
+		throw std::runtime_error("conf syntax error");
 
-std::string	Config::GetToken(const std::string& content, const std::string::size_type& start)
-{
-	const char 				seps[] = {';', '{', '}'};
-	std::string::size_type	i = start;
-	char					quote;
+	Tokens::citr	server_begin_itr = begin + 1;
+	Tokens::citr	end_braces_itr = Tokens::GetEndBracesItr(server_begin_itr, tokens_end);
+	if (end_braces_itr == tokens_end)
+		throw std::runtime_error("conf syntax error");
 
-	if (std::find(seps, &seps[3], content[start]) != &seps[3])
-		return (content.substr(start, 1));
-
-	while (i < content.length()
-		&& !std::isspace(content[i])
-		&& std::find(seps, &seps[3], content[i]) == &seps[3])
-	{
-		if (content[i] == '\'' || content[i] == '\"')
-		{
-			quote = content[i++];
-			while (i < content.length() && content[i] != quote)
-				i++;
-			if (i == content.length())
-				throw std::runtime_error("syntex error");
-		}
-		i++;
-	}
-	return (content.substr(start, i - start));
-}
-
-void	Config::LexConfigFile(const std::string& file_path)
-{
-	std::string::size_type		i;
-	std::string					token;
-	const std::string&			content = GetFileContent(file_path);
-
-	i = 0;
-	while (i < content.length())
-	{
-		while (i < content.length() && std::isspace(content[i]))
-			i++;
-		if (i == content.length())
-			break;
-		const std::string&	token = GetToken(content, i);
-		tokens_.push_back(token);
-		i += token.length();
-	}
+	*advaced_len = end_braces_itr - begin + 1;
+	servers_.push_back(ServerDirective(server_begin_itr, end_braces_itr));
 }

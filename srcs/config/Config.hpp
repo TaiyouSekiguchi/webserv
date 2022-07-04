@@ -3,7 +3,8 @@
 
 # include <string>
 # include <vector>
-// # include "ServerDirective.hpp"
+# include "Tokens.hpp"
+# include "ServerDirective.hpp"
 
 class Config
 {
@@ -11,15 +12,17 @@ class Config
 		explicit Config(const std::string& file_path);
 		~Config();
 
-		const std::vector<std::string>&	GetTokens() const;
+		// Getter
+		const std::vector<ServerDirective>&	GetServers() const;
 
 	private:
-		std::vector<std::string>	tokens_;
-		// std::vector<ServerDirective*>	servers_;
+		// Set Directive Variable
+		void	SetServer(Tokens::citr start, Tokens::citr end, int *advaced_len);
 
-		void			LexConfigFile(const std::string& file_path);
-		std::string		GetFileContent(const std::string& file_path);
-		std::string		GetToken(const std::string& content, const std::string::size_type& start);
+		// Tokens
+		Tokens							tokens_;
+		// Directive Variable
+		std::vector<ServerDirective>	servers_;
 };
 
 #endif  // CONFIG_HPP
