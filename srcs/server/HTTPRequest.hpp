@@ -6,6 +6,7 @@
 #include <vector>
 #include "ServerSocket.hpp"
 #include "ClientClosed.hpp"
+#include "HTTPError.hpp"
 
 class HTTPRequest
 {
