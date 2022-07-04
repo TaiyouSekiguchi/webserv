@@ -57,14 +57,14 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 		req.ParseRequest(*ssocket);
 		req.RequestDisplay();
 	}
-	catch (const ClientClosed& e)
+	catch (const ClientClosed & e)
 	{
 		delete ssocket;
 		return;
 	}
-	catch (std::exception & e)
+	catch (const HTTPError & e)
 	{
-		std::cerr << e.what() << std::endl;
+		std::cerr << "status code : " << e.GetStatusCode() << std::endl;
 	}
 
 	return;
