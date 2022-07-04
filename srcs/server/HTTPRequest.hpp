@@ -47,7 +47,6 @@ class HTTPRequest
 		void	RequestPart(std::string const & line);
 		void	HeaderPart(std::string const & line);
 		void	DoParse(std::string const & line);
-
 };
 
 #endif

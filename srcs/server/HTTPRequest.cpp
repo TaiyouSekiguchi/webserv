@@ -1,6 +1,8 @@
 #include "HTTPRequest.hpp"
 
-HTTPRequest::HTTPRequest() : line_status_(REQUEST), method_(NONE)
+HTTPRequest::HTTPRequest()
+	: line_status_(REQUEST)
+	, method_(NONE)
 {
 }
 
@@ -110,6 +112,7 @@ void	HTTPRequest::ParseRequest(ServerSocket & ssocket)
 {
 	std::string				data;
 	std::string				save;
+	std::string				line;
 	std::string				separator;
 	std::string::size_type	separator_length;
 	std::string::size_type	pos;
@@ -117,23 +120,20 @@ void	HTTPRequest::ParseRequest(ServerSocket & ssocket)
 	separator = "\r\n";
 	separator_length = separator.length();
 
-	while(line_status_ != BODY)
+	while (line_status_ != BODY)
 	{
-		data = ssocket.RecvData();
-		if (data.size() == 0)
+		pos = save.find(separator);
+		if (pos == std::string::npos)
 		{
-			ssocket.DisconnectSocket();
-			break ;
+			data = ssocket.RecvData();
+			if (data.size() == 0)
+				throw ClientClosed();
+			save += data;
+			continue;
 		}
-		save += data;
-		while (line_status_ != BODY)
-		{
-			pos = save.find(separator);
-			if (pos == std::string::npos)
-				break;
-			DoParse(save.substr(0, pos));
-			save = save.substr(pos + separator_length, save.size());
-		}
+		line = save.substr(0, pos);
+		save = save.substr(pos + separator_length, save.size());
+		DoParseLine(line);
 	}
 
 	//Body part
