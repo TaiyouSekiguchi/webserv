@@ -72,11 +72,12 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 	std::vector<std::string>	list;
 	const std::string			methods[3] = { "GET", "POST", "DELETE" };
 
-	line = GetLine(ssocket);
+	while ((line = GetLine(ssocket)) == "")
+		;
 
 	list = my_split(line, " ");
 	if (list.size() != 3)
-		throw std::exception();
+		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -84,14 +85,14 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 			method_ = static_cast<HTTPRequest::e_method>(i);
 	}
 	if (method_ == NONE)
-		throw std::exception();
+		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	target_ = list.at(1);
 
 	if (list.at(2) == "HTTP/1.0" || list.at(2) == "HTTP/1.1")
 		version_ = list.at(2);
 	else
-		throw std::exception();
+		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	return ;
 }
