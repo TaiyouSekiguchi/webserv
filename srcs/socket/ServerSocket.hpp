@@ -10,8 +10,8 @@ class ServerSocket : public ASocket
 		explicit ServerSocket(const int fd);
 		~ServerSocket();
 
-		std::string RecvRequest() const;
-		void		SendResponse(const std::string& response_msg) const;
+		std::string	RecvData(const ssize_t size = 1048576) const;
+		void		SendData(const std::string& msg) const;
 };
 
 #endif  // SERVERSOCKET_HPP
