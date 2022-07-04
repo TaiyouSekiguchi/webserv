@@ -23,8 +23,8 @@ class ServerDirective
 	private:
 		typedef void (ServerDirective::*SetFunc)(Tokens::citr, Tokens::citr, int*);
 
-		// Init Directive Variable
-		void	InitDirectives();
+		// Set Default Values
+		void	SetDefaultValues();
 
 		// Set Directive Variable
 		void	SetListen(Tokens::citr begin, Tokens::citr end, int *advaned_len);

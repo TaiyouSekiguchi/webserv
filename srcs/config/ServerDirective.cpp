@@ -12,7 +12,7 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr server_end)
 	Tokens::citr									itr;
 	int												advanced_len;
 
-	InitDirectives();
+	SetDefaultValues();
 
 	itr = begin;
 	while (itr != server_end)
@@ -33,7 +33,7 @@ const std::pair<std::string, int>&		ServerDirective::GetListen() const { return 
 const std::vector<std::string>&			ServerDirective::GetServerNames() const { return(server_names_); }
 const std::vector<LocationDirective>&	ServerDirective::GetLocations() const { return (locations_); }
 
-void	ServerDirective::InitDirectives()
+void	ServerDirective::SetDefaultValues()
 {
 	listen_ = std::make_pair("*", 80);
 	server_names_.push_back("");

@@ -14,7 +14,7 @@ LocationDirective::LocationDirective(
 	Tokens::citr									itr;
 	int												advanced_len;
 
-	InitDirectives();
+	SetDefaultValues();
 
 	itr = begin;
 	while (itr != location_end)

@@ -23,8 +23,8 @@ class LocationDirective
 	private:
 		typedef void (LocationDirective::*SetFunc)(Tokens::citr, Tokens::citr, int*);
 
-		// Init Directive Variable
-		void	InitDirectives();
+		// Set Default Values
+		void	SetDefaultValues();
 
 		// Set Directive Variable
 		void	SetRoot(Tokens::citr begin, Tokens::citr end, int *advaned_len);
