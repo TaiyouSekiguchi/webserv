@@ -6,8 +6,7 @@ SRCS	=	main.cpp \
 			EventQueue.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
-			ServerSocket.cpp \
-			HTTPRequest.cpp
+			ServerSocket.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
