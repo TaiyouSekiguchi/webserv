@@ -35,7 +35,7 @@ const std::string&				LocationDirective::GetPath() const { return (path_); }
 const std::string&				LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&	LocationDirective::GetIndex() const { return (index_); }
 
-void	LocationDirective::InitDirectives()
+void	LocationDirective::SetDefaultValues()
 {
 	root_ = "html";
 	index_.push_back("index.html");
