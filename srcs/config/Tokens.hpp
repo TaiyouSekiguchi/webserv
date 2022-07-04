@@ -18,6 +18,7 @@ class Tokens
 
 		// Utils
 		static citr		GetEndBracesItr(citr begin, citr end);
+		static bool		isSpecialToken(const std::string& s);
 
 	private:
 		// Lexer

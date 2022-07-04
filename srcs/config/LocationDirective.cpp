@@ -2,7 +2,7 @@
 #include "LocationDirective.hpp"
 
 LocationDirective::LocationDirective(
-	Tokens::citr begin, Tokens::citr location_end, const std::string& path)
+	const std::string& path, Tokens::citr begin, Tokens::citr location_end)
 	: path_(path)
 {
 	const std::pair<std::string, SetFunc> p[] = {

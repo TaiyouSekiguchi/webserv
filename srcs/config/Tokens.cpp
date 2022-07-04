@@ -39,6 +39,12 @@ Tokens::citr	Tokens::GetEndBracesItr(citr begin, citr end)
 	return (itr);
 }
 
+bool	Tokens::isSpecialToken(const std::string& s)
+{
+	const std::string 	seps[] = {";", "{", "}"};
+	return (std::find(seps, &seps[3], s) != &seps[3]);
+}
+
 std::string	Tokens::GetFileContent(const std::string& file_path) const
 {
 	std::ifstream ifs(file_path);

@@ -58,8 +58,17 @@ void	ServerDirective::SetServerNames(Tokens::citr begin, Tokens::citr server_end
 
 void	ServerDirective::SetLocation(Tokens::citr begin, Tokens::citr server_end, int *advanced_len)
 {
-	(void)begin;
-	(void)server_end;
-	locations_.push_back(LocationDirective(begin + 1, begin + 6, "/"));
-	*advanced_len = 9;
+	Tokens::citr		end_braces_itr;
+
+	if (begin == server_end || *begin != "{")
+		throw std::runtime_error("conf syntax error");
+	else if (begin + 1 == server_end || Tokens::isSpecialToken(*(begin + 1)))
+		throw std::runtime_error("conf syntax error");
+
+	end_braces_itr = Tokens::GetEndBracesItr(begin + 2, server_end);
+	if (end_braces_itr == server_end)
+		throw std::runtime_error("conf syntax error");
+	*advaced_len = end_braces_itr - begin + 1;
+
+	servers_.push_back(LocationDirective(*(begin + 1), begin + 2, end_braces_itr));
 }
