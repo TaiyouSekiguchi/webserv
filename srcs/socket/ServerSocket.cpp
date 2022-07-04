@@ -11,21 +11,20 @@ ServerSocket::~ServerSocket()
 {
 }
 
-std::string ServerSocket::RecvRequest() const
+std::string ServerSocket::RecvMsg(const ssize_t size) const
 {
-	const ssize_t	kSize = 1048576;     // 1MiB バイト
-	char 			request_msg[kSize + 1];
+	char 	msg[size + 1];
 
-	ssize_t recv_size = recv(fd_, request_msg, kSize, 0);
+	ssize_t recv_size = recv(fd_, msg, size, 0);
 	if (recv_size == -1)
 		throw std::runtime_error("recv error");
-	request_msg[recv_size] = '\0';
-	return (std::string(request_msg));
+	msg[recv_size] = '\0';
+	return (std::string(msg));
 }
 
-void	ServerSocket::SendResponse(const std::string& response_msg) const
+void	ServerSocket::SendMsg(const std::string& msg) const
 {
-	ssize_t send_size = send(fd_, response_msg.c_str(), response_msg.size(), 0);
+	ssize_t send_size = send(fd_, msg.c_str(), msg.size(), 0);
 	if (send_size == -1)
 		throw std::runtime_error("send error");
 }
