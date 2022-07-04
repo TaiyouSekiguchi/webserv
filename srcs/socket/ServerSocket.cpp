@@ -3,7 +3,7 @@
 #include "ServerSocket.hpp"
 
 ServerSocket::ServerSocket(const int fd) :
-	ASocket(fd)
+	ASocket(fd), socket_status_(CONNECT)
 {
 }
 
@@ -29,3 +29,12 @@ void	ServerSocket::SendData(const std::string& data) const
 		throw std::runtime_error("send error");
 }
 
+void	ServerSocket::DisconnectSocket(void)
+{
+	socket_status_ = ServerSocket::DISCONNECT;
+}
+
+ServerSocket::e_status	ServerSocket::GetSocketStatus(void) const
+{
+	return (socket_status_);
+}
