@@ -1,8 +1,7 @@
 #include "HTTPRequest.hpp"
 
 HTTPRequest::HTTPRequest()
-	: line_status_(REQUEST)
-	, method_(NONE)
+	: method_(NONE)
 {
 }
 
@@ -42,10 +41,38 @@ static std::vector<std::string>	my_split(std::string const & str, std::string co
 	return (list);
 }
 
-void	HTTPRequest::RequestPart(std::string const & line)
+std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 {
+	std::string				data;
+	std::string				line;
+	std::string				separator;
+	std::string::size_type	separator_length;
+	std::string::size_type	pos;
+
+	separator = "\r\n";
+	separator_length = separator.length();
+
+	while ((pos = save_.find(separator)) == std::string::npos)
+	{
+		data = ssocket.RecvData();
+		if (data.size() == 0)
+			throw ClientClosed();
+		save_ += data;
+	}
+
+	line = save_.substr(0, pos);
+	save_ = save_.substr(pos + separator_length, save_.size());
+
+	return (line);
+}
+
+void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
+{
+	std::string					line;
 	std::vector<std::string>	list;
 	const std::string			methods[3] = { "GET", "POST", "DELETE" };
+
+	line = GetLine(ssocket);
 
 	list = my_split(line, " ");
 	if (list.size() != 3)
@@ -66,77 +93,37 @@ void	HTTPRequest::RequestPart(std::string const & line)
 	else
 		throw std::exception();
 
-	line_status_ = HEADER;
-
 	return ;
 }
 
-void	HTTPRequest::HeaderPart(std::string const & line)
+void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 {
-	std::vector<std::string>	list;
+	std::string		line;
 
-	list = my_split(line, " ");
-	if (list.size() != 2)
-		throw std::exception();
-
-	std::string		field;
-
-	field = list.at(0);
-	if (field == "Host:")
-		host_ = list.at(1);
-	else
-		throw std::exception();
-
-	return;
-}
-
-void	HTTPRequest::DoParse(std::string const & line)
-{
-	if (line_status_ == REQUEST)
+	while ((line = GetLine(ssocket)) != "")
 	{
-		if (line != "")
-			RequestPart(line);
-	}
-	else if (line_status_ == HEADER)
-	{
-		if (line == "")
-			line_status_ = BODY;
+		std::vector<std::string>	list;
+		std::string					field;
+
+		list = my_split(line, " ");
+		if (list.size() != 2)
+			throw std::exception();
+
+		field = list.at(0);
+		if (field == "Host:")
+			host_ = list.at(1);
 		else
-			HeaderPart(line);
+			throw std::exception();
 	}
 
 	return ;
 }
 
-void	HTTPRequest::ParseRequest(ServerSocket & ssocket)
+void	HTTPRequest::ParseRequest(ServerSocket const & ssocket)
 {
-	std::string				data;
-	std::string				save;
-	std::string				line;
-	std::string				separator;
-	std::string::size_type	separator_length;
-	std::string::size_type	pos;
-
-	separator = "\r\n";
-	separator_length = separator.length();
-
-	while (line_status_ != BODY)
-	{
-		pos = save.find(separator);
-		if (pos == std::string::npos)
-		{
-			data = ssocket.RecvData();
-			if (data.size() == 0)
-				throw ClientClosed();
-			save += data;
-			continue;
-		}
-		line = save.substr(0, pos);
-		save = save.substr(pos + separator_length, save.size());
-		DoParseLine(line);
-	}
-
-	//Body part
+	ParseRequestLine(ssocket);
+	ParseHeaders(ssocket);
+	//ParseBody();
 
 	return ;
 }

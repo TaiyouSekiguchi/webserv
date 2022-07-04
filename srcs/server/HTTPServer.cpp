@@ -2,6 +2,7 @@
 #include "HTTPServer.hpp"
 #include "ListenSocket.hpp"
 #include "debug.hpp"
+#include "HTTPRequest.hpp"
 
 HTTPServer::HTTPServer()
 {
@@ -47,10 +48,28 @@ void	HTTPServer::MainLoop(EventQueue const & equeue) const
 	}
 }
 
-
 void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
-	(void)ssocket;
+	HTTPRequest		req;
+
+	try
+	{
+		req.ParseRequest(*ssocket);
+		req.RequestDisplay();
+	}
+	catch (const ClientClosed& e)
+	{
+		delete ssocket;
+		return;
+	}
+	catch (std::exception & e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
+	return;
+
+	//(void)ssocket;
 // 	int				status_code;
 // 	HTTPRequest		req;
 // 	HTTPMethod		method;
