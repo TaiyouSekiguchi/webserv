@@ -41,8 +41,8 @@ Tokens::citr	Tokens::GetEndBracesItr(citr begin, citr end)
 
 bool	Tokens::isSpecialToken(const std::string& s)
 {
-	const std::string 	seps[] = {";", "{", "}"};
-	return (std::find(seps, &seps[3], s) != &seps[3]);
+	const std::string 	symbols[] = {";", "{", "}"};
+	return (std::find(symbols, &symbols[3], s) != &symbols[3]);
 }
 
 std::string	Tokens::GetFileContent(const std::string& file_path) const
@@ -58,8 +58,8 @@ std::string	Tokens::GetFileContent(const std::string& file_path) const
 
 bool	Tokens::isSpecialSymbol(const char c) const
 {
-	const char 	seps[] = {';', '{', '}'};
-	return (std::find(seps, &seps[3], c) != &seps[3]);
+	const char 	symbols[] = {';', '{', '}'};
+	return (std::find(symbols, &symbols[3], c) != &symbols[3]);
 }
 
 std::string	Tokens::GetToken(const std::string& content, const std::string::size_type& start) const
