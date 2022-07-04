@@ -4,17 +4,9 @@
 # include <string>
 # include "ASocket.hpp"
 
-# define BUF_SIZE	1024
-
 class ServerSocket : public ASocket
 {
 	public:
-		enum	e_status
-		{
-			CONNECT,
-			DISCONNECT,
-		};
-
 		explicit ServerSocket(const int fd);
 		~ServerSocket();
 
