@@ -84,6 +84,9 @@ TEST_F(ConfigTest, basic)
 		EXPECT_EQ(litr->GetIndex().size(), (size_t)2);
 		EXPECT_EQ(litr->GetIndex()[0], "index2.html");
 		EXPECT_EQ(litr->GetIndex()[1], "index2.htm");
+		EXPECT_EQ(litr->GetAllowedMethods().size(), (size_t)2);
+		EXPECT_EQ(litr->GetAllowedMethods()[0], "GET");
+		EXPECT_EQ(litr->GetAllowedMethods()[1], "POST");
 		EXPECT_EQ(++litr, locations.end());
 	}
 	sitr++;

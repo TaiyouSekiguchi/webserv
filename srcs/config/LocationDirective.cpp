@@ -7,9 +7,10 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 	const std::pair<std::string, SetFunc> p[] = {
 		std::make_pair("index", &LocationDirective::SetIndex),
 		std::make_pair("root", &LocationDirective::SetRoot),
-		std::make_pair("autoindex", &LocationDirective::SetAutoIndex)
+		std::make_pair("autoindex", &LocationDirective::SetAutoIndex),
+		std::make_pair("allowed_methods", &LocationDirective::SetAllowedMethods)
 	};
-	const std::map<std::string, SetFunc>			set_funcs(p, &p[3]);
+	const std::map<std::string, SetFunc>			set_funcs(p, &p[4]);
 	std::map<std::string, SetFunc>::const_iterator	found;
 	Tokens::citr									itr;
 	Tokens::citr									directive_end;
@@ -38,6 +39,7 @@ const std::string&				LocationDirective::GetPath() const { return (path_); }
 const std::string&				LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&	LocationDirective::GetIndex() const { return (index_); }
 const bool&						LocationDirective::GetAutoIndex() const { return (autoindex_); }
+const std::vector<std::string>&	LocationDirective::GetAllowedMethods() const { return (allowed_methods_); }
 
 Tokens::citr	LocationDirective::GetDirectiveEnd
 	(const std::string& name, Tokens::citr begin, Tokens::citr end) const
@@ -54,6 +56,9 @@ void	LocationDirective::SetDefaultValues()
 	root_ = "html";
 	index_.push_back("index.html");
 	autoindex_ = false;
+	allowed_methods_.push_back("GET");
+	allowed_methods_.push_back("POST");
+	allowed_methods_.push_back("DELETE");
 }
 
 void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
@@ -89,4 +94,18 @@ void	LocationDirective::SetAutoIndex(Tokens::citr begin, Tokens::citr end)
 		autoindex_ = false;
 	else
 		throw std::runtime_error("conf syntax error");
+}
+
+void	LocationDirective::SetAllowedMethods(Tokens::citr begin, Tokens::citr end)
+{
+	allowed_methods_.clear();
+
+	Tokens::citr	itr = begin;
+	while (itr != end)
+	{
+		if (*itr != "GET" && *itr != "POST" && *itr != "DELETE")
+			throw std::runtime_error("conf syntax error");
+		allowed_methods_.push_back(*itr);
+		itr++;
+	}
 }

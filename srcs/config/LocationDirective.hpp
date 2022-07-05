@@ -18,7 +18,7 @@ class LocationDirective
 		const std::vector<std::string>&		GetIndex() const;
 		// const std::pair<int, std::string>&	GetReturn() const;
 		const bool&							GetAutoIndex() const;
-		// const std::vector<std::string>&		GetAllowdMethods() const;
+		const std::vector<std::string>&		GetAllowedMethods() const;
 
 	private:
 		typedef void (LocationDirective::*SetFunc)(Tokens::citr, Tokens::citr);
@@ -31,7 +31,7 @@ class LocationDirective
 		void	SetIndex(Tokens::citr begin, Tokens::citr end);
 		// void	SetReturn(Tokens::citr begin, Tokens::citr end);
 		void	SetAutoIndex(Tokens::citr begin, Tokens::citr end);
-		// void	SetAllowedMethods(Tokens::citr begin, Tokens::citr end);
+		void	SetAllowedMethods(Tokens::citr begin, Tokens::citr end);
 
 		// Location Path
 		std::string					path_;
@@ -41,7 +41,7 @@ class LocationDirective
 		std::vector<std::string>	index_;
 		// std::pair<int, std::string>	return_;
 		bool						autoindex_;
-		// std::vector<std::string>	allowed_methods_;
+		std::vector<std::string>	allowed_methods_;
 };
 
 #endif  // LOCATIONDIRECTIVE_HPP
