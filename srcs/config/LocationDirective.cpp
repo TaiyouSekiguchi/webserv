@@ -6,9 +6,10 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 {
 	const std::pair<std::string, SetFunc> p[] = {
 		std::make_pair("index", &LocationDirective::SetIndex),
-		std::make_pair("root",  &LocationDirective::SetRoot)
+		std::make_pair("root", &LocationDirective::SetRoot),
+		std::make_pair("autoindex", &LocationDirective::SetAutoIndex)
 	};
-	const std::map<std::string, SetFunc>			set_funcs(p, &p[2]);
+	const std::map<std::string, SetFunc>			set_funcs(p, &p[3]);
 	std::map<std::string, SetFunc>::const_iterator	found;
 	Tokens::citr									itr;
 	Tokens::citr									directive_end;
@@ -36,6 +37,7 @@ LocationDirective::~LocationDirective()
 const std::string&				LocationDirective::GetPath() const { return (path_); }
 const std::string&				LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&	LocationDirective::GetIndex() const { return (index_); }
+const bool&						LocationDirective::GetAutoIndex() const { return (autoindex_); }
 
 Tokens::citr	LocationDirective::GetDirectiveEnd
 	(const std::string& name, Tokens::citr begin, Tokens::citr end) const
@@ -51,7 +53,7 @@ void	LocationDirective::SetDefaultValues()
 {
 	root_ = "html";
 	index_.push_back("index.html");
-	// autoindex_ = false;
+	autoindex_ = false;
 }
 
 void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
@@ -75,4 +77,16 @@ void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr end)
 		index_.push_back(*itr);
 		itr++;
 	}
+}
+
+void	LocationDirective::SetAutoIndex(Tokens::citr begin, Tokens::citr end)
+{
+	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	if (*begin == "on")
+		autoindex_ = true;
+	else if (*begin == "off")
+		autoindex_ = false;
+	else
+		throw std::runtime_error("conf syntax error");
 }

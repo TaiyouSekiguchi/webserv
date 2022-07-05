@@ -16,9 +16,9 @@ class LocationDirective
 		const std::string&					GetPath() const;
 		const std::string&					GetRoot() const;
 		const std::vector<std::string>&		GetIndex() const;
-		// const std::pair<int, std::string>&	GetReturn();
-		// const bool&							GetAutoIndex();
-		// const std::vector<std::string>&		GetAllowdMethods();
+		// const std::pair<int, std::string>&	GetReturn() const;
+		const bool&							GetAutoIndex() const;
+		// const std::vector<std::string>&		GetAllowdMethods() const;
 
 	private:
 		typedef void (LocationDirective::*SetFunc)(Tokens::citr, Tokens::citr);
@@ -30,7 +30,7 @@ class LocationDirective
 		void	SetRoot(Tokens::citr begin, Tokens::citr end);
 		void	SetIndex(Tokens::citr begin, Tokens::citr end);
 		// void	SetReturn(Tokens::citr begin, Tokens::citr end);
-		// void	SetAutoIndex(Tokens::citr begin, Tokens::citr end);
+		void	SetAutoIndex(Tokens::citr begin, Tokens::citr end);
 		// void	SetAllowedMethods(Tokens::citr begin, Tokens::citr end);
 
 		// Location Path
@@ -40,7 +40,7 @@ class LocationDirective
 		std::string					root_;
 		std::vector<std::string>	index_;
 		// std::pair<int, std::string>	return_;
-		// bool						autoindex_;
+		bool						autoindex_;
 		// std::vector<std::string>	allowed_methods_;
 };
 

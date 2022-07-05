@@ -77,6 +77,7 @@ TEST_F(ConfigTest, basic)
 		EXPECT_EQ(litr->GetPath(), "/");
 		EXPECT_EQ(litr->GetIndex().size(), (size_t)1);
 		EXPECT_EQ(litr->GetIndex()[0], "index1.html");
+		EXPECT_EQ(litr->GetAutoIndex(), true);
 		litr++;
 		EXPECT_EQ(litr->GetPath(), "/sub1");
 		EXPECT_EQ(litr->GetRoot(), "html1");
