@@ -14,7 +14,7 @@ class ServerDirective
 		~ServerDirective();
 
 		// Getter
-		const std::pair<std::string, int>&		GetListen() const;
+		const std::pair<unsigned int, int>&		GetListen() const;
 		const std::vector<std::string>&			GetServerNames() const;
 		const std::vector<LocationDirective>&	GetLocations() const;
 	 	// const std::map<int, std::string>&		GetErrorPages() const;
@@ -34,7 +34,7 @@ class ServerDirective
 		// void	SetClientMaxBodySize(Tokens::citr begin, Tokens::citr end);
 
 		// Directive Variable
-		std::pair<std::string, int>			listen_;
+		std::pair<unsigned int, int>		listen_;
 		std::vector<std::string> 			server_names_;
 		std::vector<LocationDirective>		locations_;
 		// std::map<int, std::string> 			error_pages_;
