@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <arpa/inet.h>
 #include "Config.hpp"
 
 // テストフィクスチャ
@@ -65,10 +66,11 @@ TEST_F(ConfigTest, basic)
 
 	servers = config.GetServers();
 	sitr = servers.begin();
-	EXPECT_EQ(sitr->GetListen().first, "*");
+	EXPECT_EQ(sitr->GetListen().first, inet_addr("127.0.0.1"));
 	EXPECT_EQ(sitr->GetListen().second, 8080);
-	EXPECT_EQ(sitr->GetServerNames().size(), (size_t)1);
+	EXPECT_EQ(sitr->GetServerNames().size(), (size_t)2);
 	EXPECT_EQ(sitr->GetServerNames()[0], "localhost");
+	EXPECT_EQ(sitr->GetServerNames()[1], "webserv");
 	{
 		locations = sitr->GetLocations();
 		litr = locations.begin();
@@ -78,12 +80,13 @@ TEST_F(ConfigTest, basic)
 		litr++;
 		EXPECT_EQ(litr->GetPath(), "/sub1");
 		EXPECT_EQ(litr->GetRoot(), "html1");
-		EXPECT_EQ(litr->GetIndex().size(), (size_t)1);
+		EXPECT_EQ(litr->GetIndex().size(), (size_t)2);
 		EXPECT_EQ(litr->GetIndex()[0], "index2.html");
+		EXPECT_EQ(litr->GetIndex()[1], "index2.htm");
 		EXPECT_EQ(++litr, locations.end());
 	}
 	sitr++;
-	EXPECT_EQ(sitr->GetListen().first, "*");
+	EXPECT_EQ(sitr->GetListen().first, INADDR_ANY);
 	EXPECT_EQ(sitr->GetListen().second, 8090);
 	{
 		locations = sitr->GetLocations();
