@@ -14,7 +14,7 @@ class LocationDirective
 
 		// Getter
 		const std::string&					GetPath() const;
-		const std::string&					GetAlias() const;
+		const std::string&					GetRoot() const;
 		const std::vector<std::string>&		GetIndex() const;
 		// const std::pair<int, std::string>&	GetReturn();
 		// const bool&							GetAutoIndex();
@@ -27,7 +27,7 @@ class LocationDirective
 		void			SetDefaultValues();
 
 		// Set Directive Variable
-		void	SetAlias(Tokens::citr begin, Tokens::citr end);
+		void	SetRoot(Tokens::citr begin, Tokens::citr end);
 		void	SetIndex(Tokens::citr begin, Tokens::citr end);
 		// void	SetReturn(Tokens::citr begin, Tokens::citr end);
 		// void	SetAutoIndex(Tokens::citr begin, Tokens::citr end);
@@ -37,7 +37,7 @@ class LocationDirective
 		std::string					path_;
 
 		// Directive Variable
-		std::string					alias_;
+		std::string					root_;
 		std::vector<std::string>	index_;
 		// std::pair<int, std::string>	return_;
 		// bool						autoindex_;

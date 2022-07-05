@@ -6,7 +6,7 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 {
 	const std::pair<std::string, SetFunc> p[] = {
 		std::make_pair("index", &LocationDirective::SetIndex),
-		std::make_pair("alias",  &LocationDirective::SetAlias)
+		std::make_pair("root",  &LocationDirective::SetRoot)
 	};
 	const std::map<std::string, SetFunc>			set_funcs(p, &p[2]);
 	std::map<std::string, SetFunc>::const_iterator	found;
@@ -34,7 +34,7 @@ LocationDirective::~LocationDirective()
 }
 
 const std::string&				LocationDirective::GetPath() const { return (path_); }
-const std::string&				LocationDirective::GetAlias() const { return (alias_); }
+const std::string&				LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&	LocationDirective::GetIndex() const { return (index_); }
 
 Tokens::citr	LocationDirective::GetDirectiveEnd
@@ -49,15 +49,16 @@ Tokens::citr	LocationDirective::GetDirectiveEnd
 
 void	LocationDirective::SetDefaultValues()
 {
+	// root_ = "html";
 	// index_.push_back("index.html");
 	// autoindex_ = false;
 }
 
-void	LocationDirective::SetAlias(Tokens::citr begin, Tokens::citr end)
+void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
 {
 	(void)begin;
 	(void)end;
-	alias_ = *begin;
+	root_ = *begin;
 }
 
 void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr end)
