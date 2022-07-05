@@ -2,6 +2,7 @@
 
 HTTPRequest::HTTPRequest()
 	: method_(NONE)
+	, content_length_(0)
 {
 }
 
@@ -113,9 +114,59 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 		field = list.at(0);
 		if (field == "Host:")
 			host_ = list.at(1);
+		else if (field == "Content-Length:")
+		{
+			std::string		tmp;
+			const char		*c_content_length;
+			char			*endptr;
+
+			tmp = list.at(1);
+			c_content_length = tmp.c_str();
+			content_length_ = std::strtoul(c_content_length, &endptr, 10);
+			if (errno == ERANGE)
+				throw HTTPError(HTTPError::BAD_REQUEST);
+			if (*endptr != '\0')
+				throw HTTPError(HTTPError::BAD_REQUEST);
+		}
 		else
 			throw std::exception();
 	}
+
+	return ;
+}
+
+void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
+{
+	std::string		data;
+	std::string		tmp;
+	size_t			remaining_byte;
+	size_t			default_recv_byte = 1024;
+	size_t			recv_byte;
+
+	if (method_ != POST)
+		return;
+
+	remaining_byte = content_length_;
+
+	if (save_.length() != 0)
+	{
+		tmp = save_;
+		remaining_byte -= save_.length();
+	}
+
+	while (remaining_byte != 0)
+	{
+		if (default_recv_byte < remaining_byte)
+			recv_byte = default_recv_byte;
+		else
+			recv_byte = remaining_byte;
+
+		data = ssocket.RecvData(recv_byte);
+		remaining_byte -= data.length();
+		tmp += data;
+	}
+
+	body_ = tmp;
 
 	return ;
 }
@@ -124,17 +175,20 @@ void	HTTPRequest::ParseRequest(ServerSocket const & ssocket)
 {
 	ParseRequestLine(ssocket);
 	ParseHeaders(ssocket);
-	//ParseBody();
+	ParseBody(ssocket);
 
 	return ;
 }
 
 void	HTTPRequest::RequestDisplay(void) const
 {
-	std::cout << "method  : " << method_ << std::endl;
-	std::cout << "target  : " << target_ << std::endl;
-	std::cout << "version : " << version_ << std::endl;
-	std::cout << "host    : " << host_ << std::endl;
+	std::cout << "method            : " << method_ << std::endl;
+	std::cout << "target            : " << target_ << std::endl;
+	std::cout << "version           : " << version_ << std::endl;
+	std::cout << "host              : " << host_ << std::endl;
+	std::cout << "content_length    : " << content_length_ << std::endl;
+	std::cout << "[ BODY ]" << std::endl;
+	std::cout << body_ << std::endl;
 
 	return ;
 }

@@ -43,6 +43,7 @@ class HTTPRequest
 
 		//header
 		std::string		host_;
+		size_t			content_length_;
 
 		//body
 		std::string		body_;
@@ -51,10 +52,7 @@ class HTTPRequest
 		std::string		GetLine(ServerSocket const & ssocket);
 		void			ParseRequestLine(ServerSocket const & ssocket);
 		void			ParseHeaders(ServerSocket const & ssocket);
-
-		void			RequestPart(std::string const & line);
-		void			HeaderPart(std::string const & line);
-		void			DoParse(std::string const & line);
+		void			ParseBody(ServerSocket const & ssocket);
 };
 
 #endif
