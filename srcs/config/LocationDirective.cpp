@@ -16,12 +16,12 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 	SetDefaultValues();
 
 	itr = begin;
-	while (itr != end)
+	while (itr < end)
 	{
 		found = set_funcs.find(*itr);
 		if (found == set_funcs.end())
 			throw std::runtime_error("conf syntax error");
-		directive_end = GetDirectiveEnd(itr, end);
+		directive_end = GetDirectiveEnd(*itr, itr + 1, end);
 		if (directive_end == end)
 			throw std::runtime_error("conf syntax error");
 		(this->*(found->second))(itr + 1, end);
@@ -37,11 +37,13 @@ const std::string&				LocationDirective::GetPath() const { return (path_); }
 const std::string&				LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&	LocationDirective::GetIndex() const { return (index_); }
 
-Tokens::citr	LocationDirective::GetDirectiveEnd(Tokens::citr begin, Tokens::citr end) const
+Tokens::citr	LocationDirective::GetDirectiveEnd
+	(const std::string& name, Tokens::citr begin, Tokens::citr end) const
 {
 	Tokens::citr	directive_end;
 
-	directive_end = std::find(begin + 1, end, ";");
+	(void)name;
+	directive_end = std::find(begin, end, ";");
 	return (directive_end);
 }
 

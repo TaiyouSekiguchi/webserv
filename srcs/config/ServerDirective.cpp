@@ -4,7 +4,7 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 {
 	const std::pair<std::string, SetFunc> p[] = {
 		std::make_pair("listen", &ServerDirective::SetListen),
-		std::make_pair("server_names", &ServerDirective::SetServerNames),
+		std::make_pair("server_name", &ServerDirective::SetServerNames),
 		std::make_pair("location", &ServerDirective::SetLocation)
 	};
 	const std::map<std::string, SetFunc>			set_funcs(p, &p[3]);
@@ -15,12 +15,12 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 	SetDefaultValues();
 
 	itr = begin;
-	while (itr != end)
+	while (itr < end)
 	{
 		found = set_funcs.find(*itr);
 		if (found == set_funcs.end())
 			throw std::runtime_error("conf syntax error");
-		directive_end = GetDirectiveEnd(itr, end);
+		directive_end = GetDirectiveEnd(*itr, itr + 1, end);
 		if (directive_end == end)
 			throw std::runtime_error("conf syntax error");
 		(this->*(found->second))(itr + 1, directive_end);
@@ -36,14 +36,15 @@ const std::pair<std::string, int>&		ServerDirective::GetListen() const { return 
 const std::vector<std::string>&			ServerDirective::GetServerNames() const { return(server_names_); }
 const std::vector<LocationDirective>&	ServerDirective::GetLocations() const { return (locations_); }
 
-Tokens::citr	ServerDirective::GetDirectiveEnd(Tokens::citr begin, Tokens::citr end) const
+Tokens::citr	ServerDirective::GetDirectiveEnd
+	(const std::string& name, Tokens::citr begin, Tokens::citr end) const
 {
 	Tokens::citr	directive_end;
 
-	if (*begin == "location")
+	if (name == "location")
 		directive_end = Tokens::GetEndBracesItr(begin + 1, end);
 	else
-		directive_end = std::find(begin + 1, end, ";");
+		directive_end = std::find(begin, end, ";");
 	return (directive_end);
 }
 
@@ -70,10 +71,8 @@ void	ServerDirective::SetServerNames(Tokens::citr begin, Tokens::citr end)
 
 void	ServerDirective::SetLocation(Tokens::citr begin, Tokens::citr end)
 {
-	if (begin == end || *begin != "{")
-		throw std::runtime_error("conf syntax error");
-	if (begin + 1 == end || Tokens::isSpecialToken(*(begin + 1)))
+	if (begin >= end || Tokens::isSpecialToken(*begin))
 		throw std::runtime_error("conf syntax error");
 
-	locations_.push_back(LocationDirective(*(begin + 1), begin + 2, end));
+	locations_.push_back(LocationDirective(*begin, begin + 2, end));
 }

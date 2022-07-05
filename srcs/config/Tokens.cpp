@@ -20,23 +20,26 @@ Tokens::citr	Tokens::end() const
 	return (tokens_.end());
 }
 
-Tokens::citr	Tokens::GetEndBracesItr(citr begin, citr end)
+Tokens::citr	Tokens::GetEndBracesItr(citr braces_begin, citr end)
 {
-	citr	itr = begin;
+	if (braces_begin >= end || *braces_begin != "{")
+		return (end);
+
+	citr	itr			 = braces_begin + 1;
 	int		braces_count = 1;
 
-	while (itr != end)
+	while (itr < end)
 	{
 		if (*itr == "}")
 		{
 			if (--braces_count == 0)
-				break;
+				return (itr);
 		}
 		else if (*itr == "{")
 			++braces_count;
 		++itr;
 	}
-	return (itr);
+	return (end);
 }
 
 bool	Tokens::isSpecialToken(const std::string& s)

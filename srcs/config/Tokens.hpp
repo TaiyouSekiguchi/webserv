@@ -17,7 +17,7 @@ class Tokens
 		citr	end() const;
 
 		// Utils
-		static citr		GetEndBracesItr(citr begin, citr end);
+		static citr		GetEndBracesItr(citr braces_begin, citr end);
 		static bool		isSpecialToken(const std::string& s);
 
 	private:

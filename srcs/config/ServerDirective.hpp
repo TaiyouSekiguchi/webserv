@@ -23,7 +23,7 @@ class ServerDirective
 	private:
 		typedef void (ServerDirective::*SetFunc)(Tokens::citr, Tokens::citr);
 
-		Tokens::citr	GetDirectiveEnd(Tokens::citr begin, Tokens::citr server_end) const;
+		Tokens::citr	GetDirectiveEnd(const std::string& name, Tokens::citr begin, Tokens::citr end) const;
 		void			SetDefaultValues();
 
 		// Set Directive Variable
