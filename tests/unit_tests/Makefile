@@ -9,7 +9,10 @@ SRCS	=	HTTPServer.cpp \
 			ServerSocket.cpp \
 			ASocket.cpp \
 			EventQueue.cpp \
-			Config.cpp
+			Config.cpp \
+			Tokens.cpp \
+			LocationDirective.cpp \
+			ServerDirective.cpp
 SRCS	+=	listensocket_test.cpp \
 			conf_test.cpp
 
@@ -20,7 +23,8 @@ DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 INCLUDE =	-I $(SRCSDIR)/server \
 			-I $(SRCSDIR)/socket \
 			-I $(SRCSDIR)/utils \
-			-I$(SRCSDIR)/config
+			-I$(SRCSDIR)/config \
+			-I$(SRCSDIR)/exception
 NAME	=	unit_test
 
 CC		=	c++
