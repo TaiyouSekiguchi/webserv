@@ -17,7 +17,7 @@ class Config
 
 	private:
 		// Set Directive Variable
-		void	SetServer(Tokens::citr start, Tokens::citr end, int *advaced_len);
+		void	SetServer(Tokens::citr start, Tokens::citr end);
 
 		// Tokens
 		Tokens							tokens_;

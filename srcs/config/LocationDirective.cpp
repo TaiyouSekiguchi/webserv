@@ -1,8 +1,7 @@
 #include <map>
 #include "LocationDirective.hpp"
 
-LocationDirective::LocationDirective(
-	const std::string& path, Tokens::citr begin, Tokens::citr location_end)
+LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin, Tokens::citr end)
 	: path_(path)
 {
 	const std::pair<std::string, SetFunc> p[] = {
@@ -12,18 +11,21 @@ LocationDirective::LocationDirective(
 	const std::map<std::string, SetFunc>			set_funcs(p, &p[2]);
 	std::map<std::string, SetFunc>::const_iterator	found;
 	Tokens::citr									itr;
-	int												advanced_len;
+	Tokens::citr									directive_end;
 
 	SetDefaultValues();
 
 	itr = begin;
-	while (itr != location_end)
+	while (itr != end)
 	{
 		found = set_funcs.find(*itr);
 		if (found == set_funcs.end())
 			throw std::runtime_error("conf syntax error");
-		(this->*(found->second))(++itr, location_end, &advanced_len);
-		itr += advanced_len;
+		directive_end = GetDirectiveEnd(itr, end);
+		if (directive_end == end)
+			throw std::runtime_error("conf syntax error");
+		(this->*(found->second))(itr + 1, end);
+		itr = directive_end + 1;
 	}
 }
 
@@ -35,25 +37,31 @@ const std::string&				LocationDirective::GetPath() const { return (path_); }
 const std::string&				LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&	LocationDirective::GetIndex() const { return (index_); }
 
+Tokens::citr	LocationDirective::GetDirectiveEnd(Tokens::citr begin, Tokens::citr end) const
+{
+	Tokens::citr	directive_end;
+
+	directive_end = std::find(begin + 1, end, ";");
+	return (directive_end);
+}
+
 void	LocationDirective::SetDefaultValues()
 {
-	root_ = "html";
-	index_.push_back("index.html");
+	// root_ = "html";
+	// index_.push_back("index.html");
 	// autoindex_ = false;
 }
 
-void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr location_end, int *advanced_len)
+void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
 {
 	(void)begin;
-	(void)location_end;
-	root_ = "html";
-	*advanced_len = 3;
+	(void)end;
+	root_ = *begin;
 }
 
-void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr location_end, int *advanced_len)
+void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr end)
 {
 	(void)begin;
-	(void)location_end;
-	index_.push_back("index.html");
-	*advanced_len = 3;
+	(void)end;
+	index_.push_back(*begin);
 }

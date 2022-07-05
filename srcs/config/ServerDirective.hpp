@@ -21,17 +21,17 @@ class ServerDirective
 		// const size_t&							GetClientMaxBodySize() const;
 
 	private:
-		typedef void (ServerDirective::*SetFunc)(Tokens::citr, Tokens::citr, int*);
+		typedef void (ServerDirective::*SetFunc)(Tokens::citr, Tokens::citr);
 
-		// Set Default Values
-		void	SetDefaultValues();
+		Tokens::citr	GetDirectiveEnd(Tokens::citr begin, Tokens::citr server_end) const;
+		void			SetDefaultValues();
 
 		// Set Directive Variable
-		void	SetListen(Tokens::citr begin, Tokens::citr end, int *advaned_len);
-		void	SetServerNames(Tokens::citr begin, Tokens::citr end, int *advaned_len);
-		void	SetLocation(Tokens::citr begin, Tokens::citr end, int *advaned_len);
-		// void	SetErrorPages(Tokens::citr begin, Tokens::citr end, int *advaned_len);
-		// void	SetClientMaxBodySize(Tokens::citr begin, Tokens::citr end, int *advaned_len);
+		void	SetListen(Tokens::citr begin, Tokens::citr end);
+		void	SetServerNames(Tokens::citr begin, Tokens::citr end);
+		void	SetLocation(Tokens::citr begin, Tokens::citr end);
+		// void	SetErrorPages(Tokens::citr begin, Tokens::citr end);
+		// void	SetClientMaxBodySize(Tokens::citr begin, Tokens::citr end);
 
 		// Directive Variable
 		std::pair<std::string, int>			listen_;
