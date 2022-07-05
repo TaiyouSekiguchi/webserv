@@ -67,11 +67,59 @@ std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 	return (line);
 }
 
+void	HTTPRequest::ParseMethod(std::string const & method)
+{
+	const std::string	methods[3] = { "GET", "POST", "DELETE" };
+	const int			methods_size = 3;
+
+	for (int i = 0; i < methods_size; i++)
+	{
+		if (method == methods[i])
+			method_ = static_cast<HTTPRequest::e_method>(i);
+	}
+	if (method_ == NONE)
+		throw HTTPError(HTTPError::BAD_REQUEST);
+}
+
+void	HTTPRequest::ParseTarget(std::string const & target)
+{
+	//const char		*cstring;
+	//int				ret;
+
+	/*
+	cstring = target.c_str();
+	ret = access(cstring, F_OK);
+	if (ret == -1)
+		throw HTTPError(HTTPError::NOT_FOUND);
+
+	if (method_ == GET)
+	{
+		ret = access(cstring, R_OK);
+		if (ret == -1)
+			throw HTTPError(HTTPError::FORBIDDEN);
+	}
+	else if (method_ == POST)
+	{
+		ret = access(cstring, W_OK);
+		if (ret == -1)
+			throw HTTPError(HTTPError::FORBIDDEN);
+	}
+	*/
+	target_ = target;
+}
+
+void	HTTPRequest::ParseVersion(std::string const & version)
+{
+	if (version == "HTTP/1.0" || version == "HTTP/1.1")
+		version_ = version;
+	else
+		throw HTTPError(HTTPError::BAD_REQUEST);
+}
+
 void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 {
 	std::string					line;
 	std::vector<std::string>	list;
-	const std::string			methods[3] = { "GET", "POST", "DELETE" };
 
 	while ((line = GetLine(ssocket)) == "")
 		;
@@ -80,20 +128,61 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 	if (list.size() != 3)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	for (int i = 0; i < 3; i++)
+	ParseMethod(list.at(0));
+	ParseTarget(list.at(1));
+	ParseVersion(list.at(2));
+
+	return ;
+}
+
+void HTTPRequest::ParseHost(std::vector<std::string> const & list)
+{
+	if (list.size() != 2)
+		throw HTTPError(HTTPError::BAD_REQUEST);
+
+	host_ = list.at(1);
+}
+
+void HTTPRequest::ParseContentLength(std::vector<std::string> const & list)
+{
+	std::string		tmp;
+	const char		*c_content_length;
+	char			*endptr;
+
+	if (list.size() != 2)
+		throw HTTPError(HTTPError::BAD_REQUEST);
+
+	tmp = list.at(1);
+	c_content_length = tmp.c_str();
+	content_length_ = std::strtoul(c_content_length, &endptr, 10);
+	if (errno == ERANGE)
+		throw HTTPError(HTTPError::BAD_REQUEST);
+	if (*endptr != '\0')
+		throw HTTPError(HTTPError::BAD_REQUEST);
+}
+
+void	HTTPRequest::ParseHeader(std::vector<std::string> const & list)
+{
+	const std::string	headers[2] = {
+		"Host:",
+		"Content-Length:",
+	};
+
+	void (HTTPRequest::*parsers[2])(std::vector<std::string> const &) = {
+		&HTTPRequest::ParseHost,
+		&HTTPRequest::ParseContentLength
+	};
+
+	for ( int i = 0; i < 2; i++)
 	{
-		if (list.at(0) == methods[i])
-			method_ = static_cast<HTTPRequest::e_method>(i);
+		if (list.at(0) == headers[i])
+		{
+			(this->*parsers[i])(list);
+			return ;
+		}
 	}
-	if (method_ == NONE)
-		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	target_ = list.at(1);
-
-	if (list.at(2) == "HTTP/1.0" || list.at(2) == "HTTP/1.1")
-		version_ = list.at(2);
-	else
-		throw HTTPError(HTTPError::BAD_REQUEST);
+	throw HTTPError(HTTPError::BAD_REQUEST);
 
 	return ;
 }
@@ -105,31 +194,9 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 	while ((line = GetLine(ssocket)) != "")
 	{
 		std::vector<std::string>	list;
-		std::string					field;
 
 		list = my_split(line, " ");
-		if (list.size() != 2)
-			throw std::exception();
-
-		field = list.at(0);
-		if (field == "Host:")
-			host_ = list.at(1);
-		else if (field == "Content-Length:")
-		{
-			std::string		tmp;
-			const char		*c_content_length;
-			char			*endptr;
-
-			tmp = list.at(1);
-			c_content_length = tmp.c_str();
-			content_length_ = std::strtoul(c_content_length, &endptr, 10);
-			if (errno == ERANGE)
-				throw HTTPError(HTTPError::BAD_REQUEST);
-			if (*endptr != '\0')
-				throw HTTPError(HTTPError::BAD_REQUEST);
-		}
-		else
-			throw std::exception();
+		ParseHeader(list);
 	}
 
 	return ;

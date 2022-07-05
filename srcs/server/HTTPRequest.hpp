@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdlib>
+#include <cerrno>
+#include <unistd.h>
 #include "ServerSocket.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
@@ -51,7 +54,15 @@ class HTTPRequest
 		//func
 		std::string		GetLine(ServerSocket const & ssocket);
 		void			ParseRequestLine(ServerSocket const & ssocket);
+		void			ParseMethod(std::string const & method);
+		void			ParseTarget(std::string const & target);
+		void			ParseVersion(std::string const & version);
+
 		void			ParseHeaders(ServerSocket const & ssocket);
+		void			ParseHeader(std::vector<std::string> const & list);
+		void			ParseHost(std::vector<std::string> const & list);
+		void			ParseContentLength(std::vector<std::string> const & list);
+
 		void			ParseBody(ServerSocket const & ssocket);
 };
 
