@@ -18,7 +18,7 @@ class ConfigTest : public ::testing::Test {
 TEST_F(ConfigTest, LexSimple)
 {
 	const char*	s[] =
-		{"server", "{", "listen", "8080", ";", "location", "/", "{", "root",
+		{"server", "{", "listen", "8080", ";", "location", "/", "{", "alias",
 		 "html", ";", "index", "index.html", ";", "}", "}"};
 	const std::vector<std::string>				expected(s, &s[16]);
 	std::vector<std::string>::const_iterator	eitr = expected.begin();
@@ -38,7 +38,7 @@ TEST_F(ConfigTest, LexSimple)
 TEST_F(ConfigTest, LexComplex)
 {
 	const char*	s[] =
-		{"server", "{", "listen", "8080", ";", "location", "/", "{", "root",
+		{"server", "{", "listen", "8080", ";", "location", "/", "{", "alias",
 		 "html", ";", "index", "\"index.html\n\"", ";", "}", "}"};
 	const std::vector<std::string>				expected(s, &s[16]);
 	std::vector<std::string>::const_iterator	eitr = expected.begin();
@@ -77,7 +77,7 @@ TEST_F(ConfigTest, basic)
 		EXPECT_EQ(litr->GetIndex()[0], "index1.html");
 		litr++;
 		EXPECT_EQ(litr->GetPath(), "/sub1");
-		EXPECT_EQ(litr->GetRoot(), "html1");
+		EXPECT_EQ(litr->GetAlias(), "html1");
 		EXPECT_EQ(litr->GetIndex().size(), (size_t)1);
 		EXPECT_EQ(litr->GetIndex()[0], "index2.html");
 		EXPECT_EQ(++litr, locations.end());
