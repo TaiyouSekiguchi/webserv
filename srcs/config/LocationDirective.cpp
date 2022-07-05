@@ -22,9 +22,9 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 		if (found == set_funcs.end())
 			throw std::runtime_error("conf syntax error");
 		directive_end = GetDirectiveEnd(*itr, itr + 1, end);
-		if (directive_end == end)
+		if (directive_end == end || itr + 1 == directive_end)
 			throw std::runtime_error("conf syntax error");
-		(this->*(found->second))(itr + 1, end);
+		(this->*(found->second))(itr + 1, directive_end);
 		itr = directive_end + 1;
 	}
 }
@@ -49,21 +49,30 @@ Tokens::citr	LocationDirective::GetDirectiveEnd
 
 void	LocationDirective::SetDefaultValues()
 {
-	// root_ = "html";
-	// index_.push_back("index.html");
+	root_ = "html";
+	index_.push_back("index.html");
 	// autoindex_ = false;
 }
 
 void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
 {
-	(void)begin;
-	(void)end;
+	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	else if (Tokens::isSpecialToken(*begin))
+		throw std::runtime_error("conf syntax error");
 	root_ = *begin;
 }
 
 void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr end)
 {
-	(void)begin;
-	(void)end;
-	index_.push_back(*begin);
+	index_.clear();
+
+	Tokens::citr	itr = begin;
+	while (itr != end)
+	{
+		if (Tokens::isSpecialToken(*itr))
+			throw std::runtime_error("conf syntax error");
+		index_.push_back(*itr);
+		itr++;
+	}
 }
