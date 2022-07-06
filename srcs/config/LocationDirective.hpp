@@ -21,17 +21,17 @@ class LocationDirective
 		const std::vector<std::string>&		GetAllowedMethods() const;
 
 	private:
-		typedef void (LocationDirective::*SetFunc)(Tokens::citr, Tokens::citr);
+		typedef void (LocationDirective::*ParseFunc)(Tokens::citr, Tokens::citr);
 
 		Tokens::citr	GetDirectiveEnd(const std::string& name, Tokens::citr begin, Tokens::citr end) const;
 		void			SetDefaultValues();
 
-		// Set Directive Variable
-		void	SetRoot(Tokens::citr begin, Tokens::citr end);
-		void	SetIndex(Tokens::citr begin, Tokens::citr end);
-		// void	SetReturn(Tokens::citr begin, Tokens::citr end);
-		void	SetAutoIndex(Tokens::citr begin, Tokens::citr end);
-		void	SetAllowedMethods(Tokens::citr begin, Tokens::citr end);
+		// Parse Directive Variable
+		void	ParseRoot(Tokens::citr begin, Tokens::citr end);
+		void	ParseIndex(Tokens::citr begin, Tokens::citr end);
+		// void	ParseReturn(Tokens::citr begin, Tokens::citr end);
+		void	ParseAutoIndex(Tokens::citr begin, Tokens::citr end);
+		void	ParseAllowedMethods(Tokens::citr begin, Tokens::citr end);
 
 		// Location Path
 		std::string					path_;

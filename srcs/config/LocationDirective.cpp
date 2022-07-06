@@ -4,24 +4,24 @@
 LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin, Tokens::citr end)
 	: path_(path)
 {
-	const std::pair<std::string, SetFunc> p[] = {
-		std::make_pair("index", &LocationDirective::SetIndex),
-		std::make_pair("root", &LocationDirective::SetRoot),
-		std::make_pair("autoindex", &LocationDirective::SetAutoIndex),
-		std::make_pair("allowed_methods", &LocationDirective::SetAllowedMethods)
+	const std::pair<std::string, ParseFunc> p[] = {
+		std::make_pair("index", &LocationDirective::ParseIndex),
+		std::make_pair("root", &LocationDirective::ParseRoot),
+		std::make_pair("autoindex", &LocationDirective::ParseAutoIndex),
+		std::make_pair("allowed_methods", &LocationDirective::ParseAllowedMethods)
 	};
-	const std::map<std::string, SetFunc>			set_funcs(p, &p[4]);
-	std::map<std::string, SetFunc>::const_iterator	found;
-	Tokens::citr									itr;
-	Tokens::citr									directive_end;
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[4]);
+	std::map<std::string, ParseFunc>::const_iterator	found;
+	Tokens::citr										itr;
+	Tokens::citr										directive_end;
 
 	SetDefaultValues();
 
 	itr = begin;
 	while (itr < end)
 	{
-		found = set_funcs.find(*itr);
-		if (found == set_funcs.end())
+		found = parse_funcs.find(*itr);
+		if (found == parse_funcs.end())
 			throw std::runtime_error("conf syntax error");
 		directive_end = GetDirectiveEnd(*itr, itr + 1, end);
 		if (directive_end == end || itr + 1 == directive_end)
@@ -61,7 +61,7 @@ void	LocationDirective::SetDefaultValues()
 	allowed_methods_.push_back("DELETE");
 }
 
-void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
+void	LocationDirective::ParseRoot(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
 		throw std::runtime_error("conf syntax error");
@@ -70,7 +70,7 @@ void	LocationDirective::SetRoot(Tokens::citr begin, Tokens::citr end)
 	root_ = *begin;
 }
 
-void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr end)
+void	LocationDirective::ParseIndex(Tokens::citr begin, Tokens::citr end)
 {
 	index_.clear();
 
@@ -84,7 +84,7 @@ void	LocationDirective::SetIndex(Tokens::citr begin, Tokens::citr end)
 	}
 }
 
-void	LocationDirective::SetAutoIndex(Tokens::citr begin, Tokens::citr end)
+void	LocationDirective::ParseAutoIndex(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
 		throw std::runtime_error("conf syntax error");
@@ -96,7 +96,7 @@ void	LocationDirective::SetAutoIndex(Tokens::citr begin, Tokens::citr end)
 		throw std::runtime_error("conf syntax error");
 }
 
-void	LocationDirective::SetAllowedMethods(Tokens::citr begin, Tokens::citr end)
+void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end)
 {
 	allowed_methods_.clear();
 

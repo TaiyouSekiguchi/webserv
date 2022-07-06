@@ -16,7 +16,7 @@ Config::Config(const std::string& file_path)
 		directive_end = Tokens::GetEndBracesItr(itr + 1, end);
 		if (directive_end == end)
 			throw std::runtime_error("conf syntax error");
-		SetServer(itr + 1, directive_end);
+		ParseServer(itr + 1, directive_end);
 		itr = directive_end + 1;
 	}
 }
@@ -27,7 +27,7 @@ Config::~Config()
 
 const std::vector<ServerDirective>&	Config::GetServers() const { return (servers_); }
 
-void	Config::SetServer(Tokens::citr begin, Tokens::citr end)
+void	Config::ParseServer(Tokens::citr begin, Tokens::citr end)
 {
 	servers_.push_back(ServerDirective(begin + 1, end));
 }

@@ -16,8 +16,8 @@ class Config
 		const std::vector<ServerDirective>&	GetServers() const;
 
 	private:
-		// Set Directive Variable
-		void	SetServer(Tokens::citr start, Tokens::citr end);
+		// Parse Directive Variable
+		void	ParseServer(Tokens::citr start, Tokens::citr end);
 
 		// Tokens
 		Tokens							tokens_;

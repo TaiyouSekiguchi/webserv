@@ -3,23 +3,23 @@
 
 ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 {
-	const std::pair<std::string, SetFunc> p[] = {
-		std::make_pair("listen", &ServerDirective::SetListen),
-		std::make_pair("server_name", &ServerDirective::SetServerNames),
-		std::make_pair("location", &ServerDirective::SetLocation)
+	const std::pair<std::string, ParseFunc> p[] = {
+		std::make_pair("listen", &ServerDirective::ParseListen),
+		std::make_pair("server_name", &ServerDirective::ParseServerNames),
+		std::make_pair("location", &ServerDirective::ParseLocation)
 	};
-	const std::map<std::string, SetFunc>			set_funcs(p, &p[3]);
-	std::map<std::string, SetFunc>::const_iterator	found;
-	Tokens::citr									itr;
-	Tokens::citr									directive_end;
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[3]);
+	std::map<std::string, ParseFunc>::const_iterator	found;
+	Tokens::citr										itr;
+	Tokens::citr										directive_end;
 
 	SetDefaultValues();
 
 	itr = begin;
 	while (itr < end)
 	{
-		found = set_funcs.find(*itr);
-		if (found == set_funcs.end())
+		found = parse_funcs.find(*itr);
+		if (found == parse_funcs.end())
 			throw std::runtime_error("conf syntax error");
 		directive_end = GetDirectiveEnd(*itr, itr + 1, end);
 		if (directive_end == end || itr + 1 == directive_end)
@@ -56,7 +56,7 @@ void	ServerDirective::SetDefaultValues()
 	// client_max_body_size_ = 1048576;
 }
 
-void	ServerDirective::SetListen(Tokens::citr begin, Tokens::citr end)
+void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
 		throw std::runtime_error("conf syntax error");
@@ -90,7 +90,7 @@ void	ServerDirective::SetListen(Tokens::citr begin, Tokens::citr end)
 	}
 }
 
-void	ServerDirective::SetServerNames(Tokens::citr begin, Tokens::citr end)
+void	ServerDirective::ParseServerNames(Tokens::citr begin, Tokens::citr end)
 {
 	server_names_.clear();
 
@@ -104,7 +104,7 @@ void	ServerDirective::SetServerNames(Tokens::citr begin, Tokens::citr end)
 	}
 }
 
-void	ServerDirective::SetLocation(Tokens::citr begin, Tokens::citr end)
+void	ServerDirective::ParseLocation(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin >= end || Tokens::isSpecialToken(*begin))
 		throw std::runtime_error("conf syntax error");
