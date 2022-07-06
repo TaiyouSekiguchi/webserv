@@ -16,7 +16,7 @@ class LocationDirective
 		const std::string&					GetPath() const;
 		const std::string&					GetRoot() const;
 		const std::vector<std::string>&		GetIndex() const;
-		// const std::pair<int, std::string>&	GetReturn() const;
+		const std::pair<int, std::string>&	GetReturn() const;
 		const bool&							GetAutoIndex() const;
 		const std::vector<std::string>&		GetAllowedMethods() const;
 
@@ -29,7 +29,7 @@ class LocationDirective
 		// Parse Directive Variable
 		void	ParseRoot(Tokens::citr begin, Tokens::citr end);
 		void	ParseIndex(Tokens::citr begin, Tokens::citr end);
-		// void	ParseReturn(Tokens::citr begin, Tokens::citr end);
+		void	ParseReturn(Tokens::citr begin, Tokens::citr end);
 		void	ParseAutoIndex(Tokens::citr begin, Tokens::citr end);
 		void	ParseAllowedMethods(Tokens::citr begin, Tokens::citr end);
 
@@ -39,7 +39,7 @@ class LocationDirective
 		// Directive Variable
 		std::string					root_;
 		std::vector<std::string>	index_;
-		// std::pair<int, std::string>	return_;
+		std::pair<int, std::string>	return_;
 		bool						autoindex_;
 		std::vector<std::string>	allowed_methods_;
 };

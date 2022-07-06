@@ -62,7 +62,7 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 		throw std::runtime_error("conf syntax error");
 
 	in_addr_t						ip;
-	int								port;
+	long							port;
 	char							*endptr;
 	const std::string&				s = *begin;
 	const std::string::size_type	colon = s.find(':');
