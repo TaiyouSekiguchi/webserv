@@ -7,8 +7,12 @@ std::vector<std::string>	Utils::MySplit
 	std::string::size_type		sep_len;
 	std::string::size_type		offset;
 	std::string::size_type		pos;
+	std::string					tmp;
 
 	sep_len = separator.length();
+
+	if (str == "")
+		return (list);
 
 	if (sep_len == 0)
 		list.push_back(str);
@@ -20,13 +24,18 @@ std::vector<std::string>	Utils::MySplit
 			pos = str.find(separator, offset);
 			if (pos == std::string::npos)
 			{
-				list.push_back(str.substr(offset));
+				tmp = str.substr(offset);
+				if (tmp != "")
+					list.push_back(str.substr(offset));
 				break;
 			}
-			list.push_back(str.substr(offset, pos - offset));
-			offset = pos + sep_len;
-			while (str.substr(offset, sep_len) == separator)
-				offset += sep_len;
+			else
+			{
+				tmp = str.substr(offset, pos - offset);
+				if (tmp != "")
+					list.push_back(tmp);
+				offset = pos + sep_len;
+			}
 		}
 	}
 
