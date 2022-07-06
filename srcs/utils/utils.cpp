@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-std::vector<std::string>	MySplit
+std::vector<std::string>	Utils::MySplit
 	(std::string const & str, std::string const & separator)
 {
 	std::vector<std::string>	list;
