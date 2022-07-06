@@ -10,6 +10,36 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
+e_method		GetMethod(void) const
+{
+	return (method_);
+}
+
+std::string		GetTarget(void) const
+{
+	return (target_);
+}
+
+std::string		GetVersion(void) const
+{
+	return (version_);
+}
+
+std::string		GetHost(void) const
+{
+	return (host_);
+}
+
+size_t			GetContentLength(void) const
+{
+	return (content_length_);
+}
+
+std::string		GetBody(void) const
+{
+	return (body_);
+}
+
 static std::vector<std::string>	my_split(std::string const & str, std::string const & separator)
 {
 	std::vector<std::string>	list;
