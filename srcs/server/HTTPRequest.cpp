@@ -135,6 +135,9 @@ void	HTTPRequest::ParseTarget(std::string const & target)
 			throw HTTPError(HTTPError::FORBIDDEN);
 	}
 	*/
+	if (target[0] != "/")
+		throw HTTPError(HTTPError::BAD_REQUEST);
+
 	target_ = target;
 }
 
