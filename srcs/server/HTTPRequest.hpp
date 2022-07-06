@@ -55,6 +55,8 @@ class HTTPRequest
 		//header
 		std::string		host_;
 		size_t			content_length_;
+		std::string		user_agent_;
+		std::vector<std::string>	accept_encoding_;
 
 		//body
 		std::string		body_;
