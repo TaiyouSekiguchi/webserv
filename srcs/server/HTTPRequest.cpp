@@ -10,32 +10,32 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
-e_method		GetMethod(void) const
+HTTPRequest::e_method	HTTPRequest::GetMethod(void) const
 {
 	return (method_);
 }
 
-std::string		GetTarget(void) const
+std::string		HTTPRequest::GetTarget(void) const
 {
 	return (target_);
 }
 
-std::string		GetVersion(void) const
+std::string		HTTPRequest::GetVersion(void) const
 {
 	return (version_);
 }
 
-std::string		GetHost(void) const
+std::string		HTTPRequest::GetHost(void) const
 {
 	return (host_);
 }
 
-size_t			GetContentLength(void) const
+size_t			HTTPRequest::GetContentLength(void) const
 {
 	return (content_length_);
 }
 
-std::string		GetBody(void) const
+std::string		HTTPRequest::GetBody(void) const
 {
 	return (body_);
 }
