@@ -41,3 +41,20 @@ std::vector<std::string>	Utils::MySplit
 
 	return (list);
 }
+
+std::string		Utils::MyTrim
+	(const std::string& str, const char* set)
+{
+	std::string	result;
+
+	std::string::size_type	left = str.find_first_not_of(set);
+
+	if (left != std::string::npos)
+	{
+		std::string::size_type right = str.find_last_not_of(set);
+
+		result = str.substr(left, right - left + 1);
+	}
+
+	return (result);
+}
