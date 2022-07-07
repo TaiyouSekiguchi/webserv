@@ -16,7 +16,7 @@ class ConfigTest : public ::testing::Test {
 };
 
 // テストフィクスチャを利用する場合、TEST_F(テストフィクスチャ名, テスト名)
-TEST_F(ConfigTest, LexSimple)
+TEST_F(ConfigTest, LexBasic)
 {
 	const char*	s[] =
 		{"server", "{", "listen", "8080", ";", "location", "/", "{", "root",
@@ -24,7 +24,7 @@ TEST_F(ConfigTest, LexSimple)
 	const std::vector<std::string>				expected(s, &s[16]);
 	std::vector<std::string>::const_iterator	eitr = expected.begin();
 
-	Tokens			tokens("conf/simple.conf");
+	Tokens			tokens("conf/lex_basic.conf");
 	Tokens::citr	itr = tokens.begin();
 	Tokens::citr	end = tokens.end();
 
@@ -44,7 +44,7 @@ TEST_F(ConfigTest, LexComplex)
 	const std::vector<std::string>				expected(s, &s[16]);
 	std::vector<std::string>::const_iterator	eitr = expected.begin();
 
-	Tokens			tokens("conf/complex.conf");
+	Tokens			tokens("conf/lex_complex.conf");
 	Tokens::citr	itr = tokens.begin();
 	Tokens::citr	end = tokens.end();
 
@@ -58,7 +58,7 @@ TEST_F(ConfigTest, LexComplex)
 
 TEST_F(ConfigTest, basic)
 {
-	Config											config("conf/simple2.conf");
+	Config											config("conf/basic.conf");
 	std::vector<ServerDirective>					servers;
 	std::vector<ServerDirective>::const_iterator	sitr;
 	std::vector<LocationDirective>					locations;
