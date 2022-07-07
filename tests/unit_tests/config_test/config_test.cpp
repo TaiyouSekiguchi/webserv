@@ -71,6 +71,7 @@ TEST_F(ConfigTest, basic)
 	EXPECT_EQ(sitr->GetServerNames().size(), (size_t)2);
 	EXPECT_EQ(sitr->GetServerNames()[0], "localhost");
 	EXPECT_EQ(sitr->GetServerNames()[1], "webserv");
+	EXPECT_EQ(sitr->GetClientMaxBodySize(), 1024);
 	{
 		locations = sitr->GetLocations();
 		litr = locations.begin();
@@ -92,6 +93,7 @@ TEST_F(ConfigTest, basic)
 	sitr++;
 	EXPECT_EQ(sitr->GetListen().first, INADDR_ANY);
 	EXPECT_EQ(sitr->GetListen().second, 8090);
+	EXPECT_EQ(sitr->GetClientMaxBodySize(), 10 * 1024 * 1024);
 	{
 		locations = sitr->GetLocations();
 		litr = locations.begin();

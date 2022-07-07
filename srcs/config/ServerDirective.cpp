@@ -6,9 +6,10 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 	const std::pair<std::string, ParseFunc> p[] = {
 		std::make_pair("listen", &ServerDirective::ParseListen),
 		std::make_pair("server_name", &ServerDirective::ParseServerNames),
+		std::make_pair("client_max_body_size", &ServerDirective::ParseClientMaxBodySize),
 		std::make_pair("location", &ServerDirective::ParseLocation)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[3]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[4]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 	Tokens::citr										itr;
 	Tokens::citr										directive_end;
@@ -35,6 +36,7 @@ ServerDirective::~ServerDirective()
 
 const std::pair<unsigned int, int>&		ServerDirective::GetListen() const { return (listen_); }
 const std::vector<std::string>&			ServerDirective::GetServerNames() const { return(server_names_); }
+const long&								ServerDirective::GetClientMaxBodySize() const { return (client_max_body_size_); }
 const std::vector<LocationDirective>&	ServerDirective::GetLocations() const { return (locations_); }
 
 Tokens::citr	ServerDirective::GetDirectiveEnd
@@ -53,7 +55,7 @@ void	ServerDirective::SetDefaultValues()
 {
 	listen_ = std::make_pair(INADDR_ANY, 80);
 	server_names_.push_back("");
-	// client_max_body_size_ = 1048576;
+	client_max_body_size_ = 1048576;
 }
 
 void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
@@ -102,6 +104,31 @@ void	ServerDirective::ParseServerNames(Tokens::citr begin, Tokens::citr end)
 		server_names_.push_back(*itr);
 		itr++;
 	}
+}
+
+void	ServerDirective::ParseClientMaxBodySize(Tokens::citr begin, Tokens::citr end)
+{
+	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+
+	char		*endptr;
+	client_max_body_size_ = std::strtol((*begin).c_str(), &endptr, 10);
+	if (errno == ERANGE)
+		throw std::runtime_error("conf syntax error");
+	if (*endptr == '\0')
+		return;
+
+	const char	unit_chars[6] = {'k', 'K', 'm', 'M', 'g', 'G'};
+	const char *unit_found = std::find(unit_chars, &unit_chars[6], *endptr);
+	if (unit_found == &unit_chars[6] || *(endptr + 1) != '\0')
+		throw std::runtime_error("conf syntax error");
+
+	const int	unit_nums[6] = {1024, 1024, 1048576, 1048576, 1073741824, 1073741824};
+	const int	unit_num = unit_nums[unit_found - unit_chars];
+	const long	old = client_max_body_size_;
+	client_max_body_size_ *= unit_num;
+	if (client_max_body_size_ / unit_num != old)
+		throw std::runtime_error("conf syntax error");
 }
 
 void	ServerDirective::ParseLocation(Tokens::citr begin, Tokens::citr end)
