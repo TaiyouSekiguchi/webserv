@@ -3,6 +3,7 @@
 
 # include "ServerSocket.hpp"
 # include "EventQueue.hpp"
+# include "Config.hpp"
 
 class HTTPServer
 {
@@ -10,7 +11,7 @@ class HTTPServer
 		HTTPServer();
 		~HTTPServer();
 
-		void	Start() const;
+		void	Start(const Config& config) const;
 
 	private:
 		void	MainLoop(EventQueue const & equeue) const;
