@@ -40,38 +40,6 @@ std::string		HTTPRequest::GetBody(void) const
 	return (body_);
 }
 
-static std::vector<std::string>	my_split(std::string const & str, std::string const & separator)
-{
-	std::vector<std::string>	list;
-	std::string::size_type		sep_len;
-	std::string::size_type		offset;
-	std::string::size_type		pos;
-
-	sep_len = separator.length();
-
-	if (sep_len == 0)
-		list.push_back(str);
-	else
-	{
-		offset = 0;
-		while (1)
-		{
-			pos = str.find(separator, offset);
-			if (pos == std::string::npos)
-			{
-				list.push_back(str.substr(offset));
-				break;
-			}
-			list.push_back(str.substr(offset, pos - offset));
-			offset = pos + sep_len;
-			while (str.substr(offset, sep_len) == separator)
-				offset += sep_len;
-		}
-	}
-
-	return (list);
-}
-
 std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 {
 	std::string				data;
@@ -135,7 +103,7 @@ void	HTTPRequest::ParseTarget(std::string const & target)
 			throw HTTPError(HTTPError::FORBIDDEN);
 	}
 	*/
-	if (target[0] != "/")
+	if (target[0] != '/')
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	target_ = target;
@@ -157,7 +125,7 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 	while ((line = GetLine(ssocket)) == "")
 		;
 
-	list = MySplit(line, " ");
+	list = Utils::MySplit(line, " ");
 	if (list.size() != 3)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
@@ -172,7 +140,7 @@ void HTTPRequest::ParseHost(const std::string& content)
 {
 	std::vector<std::string>	list;
 
-	list = MySplit(content, " ")
+	list = Utils::MySplit(content, " ");
 	if (list.size() != 1)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
@@ -186,7 +154,7 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 	const char					*c_content_length;
 	char						*endptr;
 
-	list = MySplit(content, " ")
+	list = Utils::MySplit(content, " ");
 	if (list.size() != 1)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
@@ -206,12 +174,12 @@ void HTTPRequest::ParseUserAgent(const std::string& content)
 
 void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 {
-	accept_encoding_ = MySplit(content, " ");
+	accept_encoding_ = Utils::MySplit(content, " ");
 }
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
-	const size_t		size;
+	const size_t		size = 4;
 	const std::string	fields[size] = {
 		"Host:",
 		"Content-Length:",
@@ -226,7 +194,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		&HTTPRequest::ParseAcceptEncoding
 	};
 
-	for ( int i = 0; i < size; i++)
+	for (size_t i = 0; i < size; i++)
 	{
 		if (field == fields[i])
 		{
@@ -276,7 +244,7 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 {
 	std::string				line;
 	std::string				field;
-	std::stirng				content;
+	std::string				content;
 	std::string::size_type	pos;
 
 	while ((line = GetLine(ssocket)) != "")
@@ -284,9 +252,10 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 		pos = line.find(":");
 		if (pos == std::string::npos)
 			throw HTTPError(HTTPError::BAD_REQUEST);
-		filed = line.substr(0, pos);
-		content = line.substr(pos + 1, line.size());
-		ParseHeader(filed, content);
+		field = line.substr(0, pos);
+		content = line.substr(pos + 1);
+		//content = line.substr(pos + 1, line.size());
+		ParseHeader(field, content);
 
 		//std::vector<std::string>	list;
 		//list = my_split(line, " ");

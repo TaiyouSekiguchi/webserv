@@ -37,7 +37,7 @@ class HTTPRequest
 		size_t			GetContentLength(void) const;
 		std::string		GetBody(void) const;
 
-	private:
+	//private:
 		enum	e_status
 		{
 			REQUEST,
