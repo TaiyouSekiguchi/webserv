@@ -72,6 +72,10 @@ TEST_F(ConfigTest, basic)
 	EXPECT_EQ(sitr->GetServerNames()[0], "localhost");
 	EXPECT_EQ(sitr->GetServerNames()[1], "webserv");
 	EXPECT_EQ(sitr->GetClientMaxBodySize(), 1024);
+	EXPECT_EQ(sitr->GetErrorPages().size(), (size_t)3);
+	EXPECT_EQ(sitr->GetErrorPages().find(404)->second, "/404.html");
+	EXPECT_EQ(sitr->GetErrorPages().find(500)->second, "/50x.html");
+	EXPECT_EQ(sitr->GetErrorPages().find(502)->second, "/50x.html");
 	{
 		locations = sitr->GetLocations();
 		litr = locations.begin();
