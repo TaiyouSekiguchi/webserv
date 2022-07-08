@@ -57,7 +57,7 @@ TEST(ServerNameTest, Valid)
 TEST(ServerNameTest, Error)
 {
 	EXPECT_ANY_THROW({Config config("conf/server/server_name/err_empty.conf");});
-	EXPECT_ANY_THROW({Config config("conf/server/server_name/err_name.conf");});
+	EXPECT_ANY_THROW({Config config("conf/server/server_name/err_special.conf");});
 }
 
 // error_page
