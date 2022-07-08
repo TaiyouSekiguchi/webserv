@@ -133,12 +133,17 @@ void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end
 {
 	allowed_methods_.clear();
 
-	Tokens::citr	itr = begin;
+	Tokens::citr								itr;
+	std::vector<std::string>::const_iterator	found;
+
+	itr = begin;
 	while (itr != end)
 	{
 		if (*itr != "GET" && *itr != "POST" && *itr != "DELETE")
 			throw std::runtime_error("conf syntax error");
-		allowed_methods_.push_back(*itr);
+		found = std::find(allowed_methods_.begin(), allowed_methods_.end(), *itr);
+		if (found == allowed_methods_.end())
+			allowed_methods_.push_back(*itr);
 		itr++;
 	}
 }

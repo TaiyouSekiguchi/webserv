@@ -65,8 +65,8 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 	if (begin + 1 != end)
 		throw std::runtime_error("conf syntax error");
 
-	in_addr_t						ip;
-	long							port;
+	in_addr_t						ip = INADDR_ANY;
+	long							port = 80;
 	char							*endptr;
 	const std::string&				s = *begin;
 	const std::string::size_type	colon = s.find(':');
@@ -80,7 +80,6 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 			ip = inet_addr(s.c_str());
 		if (ip == INADDR_NONE)
 			throw std::runtime_error("conf syntax error");
-		listen_.first = ip;
 	}
 	if (colon != std::string::npos || period == std::string::npos)
 	{
@@ -90,8 +89,8 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 			port = std::strtol(s.c_str(), &endptr, 10);
 		if (*endptr != '\0' || errno == ERANGE || port < 1 || 65535 < port)
 			throw std::runtime_error("conf syntax error");
-		listen_.second = port;
 	}
+	listen_ = std::make_pair(ip, port);
 }
 
 void	ServerDirective::ParseServerNames(Tokens::citr begin, Tokens::citr end)
@@ -158,5 +157,14 @@ void	ServerDirective::ParseLocation(Tokens::citr begin, Tokens::citr end)
 	if (begin >= end || Tokens::isSpecialToken(*begin))
 		throw std::runtime_error("conf syntax error");
 
-	locations_.push_back(LocationDirective(*begin, begin + 2, end));
+	const std::string 								path = *begin;
+	std::vector<LocationDirective>::const_iterator	litr = locations_.begin();
+	std::vector<LocationDirective>::const_iterator	lend = locations_.end();
+	while (litr != lend)
+	{
+		if (path == litr->GetPath())
+			throw std::runtime_error("conf syntax error");
+		++litr;
+	}
+	locations_.push_back(LocationDirective(path, begin + 2, end));
 }

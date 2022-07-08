@@ -17,6 +17,7 @@ TEST(LocationTest, Error)
 {
 	EXPECT_ANY_THROW({Config config("conf/location/location/err_braces.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/location/err_special.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/location/err_same_path.conf");});
 }
 
 // root
@@ -100,11 +101,11 @@ TEST(AllowedMethodsTest, Valid)
 
 	const std::string	s1[1] = {"GET"};
 	const std::string	s2[3] = {"GET", "POST", "DELETE"};
-	const std::string	s3[2] = {"GET", "GET"};
+	const std::string	s3[1] = {"GET"};
 	std::vector<std::string> expected;
 	expected.assign(s1, s1 + 1);	EXPECT_EQ(litr->GetAllowedMethods(), expected);
 	expected.assign(s2, s2 + 3);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
-	expected.assign(s3, s3 + 2);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
+	expected.assign(s3, s3 + 1);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
 }
 TEST(AllowedMethodsTest, Error)
 {
