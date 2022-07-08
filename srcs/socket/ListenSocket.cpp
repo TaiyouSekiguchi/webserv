@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include "ListenSocket.hpp"
 
-ListenSocket::ListenSocket(const int port) :
-	ASocket(-1)
+ListenSocket::ListenSocket(const ServerDirective& server_conf)
+	: ASocket(-1, server_conf)
 {
 	fd_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_ == -1)
@@ -20,8 +20,9 @@ ListenSocket::ListenSocket(const int port) :
 	struct sockaddr_in	addr_info;
 	memset(&addr_info, 0, sizeof(struct sockaddr_in));
 	addr_info.sin_family = AF_INET;
-	addr_info.sin_port = htons(port);
-	addr_info.sin_addr.s_addr = htonl(INADDR_ANY);
+	const std::pair<unsigned int, int>& listen = server_conf_.GetListen();
+	addr_info.sin_port = htons(listen.first);
+	addr_info.sin_addr.s_addr = htonl(listen.second);
 	if (bind(fd_, (const struct sockaddr *)&addr_info, sizeof(addr_info)) == -1)
 		throw std::runtime_error("bind error");
 }

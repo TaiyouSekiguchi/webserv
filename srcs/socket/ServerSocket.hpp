@@ -7,7 +7,7 @@
 class ServerSocket : public ASocket
 {
 	public:
-		explicit ServerSocket(const int fd);
+		explicit ServerSocket(const int fd, const ServerDirective& server_conf);
 		~ServerSocket();
 
 		std::string	RecvData(const ssize_t size = 1048576) const;

@@ -2,8 +2,8 @@
 #include <sys/socket.h>
 #include "ServerSocket.hpp"
 
-ServerSocket::ServerSocket(const int fd) :
-	ASocket(fd)
+ServerSocket::ServerSocket(const int fd, const ServerDirective& server_conf)
+	: ASocket(fd, server_conf)
 {
 }
 
