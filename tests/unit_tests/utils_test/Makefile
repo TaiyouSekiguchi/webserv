@@ -2,7 +2,7 @@ SRCSDIR	= ../../../srcs
 vpath	%.cpp testsrcs:$(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils
 
 SRCS	=	utils.cpp \
-			utils_test.cpp
+			MyTrim_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
