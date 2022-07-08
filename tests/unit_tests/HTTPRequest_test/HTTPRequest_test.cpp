@@ -1,99 +1,110 @@
 #include <gtest/gtest.h>
 #include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include "ListenSocket.hpp"
 #include "./HTTPRequest.hpp"
 
-int		CreateSocket(void)
+TEST(ParseMthodTest, ParseMethodTest)
 {
-	int		sock;
+	HTTPRequest		req1;
+	req1.ParseMethod("GET");
+	EXPECT_EQ(HTTPRequest::GET, req1.GetMethod());
 
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock == -1)
-		throw "socket failed.";
+	HTTPRequest		req2;
+	req2.ParseMethod("POST");
+	EXPECT_EQ(HTTPRequest::POST, req2.GetMethod());
 
-	return (sock);
+	HTTPRequest		req3;
+	req3.ParseMethod("DELETE");
+	EXPECT_EQ(HTTPRequest::DELETE, req3.GetMethod());
+
+	HTTPRequest		req4;
+	EXPECT_ANY_THROW(req4.ParseMethod("test"));
+
+	HTTPRequest		req5;
+	EXPECT_ANY_THROW(req5.ParseMethod(""));
 }
 
-int		DummyClientConnect(void)
+TEST(ParseTargetTest, ParseTargetTest)
 {
-	int					sock;
-	struct sockaddr_in	a_addr;
+	HTTPRequest		req1;
+	req1.ParseTarget("/");
+	EXPECT_EQ("/", req1.GetTarget());
 
-	sock = CreateSocket();
+	HTTPRequest		req2;
+	req2.ParseTarget("/index.html");
+	EXPECT_EQ("/index.html", req2.GetTarget());
 
-	memset(&a_addr, 0, sizeof(struct sockaddr_in));
-	a_addr.sin_family = AF_INET;
-	a_addr.sin_port = htons((unsigned short)8080);
-	a_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-	if (connect(sock, (struct sockaddr*)&a_addr, sizeof(struct sockaddr_in)) == -1)
-	{
-		close(sock);
-		throw "connect failed.";
-	}
-
-	return (sock);
+	HTTPRequest		req3;
+	EXPECT_ANY_THROW(req3.ParseMethod(""));
+	
+	HTTPRequest		req4;
+	EXPECT_ANY_THROW(req4.ParseMethod("index.html"));
 }
 
-void	SendTestData(int sock, const char *msg)
+TEST(ParseVersionTest, ParseVersionTest)
 {
-	int				send_size;
+	HTTPRequest		req1;
+	req1.ParseVersion("HTTP/1.0");
+	EXPECT_EQ("HTTP/1.0", req1.GetVersion());
 
-	send_size = send(sock, msg, strlen(msg) + 1, 0);
-	if (send_size == -1)
-		throw "send failed.";
+	HTTPRequest		req2;
+	req2.ParseVersion("HTTP/1.1");
+	EXPECT_EQ("HTTP/1.1", req2.GetVersion());
 
-	return ;
+	HTTPRequest		req3;
+	EXPECT_ANY_THROW(req3.ParseVersion(""));
+
+	HTTPRequest		req4;
+	EXPECT_ANY_THROW(req4.ParseVersion("HTTP/0.0"));
+
+	HTTPRequest		req5;
+	EXPECT_ANY_THROW(req5.ParseVersion("HTTP/1.11"));
 }
 
-ServerSocket	*CreateServerSocket(const char *msg)
+TEST(ParseHostTest, ParseHostTest)
 {
-	ListenSocket	*lsocket = new ListenSocket();
-	lsocket->ListenConnection();
+	HTTPRequest		req1;
+	req1.ParseHost(" localhost:8080");
+	EXPECT_EQ("localhost", req1.GetHost().first);
+	EXPECT_EQ(8080, req1.GetHost().second);
 
-	int	client_fd;
-	client_fd = DummyClientConnect();
+	HTTPRequest		req2;
+	req2.ParseHost(" developer.mozilla.org");
+	EXPECT_EQ("developer.mozilla.org", req2.GetHost().first);
+	EXPECT_EQ(80, req2.GetHost().second);
 
-	int	server_fd;
-	server_fd = lsocket->AcceptConnection();
+	HTTPRequest		req3;
+	EXPECT_ANY_THROW(req3.ParseHost("localhost:8080 test"));
 
-	ServerSocket	*server_socket = new ServerSocket(server_fd);
-
-	SendTestData(client_fd, msg);
-	close(client_fd);
-
-	return (server_socket);
+	HTTPRequest		req4;
+	EXPECT_ANY_THROW(req4.ParseHost("localhost:80:80"));
 }
 
-TEST(HTTPRequestTest1, SimpleRequest)
+TEST(ParseContentLength, ParseContentLength)
 {
-	const char*		msg = "GET / HTTP/1.0\r\n\r\n";
-	ServerSocket	*ssocket = CreateServerSocket(msg);
+	HTTPRequest		req1;
+	req1.ParseContentLength(" 1234567");
+	EXPECT_EQ((size_t)1234567, req1.GetContentLength());
 
-	HTTPRequest		req;
-	req.ParseRequest(*ssocket);
+	HTTPRequest		req2;
+	req2.ParseContentLength(" 0");
+	EXPECT_EQ((size_t)0, req2.GetContentLength());
 
-	EXPECT_EQ(HTTPRequest::GET, req.GetMethod());
-	EXPECT_EQ("/", req.GetTarget());
-	EXPECT_EQ("HTTP/1.0", req.GetVersion());
-
-	delete ssocket;
+	HTTPRequest		req3;
+	EXPECT_ANY_THROW(req3.ParseContentLength(" 12345abc"));
 }
 
-TEST(HTTPRequestTest2, SimpleRequest)
+TEST(ParseUserAgent, ParseUserAgent)
 {
-	const char*		msg = "GET / HTTP/1.0\r\n\r\n";
-	ServerSocket	*ssocket = CreateServerSocket(msg);
+	HTTPRequest		req1;
+	req1.ParseUserAgent("   Debian    ");
+	EXPECT_EQ("Debian", req1.GetUserAgent());
+}
 
-	HTTPRequest		req;
-	req.ParseRequest(*ssocket);
-
-	EXPECT_EQ(HTTPRequest::GET, req.GetMethod());
-	EXPECT_EQ("/", req.GetTarget());
-	EXPECT_EQ("HTTP/1.0", req.GetVersion());
-
-	delete ssocket;
+TEST(ParseAcceptEncodingTest, ParseAcceptEncodingTest)
+{
+	HTTPRequest		req1;
+	req1.ParseAcceptEncoding(" gzip, compress, br");
+	EXPECT_EQ("gzip", req1.GetAcceptEncoding().at(0));
+	EXPECT_EQ("compress", req1.GetAcceptEncoding().at(1));
+	EXPECT_EQ("br", req1.GetAcceptEncoding().at(2));
 }
