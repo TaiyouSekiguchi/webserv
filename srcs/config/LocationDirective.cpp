@@ -111,6 +111,8 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 			url = *begin;
 		else
 			url = *(begin + 1);
+		if (Tokens::isSpecialToken(url))
+			throw std::runtime_error("conf syntax error");
 	}
 	return_ = std::make_pair(status_code, url);
 }

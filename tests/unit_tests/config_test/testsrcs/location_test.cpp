@@ -54,18 +54,25 @@ TEST(IndexTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/location/index/err_special.conf");});
 }
 
-// // return
-// TEST(ReturnTest, Valid)
-// {
-// 	Config	config("conf/location/return/valid.conf");
-// 	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-// 	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
-// }
-// TEST(ReturnTest, Error)
-// {
-// 	EXPECT_ANY_THROW({Config config("conf/location/return/err_.conf");});
-// 	EXPECT_ANY_THROW({Config config("conf/location/return/err_.conf");});
-// }
+// return
+TEST(ReturnTest, Valid)
+{
+	Config	config("conf/location/return/valid.conf");
+	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
+	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+
+	EXPECT_EQ(litr->GetReturn(), std::make_pair(301, std::string("http://localhost:8080")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(301, std::string("")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(302, std::string("http://localhost:8080")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(1, std::string("abc")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(999, std::string("1")));
+}
+TEST(ReturnTest, Error)
+{
+	EXPECT_ANY_THROW({Config config("conf/location/return/err_empty.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/return/err_over.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/return/err_char.conf");});
+}
 
 // autoindex
 TEST(AutoIndexTest, Valid)
