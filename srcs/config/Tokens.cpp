@@ -52,7 +52,7 @@ std::string	Tokens::GetFileContent(const std::string& file_path) const
 {
 	std::ifstream ifs(file_path);
 	if (ifs.fail())
-		std::runtime_error("open error");
+		throw std::runtime_error("open error");
 	std::istreambuf_iterator<char> it(ifs);
 	std::istreambuf_iterator<char> last;
 	std::string content(it, last);
