@@ -4,6 +4,7 @@ HTTPRequest::HTTPRequest()
 	: method_(NONE)
 	, content_length_(0)
 {
+	host_ = std::make_pair("", 80);
 }
 
 HTTPRequest::~HTTPRequest()
@@ -25,7 +26,7 @@ std::string		HTTPRequest::GetVersion(void) const
 	return (version_);
 }
 
-std::string		HTTPRequest::GetHost(void) const
+std::pair<std::string, int>		HTTPRequest::GetHost(void) const
 {
 	return (host_);
 }
@@ -33,6 +34,16 @@ std::string		HTTPRequest::GetHost(void) const
 size_t			HTTPRequest::GetContentLength(void) const
 {
 	return (content_length_);
+}
+
+std::string		HTTPRequest::GetUserAgent(void) const
+{
+	return (user_agent_);
+}
+
+std::vector<std::string>	HTTPRequest::GetAcceptEncoding(void) const
+{
+	return (accept_encoding_);
 }
 
 std::string		HTTPRequest::GetBody(void) const
@@ -138,53 +149,102 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 
 void HTTPRequest::ParseHost(const std::string& content)
 {
-	std::vector<std::string>	list;
+	std::vector<std::string>	list1;
+	std::vector<std::string>	list2;
+	std::string					host;
 
-	list = Utils::MySplit(content, " ");
-	if (list.size() != 1)
+	list1 = Utils::MySplit(content, " ");
+	if (list1.size() != 1)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	host_ = list.at(0);
+	list2 = Utils::MySplit(list1.at(0), ":");
+	if (list2.size() > 2)
+		throw HTTPError(HTTPError::BAD_REQUEST);
+
+	host = list2.at(0);
+	for (size_t i = 0; i < host.size(); i++)
+	{
+		if (!isalpha(host[i])
+			&& !isdigit(host[i])
+			&& host[i] != '.'
+			&& host[i] != '-')
+			throw HTTPError(HTTPError::BAD_REQUEST);
+	}
+	host_.first = host;
+
+	if (list2.size() == 2)
+	{
+		long	port;
+		char	*endptr;
+
+		port = std::strtol(list2.at(1).c_str(), &endptr, 10);
+		if (*endptr != '\0' || errno == ERANGE || port < 1 || 65535 < port)
+			throw HTTPError(HTTPError::BAD_REQUEST);
+		host_.second = port;
+	}
 }
 
 void HTTPRequest::ParseContentLength(const std::string& content)
 {
 	std::vector<std::string>	list;
-	std::string					tmp;
-	const char					*c_content_length;
 	char						*endptr;
 
 	list = Utils::MySplit(content, " ");
 	if (list.size() != 1)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	tmp = list.at(0);
-	c_content_length = tmp.c_str();
-	content_length_ = std::strtoul(c_content_length, &endptr, 10);
-	if (errno == ERANGE)
-		throw HTTPError(HTTPError::BAD_REQUEST);
-	if (*endptr != '\0')
+	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
+	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(HTTPError::BAD_REQUEST);
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
 {
-	user_agent_ = content;
+	user_agent_ = Utils::MyTrim(content, " ");
 }
 
 void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 {
-	accept_encoding_ = Utils::MySplit(content, " ");
+	std::vector<std::string>			list;
+	std::vector<std::string>::iterator	it;
+	std::vector<std::string>::iterator	it_end;
+
+	list = Utils::MySplit(content, ",");
+	it = list.begin();
+	it_end = list.end();
+	for (; it != it_end; ++it)
+	{
+		*it = Utils::MyTrim(*it, " ");
+	}
+	accept_encoding_ = list;
 }
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
+	const std::pair<std::string, ParseFunc>	p[] = {
+		std::make_pair("Host", &HTTPRequest::ParseHost),
+		std::make_pair("Content-Length", &HTTPRequest::ParseContentLength),
+		std::make_pair("User-Agent", &HTTPRequest::ParseUserAgent),
+		std::make_pair("Accept-Encoding", &HTTPRequest::ParseAcceptEncoding)
+	};
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[4]);
+	std::map<std::string, ParseFunc>::const_iterator	found;
+
+	found = parse_funcs.find(field);
+	if (found == parse_funcs.end())
+		throw HTTPError(HTTPError::BAD_REQUEST);
+
+	(this->*(found->second))(content);
+
+	return ;
+
+	/*
 	const size_t		size = 4;
 	const std::string	fields[size] = {
-		"Host:",
-		"Content-Length:",
-		"User-Agent:",
-		"Accept-Encoding:"
+		"Host",
+		"Content-Length",
+		"User-Agent",
+		"Accept-Encoding"
 	};
 
 	void (HTTPRequest::*parsers[size])(const std::string&) = {
@@ -206,39 +266,8 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	throw HTTPError(HTTPError::BAD_REQUEST);
 
 	return ;
+	*/
 }
-
-/*
-void	HTTPRequest::ParseHeader(std::vector<std::string> const & list)
-{
-	const std::string	headers[2] = {
-		"Host:",
-		"Content-Length:",
-		"User-Agent:",
-		"Accept-Encoding:"
-	};
-
-	void (HTTPRequest::*parsers[2])(std::vector<std::string> const &) = {
-		&HTTPRequest::ParseHost,
-		&HTTPRequest::ParseContentLength,
-		&HTTPRequest::ParseUserAgent,
-		&HTTPRequest::ParseAcceptEncoding
-	};
-
-	for ( int i = 0; i < 2; i++)
-	{
-		if (list.at(0) == headers[i])
-		{
-			(this->*parsers[i])(list);
-			return ;
-		}
-	}
-
-	throw HTTPError(HTTPError::BAD_REQUEST);
-
-	return ;
-}
-*/
 
 void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 {
@@ -254,12 +283,7 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 			throw HTTPError(HTTPError::BAD_REQUEST);
 		field = line.substr(0, pos);
 		content = line.substr(pos + 1);
-		//content = line.substr(pos + 1, line.size());
 		ParseHeader(field, content);
-
-		//std::vector<std::string>	list;
-		//list = my_split(line, " ");
-		//ParseHeader(list);
 	}
 
 	return ;
@@ -315,7 +339,8 @@ void	HTTPRequest::RequestDisplay(void) const
 	std::cout << "method            : " << method_ << std::endl;
 	std::cout << "target            : " << target_ << std::endl;
 	std::cout << "version           : " << version_ << std::endl;
-	std::cout << "host              : " << host_ << std::endl;
+	std::cout << "host.first        : " << host_.first << std::endl;
+	std::cout << "host.second       : " << host_.second << std::endl;
 	std::cout << "content_length    : " << content_length_ << std::endl;
 	std::cout << "[ BODY ]" << std::endl;
 	std::cout << body_ << std::endl;
