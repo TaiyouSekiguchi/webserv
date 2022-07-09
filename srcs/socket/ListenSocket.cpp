@@ -21,8 +21,8 @@ ListenSocket::ListenSocket(const ServerDirective& server_conf)
 	memset(&addr_info, 0, sizeof(struct sockaddr_in));
 	addr_info.sin_family = AF_INET;
 	const std::pair<unsigned int, int>& listen = server_conf_.GetListen();
-	addr_info.sin_port = htons(listen.first);
-	addr_info.sin_addr.s_addr = htonl(listen.second);
+	addr_info.sin_addr.s_addr = htonl(listen.first);
+	addr_info.sin_port = htons(listen.second);
 	if (bind(fd_, (const struct sockaddr *)&addr_info, sizeof(addr_info)) == -1)
 		throw std::runtime_error("bind error");
 }
