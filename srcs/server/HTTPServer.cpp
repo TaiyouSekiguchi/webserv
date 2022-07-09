@@ -2,6 +2,7 @@
 #include "HTTPServer.hpp"
 #include "ListenSocket.hpp"
 #include "debug.hpp"
+#include "Config.hpp"
 
 HTTPServer::HTTPServer()
 {
@@ -11,8 +12,9 @@ HTTPServer::~HTTPServer()
 {
 }
 
-void	HTTPServer::Start() const
+void	HTTPServer::Start(const Config& config) const
 {
+	(void)config;
 	ListenSocket	*lsocket = new ListenSocket();
 	EventQueue		equeue;
 
