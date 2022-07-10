@@ -248,10 +248,8 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
-	if (found == parse_funcs.end())
-		throw HTTPError(HTTPError::BAD_REQUEST);
-
-	(this->*(found->second))(content);
+	if (found != parse_funcs.end())
+		(this->*(found->second))(content);
 
 	return ;
 }
