@@ -40,7 +40,8 @@ class HTTPRequest
 		size_t							GetContentLength(void) const;
 		std::string						GetUserAgent(void) const;
 		std::vector<std::string>		GetAcceptEncoding(void) const;
-		bool							GetConnetcion(void) const;
+		bool							GetConnection(void) const;
+		std::string						GetContentType(void) const;
 
 		std::string						GetBody(void) const;
 
@@ -68,6 +69,7 @@ class HTTPRequest
 		std::string						user_agent_;
 		std::vector<std::string>		accept_encoding_;
 		bool							connection_;
+		std::string						content_type_;
 
 		//body
 		std::string		body_;
@@ -81,14 +83,12 @@ class HTTPRequest
 
 		void			ParseHeaders(ServerSocket const & ssocket);
 		void			ParseHeader(const std::string& field, const std::string& content);
-		//void			ParseHeader(std::vector<std::string> const & list);
 		void			ParseHost(const std::string& content);
 		void			ParseContentLength(const std::string& content);
 		void			ParseUserAgent(const std::string& content);
 		void			ParseAcceptEncoding(const std::string& content);
 		void			ParseConnection(const std::string& content);
-
-
+		void			ParseContentType(const std::string& content);
 
 		void			ParseBody(ServerSocket const & ssocket);
 };

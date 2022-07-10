@@ -40,10 +40,12 @@ class HTTPRequest
 		size_t							GetContentLength(void) const;
 		std::string						GetUserAgent(void) const;
 		std::vector<std::string>		GetAcceptEncoding(void) const;
+		bool							GetConnection(void) const;
+		std::string						GetContentType(void) const;
 
 		std::string						GetBody(void) const;
 
-//	private:
+	//private:
 		typedef	void 	(HTTPRequest::*ParseFunc)(const std::string& content);
 
 		enum	e_status
@@ -66,6 +68,8 @@ class HTTPRequest
 		size_t							content_length_;
 		std::string						user_agent_;
 		std::vector<std::string>		accept_encoding_;
+		bool							connection_;
+		std::string						content_type_;
 
 		//body
 		std::string		body_;
@@ -84,6 +88,10 @@ class HTTPRequest
 		void			ParseContentLength(const std::string& content);
 		void			ParseUserAgent(const std::string& content);
 		void			ParseAcceptEncoding(const std::string& content);
+		void			ParseConnection(const std::string& content);
+		void			ParseContentType(const std::string& content);
+
+
 
 		void			ParseBody(ServerSocket const & ssocket);
 };

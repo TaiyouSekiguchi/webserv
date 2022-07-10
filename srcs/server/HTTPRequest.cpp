@@ -47,6 +47,16 @@ std::vector<std::string>	HTTPRequest::GetAcceptEncoding(void) const
 	return (accept_encoding_);
 }
 
+bool	HTTPRequest::GetConnection(void) const
+{
+	return (connection_);
+}
+
+std::string		HTTPRequest::GetContentType(void) const
+{
+	return (content_type_);
+}
+
 std::string		HTTPRequest::GetBody(void) const
 {
 	return (body_);
@@ -235,6 +245,11 @@ void HTTPRequest::ParseConnection(const std::string& content)
 		connection_ = false;
 }
 
+void HTTPRequest::ParseContentType(const std::string& content)
+{
+	content_type_ = Utils::MyTrim(content, " ");
+}
+
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc>	p[] = {
@@ -242,9 +257,10 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("Content-Length", &HTTPRequest::ParseContentLength),
 		std::make_pair("User-Agent", &HTTPRequest::ParseUserAgent),
 		std::make_pair("Accept-Encoding", &HTTPRequest::ParseAcceptEncoding),
-		std::make_pair("Connection", &HTTPRequest::ParseConnection)
+		std::make_pair("Connection", &HTTPRequest::ParseConnection),
+		std::make_pair("Content-Type", &HTTPRequest::ParseContentType)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[5]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[6]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
