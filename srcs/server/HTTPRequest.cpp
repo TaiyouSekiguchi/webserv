@@ -3,6 +3,7 @@
 HTTPRequest::HTTPRequest()
 	: method_(NONE)
 	, content_length_(0)
+	, connection_(true)
 {
 	host_ = std::make_pair("", 80);
 }
@@ -219,15 +220,31 @@ void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 	accept_encoding_ = list;
 }
 
+void HTTPRequest::ParseConnection(const std::string& content)
+{
+	std::string		tmp;
+
+	tmp = Utils::MyTrim(content, " ");
+	for (size_t i = 0; i < content.length(); i++)
+	{
+		if (tmp[i] >= 'A' && tmp[i] <= 'Z')
+			tmp[i] = tolower(tmp[i]);
+	}
+
+	if (tmp == "close")
+		connection_ = false;
+}
+
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc>	p[] = {
 		std::make_pair("Host", &HTTPRequest::ParseHost),
 		std::make_pair("Content-Length", &HTTPRequest::ParseContentLength),
 		std::make_pair("User-Agent", &HTTPRequest::ParseUserAgent),
-		std::make_pair("Accept-Encoding", &HTTPRequest::ParseAcceptEncoding)
+		std::make_pair("Accept-Encoding", &HTTPRequest::ParseAcceptEncoding),
+		std::make_pair("Connection", &HTTPRequest::ParseConnection)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[4]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[5]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
