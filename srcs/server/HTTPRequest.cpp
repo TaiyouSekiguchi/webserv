@@ -123,7 +123,7 @@ void	HTTPRequest::ParseTarget(std::string const & target)
 
 void	HTTPRequest::ParseVersion(std::string const & version)
 {
-	if (version == "HTTP/1.0" || version == "HTTP/1.1")
+	if (version == "HTTP/1.1")
 		version_ = version;
 	else
 		throw HTTPError(HTTPError::BAD_REQUEST);
@@ -254,36 +254,6 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	(this->*(found->second))(content);
 
 	return ;
-
-	/*
-	const size_t		size = 4;
-	const std::string	fields[size] = {
-		"Host",
-		"Content-Length",
-		"User-Agent",
-		"Accept-Encoding"
-	};
-
-	void (HTTPRequest::*parsers[size])(const std::string&) = {
-		&HTTPRequest::ParseHost,
-		&HTTPRequest::ParseContentLength,
-		&HTTPRequest::ParseUserAgent,
-		&HTTPRequest::ParseAcceptEncoding
-	};
-
-	for (size_t i = 0; i < size; i++)
-	{
-		if (field == fields[i])
-		{
-			(this->*parsers[i])(content);
-			return ;
-		}
-	}
-
-	throw HTTPError(HTTPError::BAD_REQUEST);
-
-	return ;
-	*/
 }
 
 void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
@@ -302,6 +272,9 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 		content = line.substr(pos + 1);
 		ParseHeader(field, content);
 	}
+
+	if (host_.first == "")
+		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	return ;
 }
