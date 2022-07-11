@@ -3,6 +3,7 @@
 #include "./HTTPRequest.hpp"
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
+#include "Config.hpp"
 
 TEST(ParseMthodTest, ParseMethodTest)
 {
@@ -135,23 +136,28 @@ TEST(ParseConnectionTest, ParseConnectionTest)
 class RequestTest : public ::testing::Test
 {
   protected:
-    virtual void SetUp()
-    {
-      lsocket_ = new ListenSocket();
-      lsocket_->ListenConnection();
-      csocket_ = new ClientSocket();
-      csocket_->ConnectServer("127.0.0.1", 8080);
-      ssocket_ = new ServerSocket(lsocket_->AcceptConnection());
-    }
-    virtual void TearDown()
-    {
-      delete lsocket_;
-      delete ssocket_;
-      delete csocket_;
-    }
-    ListenSocket *lsocket_;
-    ServerSocket *ssocket_;
-    ClientSocket *csocket_;
+	virtual void SetUp()
+	{
+		Config	config("./default.conf");
+
+		const std::vector<ServerDirective>&				servers = config.GetServers();
+		std::vector<ServerDirective>::const_iterator	itr = servers.begin();
+
+		lsocket_ = new ListenSocket(*itr);
+		lsocket_->ListenConnection();
+		csocket_ = new ClientSocket();
+		csocket_->ConnectServer("127.0.0.1", 8080);
+		ssocket_ = new ServerSocket(lsocket_->AcceptConnection(), lsocket_->GetServerConf());
+	}
+	virtual void TearDown()
+	{
+		delete lsocket_;
+		delete ssocket_;
+		delete csocket_;
+	}
+		ListenSocket *lsocket_;
+		ServerSocket *ssocket_;
+		ClientSocket *csocket_;
 };
 
 TEST_F(RequestTest, GetLine)
