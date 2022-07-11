@@ -1,6 +1,7 @@
 #ifndef HTTPSERVER_HPP
 # define HTTPSERVER_HPP
 
+# include <vector>
 # include "ServerSocket.hpp"
 # include "EventQueue.hpp"
 # include "Config.hpp"

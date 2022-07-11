@@ -1,6 +1,7 @@
 #ifndef HTTPREQUEST_HPP
 # define HTTPREQUEST_HPP
 
+#include <unistd.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,7 +10,6 @@
 #include <cstdlib>
 #include <cctype>
 #include <cerrno>
-#include <unistd.h>
 #include "ServerSocket.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
@@ -32,7 +32,7 @@ class HTTPRequest
 		void	ParseRequest(ServerSocket const & ssocket);
 		void	RequestDisplay(void) const;
 
-		//Getter
+		// Getter
 		e_method						GetMethod(void) const;
 		std::string						GetTarget(void) const;
 		std::string						GetVersion(void) const;
@@ -55,15 +55,15 @@ class HTTPRequest
 			BODY,
 		};
 
-		//GetLine
+		// GetLine
 		std::string		save_;
 
-		//request line
+		// request line
 		e_method						method_;
 		std::string						target_;
 		std::string						version_;
 
-		//header
+		// header
 		std::pair<std::string, int>		host_;
 		size_t							content_length_;
 		std::string						user_agent_;
@@ -71,10 +71,10 @@ class HTTPRequest
 		bool							connection_;
 		std::string						content_type_;
 
-		//body
+		// body
 		std::string		body_;
 
-		//func
+		// func
 		std::string		GetLine(ServerSocket const & ssocket);
 		void			ParseRequestLine(ServerSocket const & ssocket);
 		void			ParseMethod(std::string const & method);

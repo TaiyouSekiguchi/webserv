@@ -12,55 +12,16 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
-HTTPRequest::e_method	HTTPRequest::GetMethod(void) const
-{
-	return (method_);
-}
-
-std::string		HTTPRequest::GetTarget(void) const
-{
-	return (target_);
-}
-
-std::string		HTTPRequest::GetVersion(void) const
-{
-	return (version_);
-}
-
-std::pair<std::string, int>		HTTPRequest::GetHost(void) const
-{
-	return (host_);
-}
-
-size_t			HTTPRequest::GetContentLength(void) const
-{
-	return (content_length_);
-}
-
-std::string		HTTPRequest::GetUserAgent(void) const
-{
-	return (user_agent_);
-}
-
-std::vector<std::string>	HTTPRequest::GetAcceptEncoding(void) const
-{
-	return (accept_encoding_);
-}
-
-bool	HTTPRequest::GetConnection(void) const
-{
-	return (connection_);
-}
-
-std::string		HTTPRequest::GetContentType(void) const
-{
-	return (content_type_);
-}
-
-std::string		HTTPRequest::GetBody(void) const
-{
-	return (body_);
-}
+HTTPRequest::e_method			HTTPRequest::GetMethod(void) const { return (method_); }
+std::string						HTTPRequest::GetTarget(void) const { return (target_); }
+std::string						HTTPRequest::GetVersion(void) const { return (version_); }
+std::pair<std::string, int>		HTTPRequest::GetHost(void) const { return (host_); }
+size_t							HTTPRequest::GetContentLength(void) const { return (content_length_); }
+std::string						HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
+std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
+bool							HTTPRequest::GetConnection(void) const { return (connection_); }
+std::string						HTTPRequest::GetContentType(void) const { return (content_type_); }
+std::string						HTTPRequest::GetBody(void) const { return (body_); }
 
 std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 {
@@ -103,28 +64,6 @@ void	HTTPRequest::ParseMethod(std::string const & method)
 
 void	HTTPRequest::ParseTarget(std::string const & target)
 {
-	//const char		*cstring;
-	//int				ret;
-
-	/*
-	cstring = target.c_str();
-	ret = access(cstring, F_OK);
-	if (ret == -1)
-		throw HTTPError(HTTPError::NOT_FOUND);
-
-	if (method_ == GET)
-	{
-		ret = access(cstring, R_OK);
-		if (ret == -1)
-			throw HTTPError(HTTPError::FORBIDDEN);
-	}
-	else if (method_ == POST)
-	{
-		ret = access(cstring, W_OK);
-		if (ret == -1)
-			throw HTTPError(HTTPError::FORBIDDEN);
-	}
-	*/
 	if (target[0] != '/')
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
@@ -144,8 +83,7 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 	std::string					line;
 	std::vector<std::string>	list;
 
-	while ((line = GetLine(ssocket)) == "")
-		;
+	while ((line = GetLine(ssocket)) == "") { }
 
 	list = Utils::MySplit(line, " ");
 	if (list.size() != 3)
@@ -155,7 +93,7 @@ void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
 	ParseTarget(list.at(1));
 	ParseVersion(list.at(2));
 
-	return ;
+	return;
 }
 
 void HTTPRequest::ParseHost(const std::string& content)
@@ -252,7 +190,7 @@ void HTTPRequest::ParseContentType(const std::string& content)
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
-	const std::pair<std::string, ParseFunc>	p[] = {
+	const std::pair<std::string, ParseFunc> p[] = {
 		std::make_pair("Host", &HTTPRequest::ParseHost),
 		std::make_pair("Content-Length", &HTTPRequest::ParseContentLength),
 		std::make_pair("User-Agent", &HTTPRequest::ParseUserAgent),
@@ -267,7 +205,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	if (found != parse_funcs.end())
 		(this->*(found->second))(content);
 
-	return ;
+	return;
 }
 
 void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
@@ -290,7 +228,7 @@ void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
 	if (host_.first == "")
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	return ;
+	return;
 }
 
 void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
@@ -326,7 +264,7 @@ void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
 
 	body_ = tmp;
 
-	return ;
+	return;
 }
 
 void	HTTPRequest::ParseRequest(ServerSocket const & ssocket)
@@ -335,7 +273,7 @@ void	HTTPRequest::ParseRequest(ServerSocket const & ssocket)
 	ParseHeaders(ssocket);
 	ParseBody(ssocket);
 
-	return ;
+	return;
 }
 
 void	HTTPRequest::RequestDisplay(void) const
@@ -349,5 +287,5 @@ void	HTTPRequest::RequestDisplay(void) const
 	std::cout << "[ BODY ]" << std::endl;
 	std::cout << body_ << std::endl;
 
-	return ;
+	return;
 }
