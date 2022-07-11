@@ -151,11 +151,8 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(HTTPError::BAD_REQUEST);
-	if (content_length_ > client_max_body_size_)
-	{
-		connection_ = false;
+	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
 		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
-	}
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
