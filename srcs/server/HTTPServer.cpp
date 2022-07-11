@@ -1,8 +1,11 @@
 #include <string>
 #include "HTTPServer.hpp"
+#include "HTTPRequest.hpp"
 #include "ListenSocket.hpp"
 #include "debug.hpp"
 #include "Config.hpp"
+#include "ClientClosed.hpp"
+#include "HTTPError.hpp"
 
 HTTPServer::HTTPServer()
 {
@@ -58,25 +61,27 @@ void	HTTPServer::MainLoop(EventQueue const & equeue) const
 void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
 	(void)ssocket;
-	// int				status_code;
-	// HTTPRequest		req;
+	int				status_code;
+	HTTPRequest		req;
 	// HTTPMethod		method;
-	// const ServerDirective&	server_conf = ssocket->GetServerConf();
+	const ServerDirective&	server_conf = ssocket->GetServerConf();
 
-	// try
-	// {
-	// 	req.RecvRequest(ssocket, server_conf);
+	try
+	{
+		req.ParseRequest(*ssocket, server_conf);
+		req.RequestDisplay();
 	// 	status_code = method.ExecHTTPMethod(req, server_conf);
-	// }
-	// catch (const ClientClosed& e)
-	// {
-	// 	delete ssocket;
-	// 	return;
-	// }
-	// catch (const HTTPError& e)
-	// {
-	// 	status_code = e.GetStatusCode();
-	// }
+	}
+	catch (const ClientClosed& e)
+	{
+		delete ssocket;
+		return;
+	}
+	catch (const HTTPError& e)
+	{
+		status_code = e.GetStatusCode();
+		std::cerr << "status_code : " << status_code << std::endl;
+	}
 	// HTTPResponse	res(status_code, req, method, server_conf);
 	// res.SendResponse(ssocket);
 }

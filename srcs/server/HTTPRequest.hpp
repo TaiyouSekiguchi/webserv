@@ -29,7 +29,7 @@ class HTTPRequest
 		HTTPRequest();
 		~HTTPRequest();
 
-		void	ParseRequest(ServerSocket const & ssocket);
+		void	ParseRequest(const ServerSocket& ssocket, const ServerDirective& server_conf);
 		void	RequestDisplay(void) const;
 
 		// Getter
@@ -42,7 +42,6 @@ class HTTPRequest
 		std::vector<std::string>		GetAcceptEncoding(void) const;
 		bool							GetConnection(void) const;
 		std::string						GetContentType(void) const;
-
 		std::string						GetBody(void) const;
 
 	private:
@@ -55,8 +54,11 @@ class HTTPRequest
 			BODY,
 		};
 
+		// server_conf
+		size_t							client_max_body_size_;
+
 		// GetLine
-		std::string		save_;
+		std::string						save_;
 
 		// request line
 		e_method						method_;
@@ -75,13 +77,14 @@ class HTTPRequest
 		std::string		body_;
 
 		// func
-		std::string		GetLine(ServerSocket const & ssocket);
+		void			SetServerConf(const ServerDirective& server_conf);
+		std::string		GetLine(const ServerSocket& ssocket);
 		void			ParseRequestLine(ServerSocket const & ssocket);
-		void			ParseMethod(std::string const & method);
-		void			ParseTarget(std::string const & target);
-		void			ParseVersion(std::string const & version);
+		void			ParseMethod(const std::string& method);
+		void			ParseTarget(const std::string& target);
+		void			ParseVersion(const std::string& version);
 
-		void			ParseHeaders(ServerSocket const & ssocket);
+		void			ParseHeaders(const ServerSocket& ssocket);
 		void			ParseHeader(const std::string& field, const std::string& content);
 		void			ParseHost(const std::string& content);
 		void			ParseContentLength(const std::string& content);
@@ -90,7 +93,7 @@ class HTTPRequest
 		void			ParseConnection(const std::string& content);
 		void			ParseContentType(const std::string& content);
 
-		void			ParseBody(ServerSocket const & ssocket);
+		void			ParseBody(const ServerSocket& ssocket);
 };
 
 #endif

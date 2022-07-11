@@ -11,6 +11,7 @@ class HTTPError : public std::exception
 			BAD_REQUEST = 400,
 			FORBIDDEN = 403,
 			NOT_FOUND = 404,
+			PAYLOAD_TOO_LARGE = 413,
 		};
 
 		explicit HTTPError(const int status_code) : status_code_(status_code) {}

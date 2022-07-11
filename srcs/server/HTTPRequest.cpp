@@ -23,6 +23,12 @@ bool							HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string						HTTPRequest::GetContentType(void) const { return (content_type_); }
 std::string						HTTPRequest::GetBody(void) const { return (body_); }
 
+
+void	HTTPRequest::SetServerConf(const ServerDirective& server_conf)
+{
+	client_max_body_size_ = server_conf.GetClientMaxBodySize();
+}
+
 std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 {
 	std::string				data;
@@ -62,7 +68,7 @@ void	HTTPRequest::ParseMethod(std::string const & method)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 }
 
-void	HTTPRequest::ParseTarget(std::string const & target)
+void	HTTPRequest::ParseTarget(const std::string& target)
 {
 	if (target[0] != '/')
 		throw HTTPError(HTTPError::BAD_REQUEST);
@@ -70,7 +76,7 @@ void	HTTPRequest::ParseTarget(std::string const & target)
 	target_ = target;
 }
 
-void	HTTPRequest::ParseVersion(std::string const & version)
+void	HTTPRequest::ParseVersion(const std::string& version)
 {
 	if (version == "HTTP/1.1")
 		version_ = version;
@@ -78,7 +84,7 @@ void	HTTPRequest::ParseVersion(std::string const & version)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 }
 
-void	HTTPRequest::ParseRequestLine(ServerSocket const & ssocket)
+void	HTTPRequest::ParseRequestLine(const ServerSocket& ssocket)
 {
 	std::string					line;
 	std::vector<std::string>	list;
@@ -145,6 +151,11 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	if (content_length_ > client_max_body_size_)
+	{
+		connection_ = false;
+		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
+	}
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -208,7 +219,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	return;
 }
 
-void	HTTPRequest::ParseHeaders(ServerSocket const & ssocket)
+void	HTTPRequest::ParseHeaders(const ServerSocket& ssocket)
 {
 	std::string				line;
 	std::string				field;
@@ -267,8 +278,9 @@ void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
 	return;
 }
 
-void	HTTPRequest::ParseRequest(ServerSocket const & ssocket)
+void	HTTPRequest::ParseRequest(const ServerSocket& ssocket, const ServerDirective& server_conf)
 {
+	SetServerConf(server_conf);
 	ParseRequestLine(ssocket);
 	ParseHeaders(ssocket);
 	ParseBody(ssocket);

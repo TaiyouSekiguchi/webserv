@@ -1,7 +1,8 @@
 vpath	%.cpp	srcs: \
 				srcs/server: \
 				srcs/socket: \
-				srcs/config
+				srcs/config: \
+				srcs/utils
 SRCS	=	main.cpp \
 			HTTPServer.cpp \
 			EventQueue.cpp \
@@ -11,7 +12,9 @@ SRCS	=	main.cpp \
 			Config.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp \
-			Tokens.cpp
+			Tokens.cpp \
+			HTTPRequest.cpp \
+			utils.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
