@@ -6,7 +6,7 @@
 class ListenSocket : public ASocket
 {
 	public:
-		explicit ListenSocket(const int port = 8080);
+		explicit ListenSocket(const ServerDirective& server_conf);
 		~ListenSocket();
 
 		void	ListenConnection(const int backlog = 3) const;

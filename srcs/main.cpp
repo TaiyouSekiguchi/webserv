@@ -1,12 +1,17 @@
 #include <iostream>
 #include "HTTPServer.hpp"
+#include "Config.hpp"
 
-int	main()
+int		main(int argc, char **argv)
 {
 	try
 	{
-		HTTPServer hserver;
-		hserver.Start();
+		if (argc != 2)
+			throw std::runtime_error("Usage: ./webserv <config file>");
+
+		Config		config(argv[1]);
+		HTTPServer	hserver;
+		hserver.Start(config);
 	}
 	catch (const std::exception& e)
 	{
