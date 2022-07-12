@@ -14,7 +14,8 @@ SRCS	=	main.cpp \
 			ServerDirective.cpp \
 			Tokens.cpp \
 			HTTPRequest.cpp \
-			utils.cpp
+			utils.cpp \
+			HTTPMethod.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
