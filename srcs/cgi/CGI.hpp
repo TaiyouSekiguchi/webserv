@@ -6,12 +6,15 @@
 # include <sys/wait.h> // wait
 # include <iostream>
 # include <string>
+# include <map>
+# include <utility>
 # include "HTTPError.hpp"
+# include "utils.hpp"
 
 class CGI
 {
 	public:
-		CGI(void);
+		CGI(const std::string& file_path);
 		~CGI(void);
 
 		void	ExecuteCGI(const std::string& file_path);
@@ -22,8 +25,12 @@ class CGI
 		std::string		GetBody(void) const;
 
 	private:
-		void	do_child(const std::string& file_path, const int pipe_fd[2]);
-		void	do_parent(const int pipe_fd[2]);
+		typedef	void 	(CGI::*ParseFunc)(const std::string& content);
+
+		void	DoChild(const std::string& file_path, const int pipe_fd[2]);
+		void	DoParent(const int pipe_fd[2]);
+		void	ParseHeader(const std::string& line);
+		void	ParseContentType(const std::string& content);
 
 		std::string		data_;
 		std::string		content_type_;

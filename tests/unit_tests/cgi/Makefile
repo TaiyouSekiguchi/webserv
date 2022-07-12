@@ -3,7 +3,8 @@ vpath	%.hpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SR
 vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config:$(SRCSDIR)/cgi
 
 SRCS	=	CGI.cpp \
-			CGI_test.cpp
+			CGI_test.cpp \
+			utils.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
