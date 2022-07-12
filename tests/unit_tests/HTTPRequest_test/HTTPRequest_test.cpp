@@ -186,7 +186,7 @@ TEST_F(RequestTest, RequestTest)
 	const char	*msg1 = "POST / HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: debian\r\nContent-Type: text/html\r\nContent-Length: 10\r\n\r\naaaaaaaaaa";
 	csocket_->SendRequest(msg1);
 
-	req.ParseRequest(*ssocket_);
+	req.ParseRequest(*ssocket_, ssocket_->GetServerConf());
 	EXPECT_EQ(HTTPRequest::POST, req.GetMethod());
 	EXPECT_EQ("/", req.GetTarget());
 	EXPECT_EQ("HTTP/1.1", req.GetVersion());

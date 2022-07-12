@@ -1,6 +1,7 @@
 #ifndef HTTPREQUEST_HPP
 # define HTTPREQUEST_HPP
 
+#include <unistd.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,7 +10,6 @@
 #include <cstdlib>
 #include <cctype>
 #include <cerrno>
-#include <unistd.h>
 #include "ServerSocket.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
@@ -29,10 +29,10 @@ class HTTPRequest
 		HTTPRequest();
 		~HTTPRequest();
 
-		void	ParseRequest(ServerSocket const & ssocket);
+		void	ParseRequest(const ServerSocket& ssocket, const ServerDirective& server_conf);
 		void	RequestDisplay(void) const;
 
-		//Getter
+		// Getter
 		e_method						GetMethod(void) const;
 		std::string						GetTarget(void) const;
 		std::string						GetVersion(void) const;
@@ -42,7 +42,6 @@ class HTTPRequest
 		std::vector<std::string>		GetAcceptEncoding(void) const;
 		bool							GetConnection(void) const;
 		std::string						GetContentType(void) const;
-
 		std::string						GetBody(void) const;
 
 	//private:
@@ -55,15 +54,18 @@ class HTTPRequest
 			BODY,
 		};
 
-		//GetLine
-		std::string		save_;
+		// server_conf
+		size_t							client_max_body_size_;
 
-		//request line
+		// GetLine
+		std::string						save_;
+
+		// request line
 		e_method						method_;
 		std::string						target_;
 		std::string						version_;
 
-		//header
+		// header
 		std::pair<std::string, int>		host_;
 		size_t							content_length_;
 		std::string						user_agent_;
@@ -71,19 +73,19 @@ class HTTPRequest
 		bool							connection_;
 		std::string						content_type_;
 
-		//body
+		// body
 		std::string		body_;
 
-		//func
-		std::string		GetLine(ServerSocket const & ssocket);
+		// func
+		void			SetServerConf(const ServerDirective& server_conf);
+		std::string		GetLine(const ServerSocket& ssocket);
 		void			ParseRequestLine(ServerSocket const & ssocket);
-		void			ParseMethod(std::string const & method);
-		void			ParseTarget(std::string const & target);
-		void			ParseVersion(std::string const & version);
+		void			ParseMethod(const std::string& method);
+		void			ParseTarget(const std::string& target);
+		void			ParseVersion(const std::string& version);
 
-		void			ParseHeaders(ServerSocket const & ssocket);
+		void			ParseHeaders(const ServerSocket& ssocket);
 		void			ParseHeader(const std::string& field, const std::string& content);
-		//void			ParseHeader(std::vector<std::string> const & list);
 		void			ParseHost(const std::string& content);
 		void			ParseContentLength(const std::string& content);
 		void			ParseUserAgent(const std::string& content);
@@ -91,9 +93,7 @@ class HTTPRequest
 		void			ParseConnection(const std::string& content);
 		void			ParseContentType(const std::string& content);
 
-
-
-		void			ParseBody(ServerSocket const & ssocket);
+		void			ParseBody(const ServerSocket& ssocket);
 };
 
 #endif
