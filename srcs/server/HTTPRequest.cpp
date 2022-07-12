@@ -65,7 +65,7 @@ void	HTTPRequest::ParseMethod(std::string const & method)
 			method_ = static_cast<HTTPRequest::e_method>(i);
 	}
 	if (method_ == NONE)
-		throw HTTPError(HTTPError::BAD_REQUEST);
+		throw HTTPError(HTTPError::METHOD_NOT_ALLOWED);
 }
 
 void	HTTPRequest::ParseTarget(const std::string& target)
@@ -81,7 +81,7 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	if (version == "HTTP/1.1")
 		version_ = version;
 	else
-		throw HTTPError(HTTPError::BAD_REQUEST);
+		throw HTTPError(HTTPError::HTTP_VERSION_NOT_SUPPORTED);
 }
 
 void	HTTPRequest::ParseRequestLine(const ServerSocket& ssocket)
