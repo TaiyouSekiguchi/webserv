@@ -1,7 +1,7 @@
 #include <sstream>
 #include "HTTPResponse.hpp"
 
-HTTPResponse::HTTPResponse(int status_code, HTTPRequest req)
+HTTPResponse::HTTPResponse(int status_code, HTTPRequest req, HTTPMethod method, ServerDirective server_conf)
 {
 	res_msg_ = CreateResponse(status_code, req);
 }
