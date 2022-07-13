@@ -2,12 +2,22 @@
 
 CGI::CGI(const std::string& file_path)
 {
+	SetEnv();
 	ExecuteCGI(file_path);
 	ParseCGI();
 }
 
 CGI::~CGI(void)
 {
+	free(env_[0]);
+	free(env_);
+}
+
+void	CGI::SetEnv(void)
+{
+	env_ = (char **)malloc(sizeof(char *) * 2);
+	env_[0] = strdup("NAME=Taiyou");
+	env_[1] = NULL;
 }
 
 static void	pipe_set(int src, int dst, int not_use, bool child)
@@ -27,15 +37,13 @@ static void	pipe_set(int src, int dst, int not_use, bool child)
 void	CGI::DoChild(const std::string& file_path, const int pipe_fd[2])
 {
 	char*	argv[2];
-	char**	env;
 
 	pipe_set(pipe_fd[1], 1, pipe_fd[0], true);
 
 	argv[0] = const_cast<char *>(file_path.c_str());
 	argv[1] = NULL;
-	env = NULL;
 
-	if (execve(argv[0], argv, env) < 0)
+	if (execve(argv[0], argv, env_) < 0)
 		std::exit(EXIT_FAILURE);
 }
 
@@ -55,7 +63,7 @@ void	CGI::DoParent(const int pipe_fd[2])
 			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 		if (read_byte == 0)
 			break;
-		buf[buf_size] = '\0';
+		buf[read_byte] = '\0';
 		data_ += std::string(buf);
 	}
 
