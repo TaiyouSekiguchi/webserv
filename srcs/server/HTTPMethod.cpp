@@ -118,5 +118,3 @@ void	HTTPMethod::MethodDisplay() const
 	std::cout << "location: " << location_ << std::endl;
 	std::cout << "[body]\n" << body_ << std::endl;
 }
-
-// content-type はcgi だけでいいや。
