@@ -1,16 +1,21 @@
 #include <sstream>
+#include <fstream>
 #include "HTTPResponse.hpp"
 
-HTTPResponse::HTTPResponse(int status_code, HTTPRequest req, HTTPMethod method, ServerDirective server_conf)
+const size_t HTTPResponse::BUF_SIZE = 10000;
+
+// HTTPResponse::HTTPResponse(int status_code, HTTPRequest req, HTTPMethod method, const ServerDirective server_conf)
+HTTPResponse::HTTPResponse(const int &status_code, const HTTPRequest &req, const ServerDirective &server_conf)
 {
-	res_msg_ = CreateResponse(status_code, req);
+	// AppendHeader(req, method);
+	AppendHeader(req);
+	res_msg_ = CreateResponse(status_code, server_conf);
+	std::cout << res_msg_ << std::endl;
 }
 
 HTTPResponse::~HTTPResponse()
 {
 }
-
-std::string HTTPResponse::GetResMsg() const { return res_msg_; };
 
 void HTTPResponse::SendResponse(ServerSocket *ssocket)
 {
@@ -19,24 +24,50 @@ void HTTPResponse::SendResponse(ServerSocket *ssocket)
 		throw std::runtime_error("send error");
 }
 
+// void HTTPResponse::AppendHeader(const HTTPRequest &req, const HTTPMethod &method)
+void HTTPResponse::AppendHeader(const HTTPRequest &req)
+{
+	if (req.GetConnection())
+	{
+		headers_.insert(std::make_pair("Connection", "keep-alive"));
+	}
+	else
+	{
+		headers_.insert(std::make_pair("Connection", "close"));
+	}
+	headers_.insert(std::make_pair("Server", "Webserv"));
+	headers_.insert(std::make_pair("Date", GetDate()));
+	// headers_.insert(std::make_pair("Content-Length: ", content_length);
+	// headers_.insert(std::make_pair("Content-type", method.GetContentType()));
+	// headers_.insert(std::make_pair("Location", method.Getlocation()));
+}
 
-std::string HTTPResponse::CreateResponse(int status_code, HTTPRequest req)
+std::string HTTPResponse::CreateResponse(const int &status_code, const ServerDirective &server_conf)
 {
 	std::stringstream ss;
 
-	ss << req.GetVersion() << " " << status_code << FindMsg(status_code) << "\r\n";
-	ss << AppendHeader(req);
-	// ss << method.Getbody()
+	ss << "HTTP/1.1 " << status_code << " " << STATUS_MSG_.at(status_code) << "\r\n";
+	ss << HeaderFeild();
+	if (IsErrorStatus(status_code))
+	{
+		ss << GenerateHTML(status_code, server_conf);
+	}
+	else
+	{
+		// ss << method.Getbody()
+	}
 	return ss.str();
 }
 
-std::string HTTPResponse::AppendHeader(HTTPRequest req)
+std::string HTTPResponse::HeaderFeild() const
 {
 	std::stringstream ss;
+	std::map<std::string, std::string>::const_iterator ite = headers_.begin();
 
-	ss << "date: " << GetDate() << "\r\n";
-	ss << "content-type: " << req.GetContentType() << "\r\n";
-	ss << "server: webserv\r\n";
+	for (; ite != headers_.end(); ite++)
+	{
+		ss << ite->first << ": " << ite->second << "\r\n";
+	}
 	ss << "\r\n";
 	return ss.str();
 }
@@ -52,69 +83,99 @@ std::string HTTPResponse::GetDate() const
     return str;
 }
 
-std::string HTTPResponse::FindMsg(int status_code) const
+std::string HTTPResponse::GenerateHTML(const int &status_code, const ServerDirective &server_conf) const
 {
-	std::map<int, std::string> status_msg;
-	status_msg[100] = "Continue";
-	status_msg[101] = "Switching Protocols";
-	status_msg[102] = "Processing";
-	status_msg[103] = "Early Hints";
-	status_msg[200] = "OK";
-	status_msg[201] = "Created";
-	status_msg[202] = "Accepted";
-	status_msg[203] = "Non-Authoritative Information";
-	status_msg[204] = "No Content";
-	status_msg[205] = "Reset Content";
-	status_msg[206] = "Partial Content";
-	status_msg[207] = "Multi-Status";
-	status_msg[208] = "Already Reported";
-	status_msg[226] = "IM Used";
-	status_msg[300] = "Multiple Choice";
-	status_msg[301] = "Moved Permanently";
-	status_msg[302] = "Found";
-	status_msg[303] = "See Other";
-	status_msg[304] = "Not Modified";
-	status_msg[307] = "Temporary Redirect";
-	status_msg[308] = "Permanent Redirect";
-	status_msg[400] = "Bad Request";
-	status_msg[401] = "Unauthorized";
-	status_msg[402] = "Payment Required";
-	status_msg[403] = "Forbidden";
-	status_msg[404] = "Not Found";
-	status_msg[405] = "Method Not Allowed";
-	status_msg[406] = "Not Acceptable";
-	status_msg[407] = "Proxy Authentication Required";
-	status_msg[408] = "Request Timeout";
-	status_msg[409] = "Conflict";
-	status_msg[410] = "Gone";
-	status_msg[411] = "Length Required";
-	status_msg[412] = "Precondition Failed";
-	status_msg[413] = "Payload Too Large";
-	status_msg[414] = "URI Too Long";
-	status_msg[415] = "Unsupported Media Type";
-	status_msg[416] = "Range Not Satisfiable";
-	status_msg[417] = "Expectation Failed";
-	status_msg[418] = "I'm a teapot";
-	status_msg[421] = "Misdirected Request";
-	status_msg[422] = "Unprocessable Entity";
-	status_msg[423] = "Locked";
-	status_msg[424] = "Failed Dependency";
-	status_msg[425] = "Too Early";
-	status_msg[426] = "Upgrade Required";
-	status_msg[428] = "Precondition Required";
-	status_msg[429] = "Too Many Requests";
-	status_msg[431] = "Request Header Fields Too Large";
-	status_msg[451] = "Unavailable For Legal Reasons";
-	status_msg[500] = "Internal Server Error";
-	status_msg[501] = "Not Implemented";
-	status_msg[502] = "Bad Gateway";
-	status_msg[503] = "Service Unavailable";
-	status_msg[504] = "Gateway Timeout";
-	status_msg[505] = "HTTP Version Not Supported";
-	status_msg[506] = "Variant Also Negotiates";
-	status_msg[507] = "Insufficient Storage";
-	status_msg[508] = "Loop Detected";
-	status_msg[510] = "Not Extended";
-	status_msg[511] = "Network Authentication Required";
-	return status_msg[status_code];
+	std::stringstream ss;
+	std::ifstream ifs;
+	std::string error_path = server_conf.GetErrorPages().at(status_code);
+
+	if (error_path.at(0) == '/')
+	{
+		error_path = error_path.substr(1, error_path.size());
+	}
+	ifs.open(error_path.c_str());
+	if (!ifs)
+	{
+		return "";
+	}
+	char buffer[BUF_SIZE];
+	ssize_t read_byte;
+	while (!ifs.eof())
+	{
+		ifs.read(buffer, BUF_SIZE - 1);
+		read_byte = ifs.gcount();
+		buffer[read_byte] = '\0';
+		ss << buffer;
+	}
+	ifs.close();
+	return ss.str();
 }
+
+bool HTTPResponse::IsErrorStatus(const int &status_code) const
+{
+	return status_code >= 400;
+}
+
+const std::map<int, std::string> HTTPResponse::STATUS_MSG_ = {
+	std::make_pair(100, "Continue"),
+	std::make_pair(101, "Switching Protocols"),
+	std::make_pair(102, "Processing"),
+	std::make_pair(103, "Early Hints"),
+	std::make_pair(200, "OK"),
+	std::make_pair(201, "Created"),
+	std::make_pair(202, "Accepted"),
+	std::make_pair(203, "Non-Authoritative Information"),
+	std::make_pair(204, "No Content"),
+	std::make_pair(205, "Reset Content"),
+	std::make_pair(206, "Partial Content"),
+	std::make_pair(207, "Multi-Status"),
+	std::make_pair(208, "Already Reported"),
+	std::make_pair(226, "IM Used"),
+	std::make_pair(300, "Multiple Choice"),
+	std::make_pair(301, "Moved Permanently"),
+	std::make_pair(302, "Found"),
+	std::make_pair(303, "See Other"),
+	std::make_pair(304, "Not Modified"),
+	std::make_pair(307, "Temporary Redirect"),
+	std::make_pair(308, "Permanent Redirect"),
+	std::make_pair(400, "Bad Request"),
+	std::make_pair(401, "Unauthorized"),
+	std::make_pair(402, "Payment Required"),
+	std::make_pair(403, "Forbidden"),
+	std::make_pair(404, "Not Found"),
+	std::make_pair(405, "Method Not Allowed"),
+	std::make_pair(406, "Not Acceptable"),
+	std::make_pair(407, "Proxy Authentication Required"),
+	std::make_pair(408, "Request Timeout"),
+	std::make_pair(409, "Conflict"),
+	std::make_pair(410, "Gone"),
+	std::make_pair(411, "Length Required"),
+	std::make_pair(412, "Precondition Failed"),
+	std::make_pair(413, "Payload Too Large"),
+	std::make_pair(414, "URI Too Long"),
+	std::make_pair(415, "Unsupported Media Type"),
+	std::make_pair(416, "Range Not Satisfiable"),
+	std::make_pair(417, "Expectation Failed"),
+	std::make_pair(418, "I'm a teapot"),
+	std::make_pair(421, "Misdirected Request"),
+	std::make_pair(422, "Unprocessable Entity"),
+	std::make_pair(423, "Locked"),
+	std::make_pair(424, "Failed Dependency"),
+	std::make_pair(425, "Too Early"),
+	std::make_pair(426, "Upgrade Required"),
+	std::make_pair(428, "Precondition Required"),
+	std::make_pair(429, "Too Many Requests"),
+	std::make_pair(431, "Request Header Fields Too Large"),
+	std::make_pair(451, "Unavailable For Legal Reasons"),
+	std::make_pair(500, "Internal Server Error"),
+	std::make_pair(501, "Not Implemented"),
+	std::make_pair(502, "Bad Gateway"),
+	std::make_pair(503, "Service Unavailable"),
+	std::make_pair(504, "Gateway Timeout"),
+	std::make_pair(505, "HTTP Version Not Supported"),
+	std::make_pair(506, "Variant Also Negotiates"),
+	std::make_pair(507, "Insufficient Storage"),
+	std::make_pair(508, "Loop Detected"),
+	std::make_pair(510, "Not Extended"),
+	std::make_pair(511, "Network Authentication Required")
+};
