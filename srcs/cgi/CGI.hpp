@@ -6,6 +6,7 @@
 # include <sys/wait.h> // wait
 # include <iostream>
 # include <string>
+# include <cstdlib> // exit
 # include <map>
 # include <utility>
 # include "HTTPError.hpp"

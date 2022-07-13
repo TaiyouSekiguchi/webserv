@@ -10,13 +10,18 @@ CGI::~CGI(void)
 {
 }
 
-static void	pipe_set(int src, int dst, int not_use)
+static void	pipe_set(int src, int dst, int not_use, bool child)
 {
 	if (close(not_use) < 0
 		|| close(dst) < 0
 		|| dup2(src, dst) < 0
 		|| close(src) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	{
+		if (child)
+			std::exit(EXIT_FAILURE);
+		else
+			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	}
 }
 
 void	CGI::DoChild(const std::string& file_path, const int pipe_fd[2])
@@ -24,14 +29,14 @@ void	CGI::DoChild(const std::string& file_path, const int pipe_fd[2])
 	char*	argv[2];
 	char**	env;
 
-	pipe_set(pipe_fd[1], 1, pipe_fd[0]);
+	pipe_set(pipe_fd[1], 1, pipe_fd[0], true);
 
 	argv[0] = const_cast<char *>(file_path.c_str());
 	argv[1] = NULL;
 	env = NULL;
 
 	if (execve(argv[0], argv, env) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		std::exit(EXIT_FAILURE);
 }
 
 void	CGI::DoParent(const int pipe_fd[2])
@@ -41,7 +46,7 @@ void	CGI::DoParent(const int pipe_fd[2])
 	int				read_byte;
 	int				status;
 
-	pipe_set(pipe_fd[0], 0, pipe_fd[1]);
+	pipe_set(pipe_fd[0], 0, pipe_fd[1], false);
 
 	while (1)
 	{
@@ -54,7 +59,7 @@ void	CGI::DoParent(const int pipe_fd[2])
 		data_ += std::string(buf);
 	}
 
-	if (wait(&status) < 0)
+	if (wait(&status) < 0 || WEXITSTATUS(status) == EXIT_FAILURE)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 }
 
@@ -63,10 +68,7 @@ void	CGI::ExecuteCGI(const std::string& file_path)
 	int		pipe_fd[2];
 	int		ret;
 
-	if (pipe(pipe_fd) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
-
-	if ((ret = fork()) < 0)
+	if (pipe(pipe_fd) < 0 || (ret = fork()) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	if (ret == 0)
