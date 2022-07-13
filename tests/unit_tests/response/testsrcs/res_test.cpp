@@ -15,5 +15,5 @@ TEST(Response, CreateResponse)
 	Config config("../../../conf/default.conf");
 	std::vector<ServerDirective> servers = config.GetServers();
 	HTTPRequest req(HTTPRequest::GET);
-	HTTPResponse res(404, req, servers.at(0));
+	HTTPResponse res(404, servers.at(0));
 }

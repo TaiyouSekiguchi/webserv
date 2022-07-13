@@ -10,24 +10,26 @@ class HTTPResponse
 	public:
 		// HTTPResponse(const int &status_code, const &HTTPRequest req, const HTTPMethod &method,
 			// const ServerDirective &server_conf);
-		HTTPResponse(const int &status_code, const HTTPRequest &req, const ServerDirective &server_conf);
+		HTTPResponse(const int &status_code, const ServerDirective &server_conf);
 		~HTTPResponse();
 
 		void SendResponse(ServerSocket *ssocket);
 
 	private:
-		static const size_t BUF_SIZE;
-		static const std::map<int, std::string> STATUS_MSG_;
+		static const std::pair<int, std::string> kPairs_[];
+		static const std::map<int, std::string> kStatusMsg_;
 		std::string res_msg_;
 		std::map<std::string, std::string> headers_;
 
+		// void SetkStatusMsg() const;
 		// void AppendHeader(const HTTPRequest &req, const HTTPMethod &method);
-		void AppendHeader(const HTTPRequest &req);
+		void AppendHeader();
 		std::string CreateResponse(const int &status_code, const ServerDirective &server_conf);
 		std::string HeaderFeild() const;
 		std::string GetDate() const;
 		std::string GenerateHTML(const int &status_code, const ServerDirective &server_conf) const;
 		bool IsErrorStatus(const int &status_code) const;
+		std::string DefaultErrorPage(const int &status_code) const;
 };
 
 #endif

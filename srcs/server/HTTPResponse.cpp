@@ -2,13 +2,11 @@
 #include <fstream>
 #include "HTTPResponse.hpp"
 
-const size_t HTTPResponse::BUF_SIZE = 10000;
-
 // HTTPResponse::HTTPResponse(int status_code, HTTPRequest req, HTTPMethod method, const ServerDirective server_conf)
-HTTPResponse::HTTPResponse(const int &status_code, const HTTPRequest &req, const ServerDirective &server_conf)
+HTTPResponse::HTTPResponse(const int &status_code, const ServerDirective &server_conf)
 {
 	// AppendHeader(req, method);
-	AppendHeader(req);
+	AppendHeader();
 	res_msg_ = CreateResponse(status_code, server_conf);
 	std::cout << res_msg_ << std::endl;
 }
@@ -19,34 +17,25 @@ HTTPResponse::~HTTPResponse()
 
 void HTTPResponse::SendResponse(ServerSocket *ssocket)
 {
-	ssize_t send_size = send(ssocket->GetFd(), res_msg_.c_str(), res_msg_.size(), 0);
-	if (send_size == -1)
-		throw std::runtime_error("send error");
+	ssocket->SendData(res_msg_);
 }
 
 // void HTTPResponse::AppendHeader(const HTTPRequest &req, const HTTPMethod &method)
-void HTTPResponse::AppendHeader(const HTTPRequest &req)
+void HTTPResponse::AppendHeader()
 {
-	if (req.GetConnection())
-	{
-		headers_.insert(std::make_pair("Connection", "keep-alive"));
-	}
-	else
-	{
-		headers_.insert(std::make_pair("Connection", "close"));
-	}
-	headers_.insert(std::make_pair("Server", "Webserv"));
-	headers_.insert(std::make_pair("Date", GetDate()));
-	// headers_.insert(std::make_pair("Content-Length: ", content_length);
-	// headers_.insert(std::make_pair("Content-type", method.GetContentType()));
-	// headers_.insert(std::make_pair("Location", method.Getlocation()));
+	headers_["Server"] = "Webserv";
+	headers_["Date"] = GetDate();
+	// headers_["Connection"] = req.GetConnection();
+	// headers_["Content-Length"] = content_length;
+	// headers_["Content-type"] = method.GetContentType();
+	// headers_["Location"] = method.Getlocation();
 }
 
 std::string HTTPResponse::CreateResponse(const int &status_code, const ServerDirective &server_conf)
 {
 	std::stringstream ss;
 
-	ss << "HTTP/1.1 " << status_code << " " << STATUS_MSG_.at(status_code) << "\r\n";
+	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_.at(status_code) << "\r\n";
 	ss << HeaderFeild();
 	if (IsErrorStatus(status_code))
 	{
@@ -56,7 +45,7 @@ std::string HTTPResponse::CreateResponse(const int &status_code, const ServerDir
 	{
 		// ss << method.Getbody()
 	}
-	return ss.str();
+	return (ss.str());
 }
 
 std::string HTTPResponse::HeaderFeild() const
@@ -69,7 +58,7 @@ std::string HTTPResponse::HeaderFeild() const
 		ss << ite->first << ": " << ite->second << "\r\n";
 	}
 	ss << "\r\n";
-	return ss.str();
+	return (ss.str());
 }
 
 std::string HTTPResponse::GetDate() const
@@ -80,43 +69,38 @@ std::string HTTPResponse::GetDate() const
 
 	asctime_r(localtime_r(&now, &current_time), str);
 	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
-    return str;
+    return (str);
 }
 
 std::string HTTPResponse::GenerateHTML(const int &status_code, const ServerDirective &server_conf) const
 {
-	std::stringstream ss;
-	std::ifstream ifs;
-	std::string error_path = server_conf.GetErrorPages().at(status_code);
+	std::string error_path = "html" + server_conf.GetErrorPages().at(status_code);
 
-	if (error_path.at(0) == '/')
+	std::ifstream ifs(error_path);
+	if (ifs.fail())
 	{
-		error_path = error_path.substr(1, error_path.size());
+		std::string str = DefaultErrorPage(status_code);
+		return (str);
 	}
-	ifs.open(error_path.c_str());
-	if (!ifs)
-	{
-		return "";
-	}
-	char buffer[BUF_SIZE];
-	ssize_t read_byte;
-	while (!ifs.eof())
-	{
-		ifs.read(buffer, BUF_SIZE - 1);
-		read_byte = ifs.gcount();
-		buffer[read_byte] = '\0';
-		ss << buffer;
-	}
-	ifs.close();
-	return ss.str();
+	std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	return (str);
 }
 
 bool HTTPResponse::IsErrorStatus(const int &status_code) const
 {
-	return status_code >= 400;
+	return (status_code >= 400);
 }
 
-const std::map<int, std::string> HTTPResponse::STATUS_MSG_ = {
+std::string HTTPResponse::DefaultErrorPage(const int &status_code) const
+{
+	std::stringstream ss;
+
+	ss << "Default Error Page\r\n";
+	ss << status_code << " " << kStatusMsg_.at(status_code) << "\r\n";
+	return (ss.str());
+}
+
+const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 	std::make_pair(100, "Continue"),
 	std::make_pair(101, "Switching Protocols"),
 	std::make_pair(102, "Processing"),
@@ -179,3 +163,5 @@ const std::map<int, std::string> HTTPResponse::STATUS_MSG_ = {
 	std::make_pair(510, "Not Extended"),
 	std::make_pair(511, "Network Authentication Required")
 };
+
+const std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[61]);
