@@ -24,8 +24,9 @@ class HTTPMethod
 		bool				GetFileWithIndex(const std::string& access_path, const std::vector<std::string>& indexes);
 		bool				GetAutoIndexFile(const bool autoindex);
 
-		int	ExecGETMethod(const LocationDirective& location, const std::string& access_path, const struct stat& st);
+		int	ExecGETMethod(const std::string& access_path, const struct stat& st, const LocationDirective& location);
 		int	ExecDELETEMethod(const std::string& access_path, const struct stat& st);
+		int	ExecPOSTMethod(const std::string& access_path, const struct stat& st);
 
 		std::string		content_type_;
 		std::string		location_;
