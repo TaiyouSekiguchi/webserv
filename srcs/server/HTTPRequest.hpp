@@ -18,14 +18,6 @@
 class HTTPRequest
 {
 	public:
-		enum	e_method
-		{
-			GET = 0,
-			POST,
-			DELETE,
-			NONE,
-		};
-
 		HTTPRequest();
 		~HTTPRequest();
 
@@ -33,7 +25,7 @@ class HTTPRequest
 		void	RequestDisplay(void) const;
 
 		// Getter
-		e_method						GetMethod(void) const;
+		std::string						GetMethod(void) const;
 		std::string						GetTarget(void) const;
 		std::string						GetVersion(void) const;
 		std::pair<std::string, int>		GetHost(void) const;
@@ -61,7 +53,7 @@ class HTTPRequest
 		std::string						save_;
 
 		// request line
-		e_method						method_;
+		std::string						method_;
 		std::string						target_;
 		std::string						version_;
 
