@@ -14,7 +14,8 @@ class HTTPError : public std::exception
 			METHOD_NOT_ALLOWED = 405,
 			CONFLICT = 409,
 			PAYLOAD_TOO_LARGE = 413,
-			HTTP_VERSION_NOT_SUPPORTED = 505,
+			INTERNAL_SERVER_ERROR = 500,
+			HTTP_VERSION_NOT_SUPPORTED = 505
 		};
 
 		explicit HTTPError(const int status_code) : status_code_(status_code) {}

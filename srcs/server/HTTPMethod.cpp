@@ -112,9 +112,13 @@ int		HTTPMethod::ExecDELETEMethod(const std::string& access_path, const struct s
 	if (S_ISDIR(st.st_mode) && *(req_->GetTarget().rbegin()) != '/')
 		throw HTTPError(HTTPError::CONFLICT);
 
-	if (unlink(access_path.c_str()) == -1)
-		throw HTTPError(HTTPError::FORBIDDEN);
-
+	if (std::remove(access_path.c_str()) == -1)
+	{
+		if (errno == EACCES || errno == ENOTEMPTY)
+			throw HTTPError(HTTPError::FORBIDDEN);
+		else
+			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	}
 	return (204);
 }
 
