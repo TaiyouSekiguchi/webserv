@@ -60,6 +60,12 @@ TEST_F(DELETETest, NotAllowedTest)
 	EXPECT_EQ(status_code_, HTTPError::METHOD_NOT_ALLOWED);
 }
 
+TEST_F(DELETETest, NotFoundTest)
+{
+	RunCommunication("DELETE /sub1/no.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(status_code_, HTTPError::NOT_FOUND);
+}
+
 TEST_F(DELETETest, NotSlashEndDirTest)
 {
 	RunCommunication("DELETE /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
