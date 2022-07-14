@@ -25,7 +25,7 @@ class HTTPMethod
 		bool				GetAutoIndexFile(const bool autoindex);
 
 		int	ExecGETMethod(const LocationDirective& location, const std::string& access_path, const struct stat& st);
-		int	ExecDELETEMethod(const LocationDirective& location, const std::string& access_path, const struct stat& st);
+		int	ExecDELETEMethod(const std::string& access_path, const struct stat& st);
 
 		std::string		content_type_;
 		std::string		location_;

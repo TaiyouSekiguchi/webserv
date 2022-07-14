@@ -107,8 +107,7 @@ int		HTTPMethod::ExecGETMethod
 		throw HTTPError(HTTPError::FORBIDDEN);
 }
 
-int		HTTPMethod::ExecDELETEMethod
-	(const LocationDirective& location, const std::string& access_path, const struct stat& st)
+int		HTTPMethod::ExecDELETEMethod(const std::string& access_path, const struct stat& st)
 {
 	if (S_ISDIR(st.st_mode) && *(req_->GetTarget().rbegin()) != '/')
 		throw HTTPError(HTTPError::CONFLICT);
@@ -116,7 +115,7 @@ int		HTTPMethod::ExecDELETEMethod
 	if (unlink(access_path.c_str()) == -1)
 		throw HTTPError(HTTPError::FORBIDDEN);
 
-	return (200);
+	return (204);
 }
 
 int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf)
@@ -144,9 +143,10 @@ int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& s
 	if (method == "GET")
 		return (ExecGETMethod(location, access_path, st));
 	else if (method == "DELETE")
-		return (ExecDELETEMethod(location, access_path, st));
+		return (ExecDELETEMethod(access_path, st));
 	// else if (method == "POST")
 	// 	return (ExecDELETEMethod(location, access_path, st));
+	return (200);
 }
 
 void	HTTPMethod::MethodDisplay() const

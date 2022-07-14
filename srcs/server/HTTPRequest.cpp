@@ -59,6 +59,7 @@ void	HTTPRequest::ParseMethod(std::string const & method)
 	const char *found = std::find_if(str, str + method.size(), Utils::MyisLower);
 	if (found != str + method.size())
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	method_ = method;
 }
 
 void	HTTPRequest::ParseTarget(const std::string& target)
