@@ -28,8 +28,9 @@ class HTTPResponse
 		std::string HeaderFeild() const;
 		std::string GetDate() const;
 		std::string GenerateHTML(const int &status_code, const ServerDirective &server_conf) const;
-		bool IsErrorStatus(const int &status_code) const;
-		std::string DefaultErrorPage(const int &status_code) const;
+		std::string GenerateDefaultHTML(const int &status_code) const;
+		bool IsNormalStatus(const int &status_code) const;
+		bool IsRedirectStatus(const int &status_code) const;
 };
 
 #endif

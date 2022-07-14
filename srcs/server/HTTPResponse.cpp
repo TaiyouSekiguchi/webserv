@@ -31,13 +31,24 @@ void HTTPResponse::AppendHeader()
 	// headers_["Location"] = method.Getlocation();
 }
 
+std::string HTTPResponse::GetDate() const
+{
+	time_t now = time(NULL);
+	struct tm current_time;
+	char str[50];
+
+	asctime_r(localtime_r(&now, &current_time), str);
+	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
+    return (str);
+}
+
 std::string HTTPResponse::CreateResponse(const int &status_code, const ServerDirective &server_conf)
 {
 	std::stringstream ss;
 
 	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_.at(status_code) << "\r\n";
 	ss << HeaderFeild();
-	if (IsErrorStatus(status_code))
+	if (!IsNormalStatus(status_code))
 	{
 		ss << GenerateHTML(status_code, server_conf);
 	}
@@ -61,42 +72,49 @@ std::string HTTPResponse::HeaderFeild() const
 	return (ss.str());
 }
 
-std::string HTTPResponse::GetDate() const
-{
-	time_t now = time(NULL);
-	struct tm current_time;
-	char str[50];
-
-	asctime_r(localtime_r(&now, &current_time), str);
-	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
-    return (str);
-}
-
 std::string HTTPResponse::GenerateHTML(const int &status_code, const ServerDirective &server_conf) const
 {
-	std::string error_path = "html" + server_conf.GetErrorPages().at(status_code);
+	std::string error_path;
+	std::map<int, std::string>::const_iterator ite = server_conf.GetErrorPages().find(status_code);
+
+	if (ite != server_conf.GetErrorPages().end())
+	{
+		error_path = "html" + ite->second;
+	}
 
 	std::ifstream ifs(error_path);
-	if (ifs.fail())
+
+	if (IsRedirectStatus(status_code) || ifs.fail())
 	{
-		std::string str = DefaultErrorPage(status_code);
+		std::string str = GenerateDefaultHTML(status_code);
 		return (str);
 	}
+
 	std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	return (str);
 }
 
-bool HTTPResponse::IsErrorStatus(const int &status_code) const
+bool HTTPResponse::IsNormalStatus(const int &status_code) const
 {
-	return (status_code >= 400);
+	return (status_code < 300);
 }
 
-std::string HTTPResponse::DefaultErrorPage(const int &status_code) const
+bool HTTPResponse::IsRedirectStatus(const int &status_code) const
+{
+	return (status_code >= 300 && status_code < 400);
+}
+
+std::string HTTPResponse::GenerateDefaultHTML(const int &status_code) const
 {
 	std::stringstream ss;
 
-	ss << "Default Error Page\r\n";
-	ss << status_code << " " << kStatusMsg_.at(status_code) << "\r\n";
+	ss << "<html>\r\n";
+	ss << "<head><title>" << status_code << " " << kStatusMsg_.at(status_code) <<"</title></head>\r\n";
+	ss << "<body>\r\n";
+	ss << "<center><h1>" << status_code << " " << kStatusMsg_.at(status_code) << "</h1></center>\r\n";
+	ss << "<hr><center>" << headers_.at("Server") << "</center>\r\n";
+	ss << "</body>\r\n";
+	ss << "</html>\r\n";
 	return (ss.str());
 }
 
