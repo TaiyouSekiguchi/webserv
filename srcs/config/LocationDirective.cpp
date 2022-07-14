@@ -66,8 +66,6 @@ void	LocationDirective::SetDefaultValues()
 	return_ = std::make_pair(-1, "");
 	autoindex_ = false;
 	allowed_methods_.push_back("GET");
-	allowed_methods_.push_back("POST");
-	allowed_methods_.push_back("DELETE");
 }
 
 void	LocationDirective::ParseRoot(Tokens::citr begin, Tokens::citr end)
@@ -137,8 +135,6 @@ void	LocationDirective::ParseAutoIndex(Tokens::citr begin, Tokens::citr end)
 
 void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end)
 {
-	allowed_methods_.clear();
-
 	Tokens::citr								itr;
 	std::vector<std::string>::const_iterator	found;
 
