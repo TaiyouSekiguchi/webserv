@@ -58,3 +58,8 @@ std::string		Utils::MyTrim
 
 	return (result);
 }
+
+bool	Utils::MyisLower(const char ch)
+{
+    return std::islower(static_cast<unsigned char>(ch));
+}

@@ -1,8 +1,7 @@
 #include "HTTPRequest.hpp"
 
 HTTPRequest::HTTPRequest()
-	: method_(NONE)
-	, content_length_(0)
+	: content_length_(0)
 	, connection_(true)
 {
 	host_ = std::make_pair("", 80);
@@ -12,7 +11,7 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
-HTTPRequest::e_method			HTTPRequest::GetMethod(void) const { return (method_); }
+std::string						HTTPRequest::GetMethod(void) const { return (method_); }
 std::string						HTTPRequest::GetTarget(void) const { return (target_); }
 std::string						HTTPRequest::GetVersion(void) const { return (version_); }
 std::pair<std::string, int>		HTTPRequest::GetHost(void) const { return (host_); }
@@ -56,16 +55,10 @@ std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 
 void	HTTPRequest::ParseMethod(std::string const & method)
 {
-	const std::string	methods[3] = { "GET", "POST", "DELETE" };
-	const int			methods_size = 3;
-
-	for (int i = 0; i < methods_size; i++)
-	{
-		if (method == methods[i])
-			method_ = static_cast<HTTPRequest::e_method>(i);
-	}
-	if (method_ == NONE)
-		throw HTTPError(HTTPError::METHOD_NOT_ALLOWED);
+	const char *str = method.c_str();
+	const char *found = std::find_if(str, str + method.size(), Utils::MyisLower);
+	if (found != str + method.size())
+		throw HTTPError(HTTPError::BAD_REQUEST);
 }
 
 void	HTTPRequest::ParseTarget(const std::string& target)
@@ -247,8 +240,8 @@ void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
 	size_t			default_recv_byte = 1024;
 	size_t			recv_byte;
 
-	if (method_ != POST)
-		return;
+	// if (method_ != POST)
+	// 	return;
 
 	remaining_byte = content_length_;
 
