@@ -84,14 +84,9 @@ bool	HTTPMethod::GetFileWithIndex
 // 	return (true);
 // }
 
-int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf)
+int		HTTPMethod::ExecGETMethod
+	(const LocationDirective& location, const std::string& access_path, const struct stat& st)
 {
-	const LocationDirective&	location = SelectLocation(req.GetTarget(), server_conf.GetLocations());
-	const std::string			access_path = location.GetRoot() + req.GetTarget();
-	struct stat					st;
-
-	if (stat(access_path.c_str(), &st) == -1)
-		throw HTTPError(HTTPError::NOT_FOUND);
 	if (S_ISREG(st.st_mode))
 	{
 		if (GetFile(access_path))
@@ -100,7 +95,7 @@ int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& s
 	}
 	else if (S_ISDIR(st.st_mode))
 	{
-		if (!CheckSlashEnd(req.GetTarget(), req.GetHost().first, server_conf.GetListen().second))
+		if (!CheckSlashEnd(req_->GetTarget(), req_->GetHost().first, server_conf_->GetListen().second))
 			return (301);
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
 			return (200);
@@ -110,6 +105,48 @@ int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& s
 	}
 	else
 		throw HTTPError(HTTPError::FORBIDDEN);
+}
+
+int		HTTPMethod::ExecDELETEMethod
+	(const LocationDirective& location, const std::string& access_path, const struct stat& st)
+{
+	if (S_ISDIR(st.st_mode) && *(req_->GetTarget().rbegin()) != '/')
+		throw HTTPError(HTTPError::CONFLICT);
+
+	if (unlink(access_path.c_str()) == -1)
+		throw HTTPError(HTTPError::FORBIDDEN);
+
+	return (200);
+}
+
+int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf)
+{
+	req_ = &req;
+	server_conf_ = &server_conf;
+
+	const LocationDirective&			location = SelectLocation(req.GetTarget(), server_conf.GetLocations());
+	const std::pair<int, std::string>&	redirect = location.GetReturn();
+	if (redirect.first != -1)
+	{
+		location_ = redirect.second;
+		return (redirect.first);
+	}
+
+	const std::vector<std::string>&	allow_methods = location.GetAllowedMethods();
+	const std::string&				method = req.GetMethod();
+	if (std::find(allow_methods.begin(), allow_methods.end(), method) == allow_methods.end())
+		throw HTTPError(HTTPError::METHOD_NOT_ALLOWED);
+
+	const std::string	access_path = location.GetRoot() + req.GetTarget();
+	struct stat			st;
+	if (stat(access_path.c_str(), &st) == -1)
+		throw HTTPError(HTTPError::NOT_FOUND);
+	if (method == "GET")
+		return (ExecGETMethod(location, access_path, st));
+	else if (method == "DELETE")
+		return (ExecDELETEMethod(location, access_path, st));
+	// else if (method == "POST")
+	// 	return (ExecDELETEMethod(location, access_path, st));
 }
 
 void	HTTPMethod::MethodDisplay() const
