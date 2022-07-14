@@ -18,7 +18,8 @@ SRCS	=	ClientSocket.cpp \
 			utils.cpp
 
 SRCS	+=	GET_test.cpp \
-			DELETE_test.cpp
+			DELETE_test.cpp \
+			POST_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
