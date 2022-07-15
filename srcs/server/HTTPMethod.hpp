@@ -23,6 +23,7 @@ class HTTPMethod
 		bool				GetFile(const std::string& file_path);
 		bool				GetFileWithIndex(const std::string& access_path, const std::vector<std::string>& indexes);
 		bool				GetAutoIndexFile(const bool autoindex);
+		bool				CheckCGIScript(const std::string& access_path, const LocationDirective& location);
 
 		int	ExecGETMethod(const std::string& access_path, const struct stat& st, const LocationDirective& location);
 		int	ExecDELETEMethod(const std::string& access_path, const struct stat& st);

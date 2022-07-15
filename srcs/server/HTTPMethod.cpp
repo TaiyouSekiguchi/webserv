@@ -148,7 +148,7 @@ int		HTTPMethod::ExecPOSTMethod(const std::string& access_path, const struct sta
 	return (201);
 }
 
-bool	CheckCGIScript
+bool	HTTPMethod::CheckCGIScript
 	(const std::string& access_path, const LocationDirective& location)
 {
 	struct stat						st;
@@ -171,7 +171,7 @@ bool	CheckCGIScript
 	return (true);
 }
 
-// int		ExecCGI(const std::string& access_path)
+// int		HTTPMethod::ExecCGI(const std::string& access_path)
 // {
 	// cgi_.ExecuteCGI(access_path);
 	// cgi_.ParseCGI();
