@@ -2,13 +2,11 @@
 #include <fstream>
 #include "HTTPResponse.hpp"
 
-// HTTPResponse::HTTPResponse(int status_code, HTTPRequest req, HTTPMethod method, const ServerDirective server_conf)
-HTTPResponse::HTTPResponse(const int &status_code, const ServerDirective &server_conf)
+HTTPResponse::HTTPResponse(const int &status_code, const HTTPRequest &req,
+							const HTTPMethod &method, const ServerDirective &server_conf)
 {
-	// AppendHeader(req, method);
-	AppendHeader();
-	res_msg_ = CreateResponse(status_code, server_conf);
-	std::cout << res_msg_ << std::endl;
+	AppendHeader(req, method);
+	res_msg_ = CreateResponse(status_code, method, server_conf);
 }
 
 HTTPResponse::~HTTPResponse()
@@ -20,15 +18,13 @@ void HTTPResponse::SendResponse(ServerSocket *ssocket)
 	ssocket->SendData(res_msg_);
 }
 
-// void HTTPResponse::AppendHeader(const HTTPRequest &req, const HTTPMethod &method)
-void HTTPResponse::AppendHeader()
+void HTTPResponse::AppendHeader(const HTTPRequest &req, const HTTPMethod &method)
 {
 	headers_["Server"] = "Webserv";
 	headers_["Date"] = GetDate();
-	// headers_["Connection"] = req.GetConnection();
-	// headers_["Content-Length"] = content_length;
-	// headers_["Content-type"] = method.GetContentType();
-	// headers_["Location"] = method.Getlocation();
+	headers_["Connection"] = req.GetConnection() ? "keep-alive" : "close";
+	headers_["Content-type"] = method.GetContentType();
+	headers_["Location"] = method.GetLocation();
 }
 
 std::string HTTPResponse::GetDate() const
@@ -42,21 +38,37 @@ std::string HTTPResponse::GetDate() const
     return (str);
 }
 
-std::string HTTPResponse::CreateResponse(const int &status_code, const ServerDirective &server_conf)
+std::string HTTPResponse::CreateResponse(const int &status_code,
+											const HTTPMethod &method, const ServerDirective &server_conf)
 {
 	std::stringstream ss;
+	std::string body = SelectBody(status_code, method, server_conf);
 
 	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_.at(status_code) << "\r\n";
 	ss << HeaderFeild();
+	ss << body;
+	return (ss.str());
+}
+
+std::string HTTPResponse::SelectBody(const int &status_code,
+										const HTTPMethod &method, const ServerDirective &server_conf)
+{
+	std::string body;
+
 	if (!IsNormalStatus(status_code))
 	{
-		ss << GenerateHTML(status_code, server_conf);
+		body = GenerateHTML(status_code, server_conf);
 	}
 	else
 	{
-		// ss << method.Getbody()
+		body = method.GetBody();
 	}
-	return (ss.str());
+
+	std::stringstream ss;
+
+	ss << body.size();
+	headers_["Content-Length"] = ss.str();
+	return (body);
 }
 
 std::string HTTPResponse::HeaderFeild() const

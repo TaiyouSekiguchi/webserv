@@ -4,13 +4,13 @@
 #include "HTTPRequest.hpp"
 #include "HTTPServer.hpp"
 #include "ServerDirective.hpp"
+#include "HTTPMethod.hpp"
 
 class HTTPResponse
 {
 	public:
-		// HTTPResponse(const int &status_code, const &HTTPRequest req, const HTTPMethod &method,
-			// const ServerDirective &server_conf);
-		HTTPResponse(const int &status_code, const ServerDirective &server_conf);
+		HTTPResponse(const int &status_code, const HTTPRequest &req,
+						const HTTPMethod &method, const ServerDirective &server_conf);
 		~HTTPResponse();
 
 		void SendResponse(ServerSocket *ssocket);
@@ -21,16 +21,15 @@ class HTTPResponse
 		std::string res_msg_;
 		std::map<std::string, std::string> headers_;
 
-		// void SetkStatusMsg() const;
-		// void AppendHeader(const HTTPRequest &req, const HTTPMethod &method);
-		void AppendHeader();
-		std::string CreateResponse(const int &status_code, const ServerDirective &server_conf);
+		void AppendHeader(const HTTPRequest &req, const HTTPMethod &method);
+		std::string CreateResponse(const int &status_code, const HTTPMethod &method, const ServerDirective &server_conf);
 		std::string HeaderFeild() const;
 		std::string GetDate() const;
 		std::string GenerateHTML(const int &status_code, const ServerDirective &server_conf) const;
 		std::string GenerateDefaultHTML(const int &status_code) const;
 		bool IsNormalStatus(const int &status_code) const;
 		bool IsRedirectStatus(const int &status_code) const;
+		std::string SelectBody(const int &status_code, const HTTPMethod &method, const ServerDirective &server_conf);
 };
 
 #endif

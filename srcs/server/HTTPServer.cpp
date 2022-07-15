@@ -7,6 +7,7 @@
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
 #include "HTTPMethod.hpp"
+#include "HTTPResponse.hpp"
 
 HTTPServer::HTTPServer()
 {
@@ -83,6 +84,6 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 	req.RequestDisplay();
 	std::cout << "status_code: " << status_code << std::endl;
 	method.MethodDisplay();
-	// HTTPResponse	res(status_code, req, method, server_conf);
-	// res.SendResponse(ssocket);
+	HTTPResponse	res(status_code, req, method, server_conf);
+	res.SendResponse(ssocket);
 }

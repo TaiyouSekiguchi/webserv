@@ -1,12 +1,14 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp testsrcs:	$(SRCSDIR)/config: \
-						$(SRCSDIR)/socket: \
-						$(SRCSDIR)/utils: \
-						$(SRCSDIR)/server
+vpath	%.cpp	testsrcs: \
+				$(SRCSDIR)/config: \
+				$(SRCSDIR)/socket: \
+				$(SRCSDIR)/utils: \
+				$(SRCSDIR)/server
 
 SRCS	=	\
 			ASocket.cpp \
 			EventQueue.cpp \
+			ClientSocket.cpp \
 			ServerSocket.cpp \
 			ListenSocket.cpp \
 			Tokens.cpp \
@@ -16,6 +18,7 @@ SRCS	=	\
 			HTTPServer.cpp \
 			HTTPRequest.cpp \
 			utils.cpp \
+			HTTPMethod.cpp \
 			HTTPResponse.cpp
 			# main.cpp \
 			
