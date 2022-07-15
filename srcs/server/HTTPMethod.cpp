@@ -148,6 +148,39 @@ int		HTTPMethod::ExecPOSTMethod(const std::string& access_path, const struct sta
 	return (201);
 }
 
+bool	CheckCGIScript
+	(const std::string& access_path, const LocationDirective& location)
+{
+	struct stat						st;
+	std::string::size_type			dot_pos;
+	std::string						extension;
+	const std::vector<std::string>&	enable_extensions = location.GetCGIEnableExtension();
+	std::vector<std::string>::const_iterator	found;
+
+	if (stat(access_path.c_str(), &st) == -1)
+		return (false);
+	if (!S_ISREG(st.st_mode))
+		return (false);
+	dot_pos = access_path.find_last_of('.');
+	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
+		return (false);
+	extension = access_path.substr(dot_pos + 1);
+	found = std::find(enable_extensions.begin(), enable_extensions.end(), extension);
+	if (found == enable_extensions.end())
+		return (false);
+	return (true);
+}
+
+// int		ExecCGI(const std::string& access_path)
+// {
+	// cgi_.ExecuteCGI(access_path);
+	// cgi_.ParseCGI();
+	// body_ = cgi_.GetBody();
+	// location_ = cgi_.GetLocation();
+	// content_type_ = cgi_.GetContentType();
+	// return (cgi_.GetStatusCode());
+// }
+
 int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf)
 {
 	req_ = &req;
@@ -165,6 +198,10 @@ int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& s
 	const std::string&				method = req.GetMethod();
 	if (std::find(allow_methods.begin(), allow_methods.end(), method) == allow_methods.end())
 		throw HTTPError(HTTPError::METHOD_NOT_ALLOWED);
+
+	if (CheckCGIScript(location.GetRoot() + req.GetTarget(), location))
+		return (200);
+		// return (ExecCGI(access_path));
 
 	std::string		access_path;
 	if (method == "POST")
