@@ -112,3 +112,19 @@ TEST(AllowedMethodsTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/location/allowed_methods/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/allowed_methods/err_unknown.conf");});
 }
+
+// upload_root
+TEST(UploadRootTest, Valid)
+{
+	Config	config("conf/location/upload_root/valid.conf");
+	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
+	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+
+	EXPECT_EQ(litr->GetUploadRoot(), "html");
+	EXPECT_EQ((++litr)->GetUploadRoot(), "1");
+}
+TEST(UploadRootTest, Error)
+{
+	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_empty.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_special.conf");});
+}
