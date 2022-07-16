@@ -92,16 +92,3 @@ TEST_F(GETTest, DirForbiddenTest)
 	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(status_code_, HTTPError::FORBIDDEN);
 }
-
-TEST_F(GETTest, ReturnTest)
-{
-	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(status_code_, 301);
-	EXPECT_EQ(method_.GetLocation(), "http://localhost:8080");
-}
-
-TEST_F(GETTest, UnknownMethodTest)
-{
-	RunCommunication("AAA / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(status_code_, HTTPError::METHOD_NOT_ALLOWED);
-}

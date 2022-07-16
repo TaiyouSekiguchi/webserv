@@ -128,3 +128,21 @@ TEST(UploadRootTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_special.conf");});
 }
+
+// cgi_enable_extension
+TEST(CGIEnableExtensionTest, Valid)
+{
+	Config	config("conf/location/cgi_enable_extension/valid.conf");
+	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
+	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+
+	const std::string	s[1] = {"pl"};
+	std::vector<std::string> expected;
+	expected.assign(s, s + 1);	EXPECT_EQ(litr->GetCGIEnableExtension(), expected);
+	expected.assign(s, s + 1);	EXPECT_EQ((++litr)->GetCGIEnableExtension(), expected);
+}
+TEST(CGIEnableExtensionTest, Error)
+{
+	EXPECT_ANY_THROW({Config config("conf/location/cgi_enable_extension/err_empty.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/cgi_enable_extension/err_unknown.conf");});
+}
