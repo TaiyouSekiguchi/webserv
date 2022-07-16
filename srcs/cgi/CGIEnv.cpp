@@ -38,7 +38,7 @@ void	CGIEnv::SetEnv(void)
 	AddEnv("SERVER_SOFTWARE", "TEST");
 }
 
-char**	CGIEnv::GetEnv(void)
+char**	CGIEnv::GetEnv(void) const
 {
 	char**		exec_env;
 	size_t		size;

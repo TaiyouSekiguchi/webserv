@@ -12,7 +12,7 @@ class CGIEnv
 		CGIEnv(void);
 		~CGIEnv(void);
 
-		char**	GetEnv(void);
+		char**	GetEnv(void) const;
 
 	private:
 		typedef	std::pair<std::string, std::string> pair;
