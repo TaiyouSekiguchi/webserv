@@ -9,9 +9,33 @@ CGIEnv::~CGIEnv(void)
 {
 }
 
+void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
+{
+	env_.push_back(std::make_pair(key, value));
+}
+
 void	CGIEnv::SetEnv(void)
 {
-	env_.push_back(std::make_pair("NAME", "Taiyou"));
+	AddEnv("AUTH_TYPE", "AUTH_TYPE");
+	AddEnv("CONTENT_LENGTH", "42");
+	AddEnv("CONTENT_TYPE", "TEST");
+	AddEnv("GATEWAY_INTERFACE", "CGI/1.1");
+	AddEnv("HTTP_ACCEPT", "TEST");
+	AddEnv("HTTP_REFERER", "TEST");
+	AddEnv("HTTP_USER_AGENT", "TEST");
+	AddEnv("PATH_INFO", "TEST");
+	AddEnv("PATH_TRANSLATED", "TEST");
+	AddEnv("QUERY_STRING", "TEST");
+	AddEnv("REMOTE_ADDR", "TEST");
+	AddEnv("REMOTE_HOST", "TEST");
+	AddEnv("REMOTE_IDENT", "TEST");
+	AddEnv("REMOTE_USER", "TEST");
+	AddEnv("REQUEST_METHOD", "TEST");
+	AddEnv("SCRIPT_NAME", "TEST");
+	AddEnv("SERVER_NAME", "TEST");
+	AddEnv("SERVER_PORT", "TEST");
+	AddEnv("SERVER_PROTOCOL", "TEST");
+	AddEnv("SERVER_SOFTWARE", "TEST");
 }
 
 char**	CGIEnv::GetEnv(void)
