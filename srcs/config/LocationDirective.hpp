@@ -20,6 +20,7 @@ class LocationDirective
 		const std::pair<int, std::string>&	GetReturn() const;
 		const bool&							GetAutoIndex() const;
 		const std::vector<std::string>&		GetAllowedMethods() const;
+		const std::string&					GetUploadRoot() const;
 
 	private:
 		typedef void (LocationDirective::*ParseFunc)(Tokens::citr, Tokens::citr);
@@ -33,6 +34,7 @@ class LocationDirective
 		void	ParseReturn(Tokens::citr begin, Tokens::citr end);
 		void	ParseAutoIndex(Tokens::citr begin, Tokens::citr end);
 		void	ParseAllowedMethods(Tokens::citr begin, Tokens::citr end);
+		void	ParseUploadRoot(Tokens::citr begin, Tokens::citr end);
 
 		// Location Path
 		std::string					path_;
@@ -43,6 +45,7 @@ class LocationDirective
 		std::pair<int, std::string>	return_;
 		bool						autoindex_;
 		std::vector<std::string>	allowed_methods_;
+		std::string					upload_root_;
 };
 
 #endif  // LOCATIONDIRECTIVE_HPP

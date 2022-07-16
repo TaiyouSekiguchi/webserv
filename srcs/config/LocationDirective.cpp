@@ -15,9 +15,10 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 		std::make_pair("index", &LocationDirective::ParseIndex),
 		std::make_pair("return", &LocationDirective::ParseReturn),
 		std::make_pair("autoindex", &LocationDirective::ParseAutoIndex),
-		std::make_pair("allowed_methods", &LocationDirective::ParseAllowedMethods)
+		std::make_pair("allowed_methods", &LocationDirective::ParseAllowedMethods),
+		std::make_pair("upload_root", &LocationDirective::ParseUploadRoot)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[5]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[6]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 	Tokens::citr										itr;
 	Tokens::citr										directive_end;
@@ -48,6 +49,7 @@ const std::vector<std::string>&		LocationDirective::GetIndex() const { return (i
 const std::pair<int, std::string>&	LocationDirective::GetReturn() const { return (return_); }
 const bool&							LocationDirective::GetAutoIndex() const { return (autoindex_); }
 const std::vector<std::string>&		LocationDirective::GetAllowedMethods() const { return (allowed_methods_); }
+const std::string&					LocationDirective::GetUploadRoot() const { return (upload_root_); }
 
 Tokens::citr	LocationDirective::GetDirectiveEnd
 	(const std::string& name, Tokens::citr begin, Tokens::citr end) const
@@ -66,6 +68,7 @@ void	LocationDirective::SetDefaultValues()
 	return_ = std::make_pair(-1, "");
 	autoindex_ = false;
 	allowed_methods_.push_back("GET");
+	upload_root_ = "html";
 }
 
 void	LocationDirective::ParseRoot(Tokens::citr begin, Tokens::citr end)
@@ -148,4 +151,13 @@ void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end
 			allowed_methods_.push_back(*itr);
 		itr++;
 	}
+}
+
+void	LocationDirective::ParseUploadRoot(Tokens::citr begin, Tokens::citr end)
+{
+	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	else if (Tokens::isSpecialToken(*begin))
+		throw std::runtime_error("conf syntax error");
+	upload_root_ = *begin;
 }
