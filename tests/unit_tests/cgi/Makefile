@@ -3,6 +3,7 @@ vpath	%.hpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SR
 vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config:$(SRCSDIR)/cgi
 
 SRCS	=	CGI.cpp \
+			CGIEnv.cpp \
 			CGI_test.cpp \
 			utils.cpp
 
@@ -15,7 +16,9 @@ INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRC
 NAME	=	unit_test
 
 CC		=	c++
+#CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
+#CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

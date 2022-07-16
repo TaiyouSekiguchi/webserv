@@ -1,23 +1,14 @@
 #include "CGI.hpp"
 
 CGI::CGI(const std::string& file_path)
+	: file_path_(file_path)
 {
-	SetEnv();
-	ExecuteCGI(file_path);
+	ExecuteCGI();
 	ParseCGI();
 }
 
 CGI::~CGI(void)
 {
-	free(env_[0]);
-	free(env_);
-}
-
-void	CGI::SetEnv(void)
-{
-	env_ = (char **)malloc(sizeof(char *) * 2);
-	env_[0] = strdup("NAME=Taiyou");
-	env_[1] = NULL;
 }
 
 static void	pipe_set(int src, int dst, int not_use, bool child)
@@ -34,16 +25,17 @@ static void	pipe_set(int src, int dst, int not_use, bool child)
 	}
 }
 
-void	CGI::DoChild(const std::string& file_path, const int pipe_fd[2])
+void	CGI::DoChild(const int pipe_fd[2])
 {
+	CGIEnv	env;
 	char*	argv[2];
 
 	pipe_set(pipe_fd[1], 1, pipe_fd[0], true);
 
-	argv[0] = const_cast<char *>(file_path.c_str());
+	argv[0] = const_cast<char *>(file_path_.c_str());
 	argv[1] = NULL;
 
-	if (execve(argv[0], argv, env_) < 0)
+	if (execve(argv[0], argv, env.GetEnv()) < 0)
 		std::exit(EXIT_FAILURE);
 }
 
@@ -71,7 +63,7 @@ void	CGI::DoParent(const int pipe_fd[2])
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 }
 
-void	CGI::ExecuteCGI(const std::string& file_path)
+void	CGI::ExecuteCGI(void)
 {
 	int		pipe_fd[2];
 	int		ret;
@@ -80,7 +72,7 @@ void	CGI::ExecuteCGI(const std::string& file_path)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	if (ret == 0)
-		DoChild(file_path, pipe_fd);
+		DoChild(pipe_fd);
 	else
 		DoParent(pipe_fd);
 
