@@ -9,7 +9,7 @@
 class CGIEnv
 {
 	public:
-		CGIEnv(void);
+		CGIEnv(const HTTPRequest& req);
 		~CGIEnv(void);
 
 		char**	GetEnv(void) const;
@@ -20,7 +20,8 @@ class CGIEnv
 		void	SetEnv(void);
 		void	AddEnv(const std::string& key, const std::string& value);
 
-		std::vector<pair>	env_;
+		const HTTPRequest&		req_;
+		std::vector<pair>		env_;
 };
 
 #endif

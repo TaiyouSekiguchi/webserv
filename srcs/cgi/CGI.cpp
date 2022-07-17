@@ -1,7 +1,8 @@
 #include "CGI.hpp"
 
-CGI::CGI(const std::string& file_path)
+CGI::CGI(const std::string& file_path, const HTTPRequest& req)
 	: file_path_(file_path)
+	, req_(req)
 {
 	ExecuteCGI();
 	ParseCGI();
@@ -27,7 +28,7 @@ static void	pipe_set(int src, int dst, int not_use, bool child)
 
 void	CGI::DoChild(const int pipe_fd[2])
 {
-	CGIEnv	env;
+	CGIEnv	env(req_);
 	char*	argv[2];
 
 	pipe_set(pipe_fd[1], 1, pipe_fd[0], true);

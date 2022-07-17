@@ -18,7 +18,7 @@
 class CGI
 {
 	public:
-		CGI(const std::string& file_path);
+		CGI(const std::string& file_path, const HTTPRequest& req);
 		~CGI(void);
 
 		std::string		GetData(void) const;
@@ -35,10 +35,11 @@ class CGI
 		void	ParseHeader(const std::string& line);
 		void	ParseContentType(const std::string& content);
 
-		const std::string	file_path_;
-		std::string			data_;
-		std::string			content_type_;
-		std::string			body_;
+		const std::string		file_path_;
+		const HTTPRequest&		req_;
+		std::string				data_;
+		std::string				content_type_;
+		std::string				body_;
 };
 
 #endif
