@@ -50,8 +50,7 @@ char**	CGIEnv::GetEnv(void) const
 		std::string	tmp;
 
 		tmp = env_[i].first + "=" + env_[i].second;
-		exec_env[i] = new char[tmp.size() + 1];
-		strlcpy(exec_env[i], tmp.c_str(), tmp.size() + 1);
+		exec_env[i] = strdup(tmp.c_str());
 	}
 	exec_env[size] = NULL;
 

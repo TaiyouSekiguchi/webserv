@@ -31,7 +31,7 @@ class CGI
 		void	ExecuteCGI(void);
 		void	ParseCGI(void);
 		void	DoChild(const int pipe_fd[2]);
-		void	DoParent(const int pipe_fd[2]);
+		void	DoParent(const int pipe_fd[2], const pid_t pid);
 		void	ParseHeader(const std::string& line);
 		void	ParseContentType(const std::string& content);
 

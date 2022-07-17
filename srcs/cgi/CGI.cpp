@@ -39,11 +39,12 @@ void	CGI::DoChild(const int pipe_fd[2])
 		std::exit(EXIT_FAILURE);
 }
 
-void	CGI::DoParent(const int pipe_fd[2])
+void	CGI::DoParent(const int pipe_fd[2], const pid_t pid)
 {
 	const size_t	buf_size = 4;
 	char			buf[buf_size + 1];
 	int				read_byte;
+	pid_t			ret_pid;
 	int				status;
 
 	pipe_set(pipe_fd[0], 0, pipe_fd[1], false);
@@ -59,22 +60,26 @@ void	CGI::DoParent(const int pipe_fd[2])
 		data_ += std::string(buf);
 	}
 
-	if (wait(&status) < 0 || WEXITSTATUS(status) == EXIT_FAILURE)
+	ret_pid = waitpid(pid, &status, 0);
+	if (ret_pid < 0
+		|| ret_pid != pid
+		|| !WIFEXITED(status)
+		|| WEXITSTATUS(status) == EXIT_FAILURE)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 }
 
 void	CGI::ExecuteCGI(void)
 {
 	int		pipe_fd[2];
-	int		ret;
+	pid_t	pid;
 
-	if (pipe(pipe_fd) < 0 || (ret = fork()) < 0)
+	if (pipe(pipe_fd) < 0 || (pid = fork()) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
-	if (ret == 0)
+	if (pid == 0)
 		DoChild(pipe_fd);
 	else
-		DoParent(pipe_fd);
+		DoParent(pipe_fd, pid);
 
 	return;
 }
