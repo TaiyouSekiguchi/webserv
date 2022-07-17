@@ -16,7 +16,7 @@ void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
 
 void	CGIEnv::SetEnv(void)
 {
-	AddEnv("AUTH_TYPE", "AUTH_TYPE");
+	AddEnv("AUTH_TYPE", "");
 	AddEnv("CONTENT_LENGTH", "42");
 	AddEnv("CONTENT_TYPE", "TEST");
 	AddEnv("GATEWAY_INTERFACE", "CGI/1.1");
