@@ -1,7 +1,7 @@
 #include <fstream>
 #include <sstream>
-#include <sys/stat.h>
 #include "HTTPMethod.hpp"
+#include "Dir.hpp"
 
 HTTPMethod::HTTPMethod()
 {
@@ -16,17 +16,16 @@ const std::string&	HTTPMethod::GetLocation()	 const	{ return (location_); }
 const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 
 LocationDirective	HTTPMethod::SelectLocation
-	(const std::string& target, const std::vector<LocationDirective>& locations) const
+	(const std::vector<LocationDirective>& locations) const
 {
 	std::vector<LocationDirective>::const_iterator	itr = locations.begin();
 	std::vector<LocationDirective>::const_iterator	end = locations.end();
 	std::vector<LocationDirective>::const_iterator 	longest = end;
-	std::string::size_type							pos;
+	const std::string& 								target = req_->GetTarget();
 
 	while (itr != end)
 	{
-		pos = target.find(itr->GetPath());
-		if (pos != std::string::npos)
+		if (target.find(itr->GetPath()) != std::string::npos)
 		{
 			if (longest == end || longest->GetPath().size() < itr->GetPath().size())
 				longest = itr;
@@ -38,21 +37,15 @@ LocationDirective	HTTPMethod::SelectLocation
 	return (*longest);
 }
 
-bool	HTTPMethod::CheckSlashEnd
-	(const std::string& target, const std::string& hostname, const int port)
+int		HTTPMethod::Redirect(const std::string& location, const int status_code)
 {
-	if (*(target.rbegin()) == '/')
-		return (true);
-
-	std::stringstream	ss;
-	ss << port;
-	location_ = "http://" + hostname + ":" + ss.str() + target + "/";
-	return (false);
+	location_ = location;
+	return (status_code);
 }
 
-bool	HTTPMethod::GetFile(const std::string& file_path)
+bool	HTTPMethod::GetFile(const std::string& access_path)
 {
-	std::ifstream ifs(file_path);
+	std::ifstream ifs(access_path);
 	if (ifs.fail())
 		return (false);
 	std::istreambuf_iterator<char> itr(ifs);
@@ -76,43 +69,74 @@ bool	HTTPMethod::GetFileWithIndex
 	return (false);
 }
 
-// bool	HTTPMethod::GetAutoIndexFile(const bool autoindex)
-// {
-// 	if (autoindex == false)
-// 		return (false);
-// 	body_ = "autoindex";
-// 	return (true);
-// }
-
-int		HTTPMethod::ExecGETMethod
-	(const LocationDirective& location, const std::string& access_path, const struct stat& st)
+bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool autoindex)
 {
-	if (S_ISREG(st.st_mode))
+	if (autoindex == false)
+		return (false);
+
+	std::stringstream	body_stream;
+	body_stream
+		<< "<html>\r\n"
+		<< "<head><title>Index of " << req_->GetTarget() << "</title></head>\r\n"
+		<< "<body>\r\n" << "<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\r\n";
+
+	Dir		dir(access_path);
+	if (dir.Fail())
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+
+	const std::vector<std::string>&				names = dir.GetFileNameList();
+	std::vector<std::string>::const_iterator	itr = names.begin();
+	std::vector<std::string>::const_iterator	end = names.end();
+	while (itr != end)
+	{
+		Stat st(access_path + *itr);
+		if (st.Fail())
+			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		body_stream
+			<< "<a href=\"" << *itr << "\">" << *itr << "</a>\t\t"
+			<< st.GetModifyTime() << "\t" << st.GetSize() << "\r\n";
+		++itr;
+	}
+
+	body_stream << "</pre><hr></body>\r\n" << "</html>\r\n";
+	body_ = body_stream.str();
+	return (true);
+}
+
+int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
+{
+	const std::string&	access_path = st.GetPath();
+
+	if (st.IsRegularFile())
 	{
 		if (GetFile(access_path))
 			return (200);
 		throw HTTPError(HTTPError::FORBIDDEN);
 	}
-	else if (S_ISDIR(st.st_mode))
+	else if (st.IsDirectory())
 	{
-		if (!CheckSlashEnd(req_->GetTarget(), req_->GetHost().first, server_conf_->GetListen().second))
-			return (301);
+		if (*(req_->GetTarget().rbegin()) != '/')
+		{
+			const std::string& host = req_->GetHost().first;
+			const std::string& ip = Utils::ToString(server_conf_->GetListen().second);
+			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", 301));
+		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
 			return (200);
-		// else if (GetAutoIndexFile(location.GetAutoIndex()))
-		// 	return (200);
+		else if (GetAutoIndexFile(access_path, location.GetAutoIndex()))
+			return (200);
 		throw HTTPError(HTTPError::FORBIDDEN);
 	}
 	else
 		throw HTTPError(HTTPError::FORBIDDEN);
 }
 
-int		HTTPMethod::ExecDELETEMethod(const std::string& access_path, const struct stat& st)
+int		HTTPMethod::ExecDELETEMethod(const Stat& st)
 {
-	if (S_ISDIR(st.st_mode) && *(req_->GetTarget().rbegin()) != '/')
+	if (st.IsDirectory() && *(req_->GetTarget().rbegin()) != '/')
 		throw HTTPError(HTTPError::CONFLICT);
 
-	if (std::remove(access_path.c_str()) == -1)
+	if (std::remove(st.GetPath().c_str()) == -1)
 	{
 		if (errno == EACCES || errno == ENOTEMPTY)
 			throw HTTPError(HTTPError::FORBIDDEN);
@@ -122,35 +146,97 @@ int		HTTPMethod::ExecDELETEMethod(const std::string& access_path, const struct s
 	return (204);
 }
 
+int		HTTPMethod::ExecPOSTMethod(const Stat& st)
+{
+	if (!st.IsDirectory())
+		throw HTTPError(HTTPError::CONFLICT);
+
+	std::fstream		output_fstream;
+	const std::string&	timestamp = Utils::GetMicroSecondTime();
+	const std::string	file_path = st.GetPath() + "/" + timestamp;
+
+	Stat	check_st(file_path);
+	if (!check_st.Fail())
+		throw HTTPError(HTTPError::CONFLICT);
+    output_fstream.open(file_path, std::ios_base::out);
+    if (!output_fstream.is_open())
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	output_fstream << req_->GetBody();
+	if (*(req_->GetTarget().rbegin()) == '/')
+		location_ = req_->GetTarget() + timestamp;
+	else
+		location_ = req_->GetTarget() + "/" + timestamp;
+	return (201);
+}
+
+bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
+{
+	if (st.Fail() || !st.IsRegularFile())
+		return (false);
+
+	std::string::size_type	dot_pos;
+	std::string				extension;
+	const std::string&		access_path = st.GetPath();
+
+	dot_pos = access_path.find_last_of('.');
+	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
+		return (false);
+	extension = access_path.substr(dot_pos + 1);
+	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
+		return (false);
+	return (true);
+}
+
+// int		HTTPMethod::ExecCGI(const std::string& access_path)
+// {
+// 	CGI cgi(access_path);
+// 	body_ = cgi.GetBody();
+// 	location_ = cgi.GetLocation();
+// 	content_type_ = cgi.GetContentType();
+// 	return (cgi.GetStatusCode());
+// }
+
+int		HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
+{
+	const std::string&	method = req_->GetMethod();
+
+	std::string			access_path;
+	if (method == "POST")
+		access_path = location.GetUploadRoot() + req_->GetTarget();
+	else
+		access_path = location.GetRoot() + req_->GetTarget();
+
+	Stat	st(access_path);
+	if (st.Fail())
+		throw HTTPError(HTTPError::NOT_FOUND);
+
+	if (method == "GET")
+		return (ExecGETMethod(st, location));
+	else if (method == "DELETE")
+		return (ExecDELETEMethod(st));
+	else
+		return (ExecPOSTMethod(st));
+}
+
 int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf)
 {
 	req_ = &req;
 	server_conf_ = &server_conf;
+	const LocationDirective&	location = SelectLocation(server_conf.GetLocations());
 
-	const LocationDirective&			location = SelectLocation(req.GetTarget(), server_conf.GetLocations());
 	const std::pair<int, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != -1)
-	{
-		location_ = redirect.second;
-		return (redirect.first);
-	}
+		return (Redirect(redirect.second, redirect.first));
 
-	const std::vector<std::string>&	allow_methods = location.GetAllowedMethods();
-	const std::string&				method = req.GetMethod();
-	if (std::find(allow_methods.begin(), allow_methods.end(), method) == allow_methods.end())
+	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
 		throw HTTPError(HTTPError::METHOD_NOT_ALLOWED);
 
-	const std::string	access_path = location.GetRoot() + req.GetTarget();
-	struct stat			st;
-	if (stat(access_path.c_str(), &st) == -1)
-		throw HTTPError(HTTPError::NOT_FOUND);
-	if (method == "GET")
-		return (ExecGETMethod(location, access_path, st));
-	else if (method == "DELETE")
-		return (ExecDELETEMethod(access_path, st));
-	// else if (method == "POST")
-	// 	return (ExecDELETEMethod(location, access_path, st));
-	return (200);
+	Stat	cgi_st(location.GetRoot() + req.GetTarget());
+	if (CheckCGIScript(cgi_st, location))
+		return (200);
+		// return (ExecCGI(cgi_st.GetPath()));
+
+	return (SwitchHTTPMethod(location));
 }
 
 void	HTTPMethod::MethodDisplay() const

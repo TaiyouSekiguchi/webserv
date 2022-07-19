@@ -15,10 +15,14 @@ SRCS	=	ClientSocket.cpp \
 			LocationDirective.cpp \
 			HTTPRequest.cpp \
 			HTTPMethod.cpp \
-			utils.cpp
+			utils.cpp \
+			Stat.cpp \
+			Dir.cpp
 
 SRCS	+=	GET_test.cpp \
-			DELETE_test.cpp
+			DELETE_test.cpp \
+			POST_test.cpp \
+			others_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))

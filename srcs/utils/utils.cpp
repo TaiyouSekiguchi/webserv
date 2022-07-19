@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include "utils.hpp"
 
 std::vector<std::string>	Utils::MySplit
@@ -62,4 +63,17 @@ std::string		Utils::MyTrim
 bool	Utils::MyisLower(const char ch)
 {
     return std::islower(static_cast<unsigned char>(ch));
+}
+
+bool	Utils::IsNotFound(const std::vector<std::string>& vec, const std::string& val)
+{
+	std::vector<std::string>::const_iterator	end = vec.end();
+	return (std::find(vec.begin(), end, val) == end);
+}
+
+std::string		Utils::GetMicroSecondTime()
+{
+	timeval		t;
+	gettimeofday(&t, NULL);
+	return (ToString(t.tv_sec * 1000000 + t.tv_usec));
 }

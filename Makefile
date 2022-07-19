@@ -16,6 +16,8 @@ SRCS	=	main.cpp \
 			HTTPRequest.cpp \
 			utils.cpp \
 			HTTPMethod.cpp \
+			Stat.cpp \
+			Dir.cpp \
 			HTTPResponse.cpp
 
 OBJSDIR	=	./objs

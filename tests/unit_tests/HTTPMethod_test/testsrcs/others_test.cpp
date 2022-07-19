@@ -6,7 +6,7 @@
 #include "HTTPRequest.hpp"
 #include "HTTPMethod.hpp"
 
-class GETTest : public ::testing::Test
+class OthersTest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
@@ -48,47 +48,39 @@ class GETTest : public ::testing::Test
 		HTTPMethod				method_;
 };
 
-Config			GETTest::config_("conf/get.conf");
-ListenSocket*	GETTest::lsocket_ = NULL;
-ServerSocket*	GETTest::ssocket_ = NULL;
-ClientSocket*	GETTest::csocket_ = NULL;
+Config			OthersTest::config_("conf/others.conf");
+ListenSocket*	OthersTest::lsocket_ = NULL;
+ServerSocket*	OthersTest::ssocket_ = NULL;
+ClientSocket*	OthersTest::csocket_ = NULL;
 
-TEST_F(GETTest, BasicTest)
+TEST_F(OthersTest, ReturnTest)
 {
-	RunCommunication("GET / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(status_code_, 200);
-	EXPECT_EQ(method_.GetBody(), "html/index.html\n");
-}
-
-TEST_F(GETTest, NotFoundTest)
-{
-	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(status_code_, HTTPError::NOT_FOUND);
-}
-
-TEST_F(GETTest, RootTest)
-{
-	RunCommunication("GET /hoge/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(status_code_, 200);
-	EXPECT_EQ(method_.GetBody(), "html/sub1/hoge/index.html\n");
-}
-
-TEST_F(GETTest, DirRedirectTest)
-{
-	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(status_code_, 301);
-	EXPECT_EQ(method_.GetLocation(), "http://localhost:8080/sub1/");
+	EXPECT_EQ(method_.GetLocation(), "http://localhost:8080");
 }
 
-TEST_F(GETTest, IndexTest)
+TEST_F(OthersTest, UnknownMethodTest)
+{
+	RunCommunication("AAA / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(status_code_, HTTPError::METHOD_NOT_ALLOWED);
+}
+
+TEST_F(OthersTest, ValidCGITest)
+{
+	RunCommunication("GET /cgi-bin/tohoho.pl HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(status_code_, 200);
+	EXPECT_EQ(method_.GetBody(), "");
+}
+
+TEST_F(OthersTest, AutoIndexTest)
 {
 	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(status_code_, 200);
-	EXPECT_EQ(method_.GetBody(), "html/sub1/sub1.html\n");
-}
-
-TEST_F(GETTest, DirForbiddenTest)
-{
-	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(status_code_, HTTPError::FORBIDDEN);
+	const std::string&	body = method_.GetBody();
+	EXPECT_NE(body.find("<head><title>Index of /sub1/</title></head>"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"hoge/\">hoge/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"index.html\">index.html</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"noindex/\">noindex/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"sub1.html\">sub1.html</a>\t\t"), std::string::npos);
 }
