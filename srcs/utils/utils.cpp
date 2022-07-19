@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <sstream>
 
 std::vector<std::string>	Utils::MySplit
 	(std::string const & str, std::string const & separator)
@@ -62,4 +63,11 @@ std::string		Utils::MyTrim
 bool	Utils::MyisLower(const char ch)
 {
     return std::islower(static_cast<unsigned char>(ch));
+}
+
+std::string	Utils::toString(const long n)
+{
+	std::stringstream	ss;
+	ss << n;
+	return (ss.str());
 }
