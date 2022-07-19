@@ -1,5 +1,6 @@
-#include "utils.hpp"
 #include <sstream>
+#include <sys/time.h>
+#include "utils.hpp"
 
 std::vector<std::string>	Utils::MySplit
 	(std::string const & str, std::string const & separator)
@@ -70,4 +71,11 @@ std::string	Utils::toString(const long n)
 	std::stringstream	ss;
 	ss << n;
 	return (ss.str());
+}
+
+std::string		Utils::GetMicroSecondTime()
+{
+	timeval		t;
+	gettimeofday(&t, NULL);
+	return (toString(t.tv_sec * 1000000 + t.tv_usec));
 }

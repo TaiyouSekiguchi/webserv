@@ -12,6 +12,8 @@ namespace Utils
 		(const std::string& str, const char* set = " \t\v\r\n");
 	bool 			MyisLower(const char ch);
 	std::string		toString(const long n);
+	std::string		GetMicroSecondTime();
+
 
 	template <typename T>
 	bool	isNotFound(const std::vector<T> container, const T value);

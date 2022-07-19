@@ -149,7 +149,7 @@ int		HTTPMethod::ExecPOSTMethod(const Stat& st)
 		throw HTTPError(HTTPError::CONFLICT);
 
 	std::fstream		output_fstream;
-	const std::string	timestamp = Utils::toString(time(NULL));
+	const std::string	timestamp = Utils::GetMicroSecondTime();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
 	Stat	check_st(file_path);
