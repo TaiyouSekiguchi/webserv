@@ -15,7 +15,9 @@ SRCS	=	ClientSocket.cpp \
 			LocationDirective.cpp \
 			HTTPRequest.cpp \
 			HTTPMethod.cpp \
-			utils.cpp
+			utils.cpp \
+			Stat.cpp \
+			Dir.cpp
 
 SRCS	+=	GET_test.cpp \
 			DELETE_test.cpp \
