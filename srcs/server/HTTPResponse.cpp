@@ -60,6 +60,7 @@ void HTTPResponse::ParseHeader(int *status_code, const HTTPMethod &method, const
 
 void HTTPResponse::SelectBody(int *status_code, const HTTPMethod &method, const ServerDirective &server_conf)
 {
+	std::cout << "status_code: " << *status_code << std::endl;
 	if (!IsNormalStatus(*status_code))
 	{
 		body_ = GenerateHTML(status_code, server_conf);
@@ -70,7 +71,7 @@ void HTTPResponse::SelectBody(int *status_code, const HTTPMethod &method, const 
 
 bool HTTPResponse::IsNormalStatus(const int &status_code) const
 {
-	return (status_code < 400);
+	return (status_code < 300);
 }
 
 std::string HTTPResponse::GenerateHTML(int *status_code, const ServerDirective &server_conf)
@@ -79,12 +80,22 @@ std::string HTTPResponse::GenerateHTML(int *status_code, const ServerDirective &
 
 	if (ite != server_conf.GetErrorPages().end())
 	{
+		const std::string error_page_path = ite->second;
+		if (error_page_path.at(0) == '/')
+		{
+			std::ifstream ifs(("html" + error_page_path).c_str());
+			if (ifs.fail())
+			{
+				return ("");
+			}
+			std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+			return (str.c_str());
+		}
 		*status_code = 302;
 		headers_["Location"] = ite->second;
 	}
-
 	std::string str = GenerateDefaultHTML(*status_code);
-		return (str);
+	return (str);
 }
 
 std::string HTTPResponse::GenerateDefaultHTML(const int &status_code) const
