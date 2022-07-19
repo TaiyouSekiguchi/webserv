@@ -72,3 +72,15 @@ TEST_F(OthersTest, ValidCGITest)
 	EXPECT_EQ(status_code_, 200);
 	EXPECT_EQ(method_.GetBody(), "");
 }
+
+TEST_F(OthersTest, AutoIndexTest)
+{
+	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(status_code_, 200);
+	const std::string&	body = method_.GetBody();
+	EXPECT_NE(body.find("<head><title>Index of /sub1/</title></head>"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"hoge/\">hoge/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"index.html\">index.html</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"noindex/\">noindex/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"sub1.html\">sub1.html</a>\t\t"), std::string::npos);
+}

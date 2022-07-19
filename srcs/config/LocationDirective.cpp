@@ -1,5 +1,6 @@
 #include <map>
 #include "LocationDirective.hpp"
+#include "utils.hpp"
 
 LocationDirective::LocationDirective()
 	: path_("/")
@@ -143,7 +144,6 @@ void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end
 	const std::string	valid_methods[3] = {"GET", "POST", "DELETE"};
 	Tokens::citr								itr;
 	const std::string*							found_ptr;
-	std::vector<std::string>::const_iterator	found_itr;
 
 	itr = begin;
 	while (itr != end)
@@ -151,8 +151,7 @@ void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end
 		found_ptr = std::find(valid_methods, &valid_methods[3], *itr);
 		if (found_ptr == &valid_methods[3])
 			throw std::runtime_error("conf syntax error");
-		found_itr = std::find(allowed_methods_.begin(), allowed_methods_.end(), *itr);
-		if (found_itr == allowed_methods_.end())
+		if (Utils::IsNotFound(allowed_methods_, *itr))
 			allowed_methods_.push_back(*itr);
 		itr++;
 	}
@@ -170,9 +169,8 @@ void	LocationDirective::ParseUploadRoot(Tokens::citr begin, Tokens::citr end)
 void	LocationDirective::ParseCGIEnableExtension(Tokens::citr begin, Tokens::citr end)
 {
 	const std::string	valid_extensions[1] = {"pl"};
-	Tokens::citr								itr;
-	const std::string*							found_ptr;
-	std::vector<std::string>::const_iterator	found_itr;
+	Tokens::citr		itr;
+	const std::string*	found_ptr;
 
 	itr = begin;
 	while (itr != end)
@@ -180,8 +178,7 @@ void	LocationDirective::ParseCGIEnableExtension(Tokens::citr begin, Tokens::citr
 		found_ptr = std::find(valid_extensions, &valid_extensions[1], *itr);
 		if (found_ptr == &valid_extensions[1])
 			throw std::runtime_error("conf syntax error");
-		found_itr = std::find(cgi_enable_extension_.begin(), cgi_enable_extension_.end(), *itr);
-		if (found_itr == cgi_enable_extension_.end())
+		if (Utils::IsNotFound(cgi_enable_extension_, *itr))
 			cgi_enable_extension_.push_back(*itr);
 		itr++;
 	}
