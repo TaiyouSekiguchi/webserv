@@ -112,3 +112,37 @@ TEST(AllowedMethodsTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/location/allowed_methods/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/allowed_methods/err_unknown.conf");});
 }
+
+// upload_root
+TEST(UploadRootTest, Valid)
+{
+	Config	config("conf/location/upload_root/valid.conf");
+	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
+	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+
+	EXPECT_EQ(litr->GetUploadRoot(), "html");
+	EXPECT_EQ((++litr)->GetUploadRoot(), "1");
+}
+TEST(UploadRootTest, Error)
+{
+	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_empty.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_special.conf");});
+}
+
+// cgi_enable_extension
+TEST(CGIEnableExtensionTest, Valid)
+{
+	Config	config("conf/location/cgi_enable_extension/valid.conf");
+	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
+	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+
+	const std::string	s[1] = {"pl"};
+	std::vector<std::string> expected;
+	expected.assign(s, s + 1);	EXPECT_EQ(litr->GetCGIEnableExtension(), expected);
+	expected.assign(s, s + 1);	EXPECT_EQ((++litr)->GetCGIEnableExtension(), expected);
+}
+TEST(CGIEnableExtensionTest, Error)
+{
+	EXPECT_ANY_THROW({Config config("conf/location/cgi_enable_extension/err_empty.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/cgi_enable_extension/err_unknown.conf");});
+}
