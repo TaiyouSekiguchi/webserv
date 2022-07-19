@@ -18,24 +18,25 @@ bool	Dir::Fail() const
 	return (dir_ == NULL);
 }
 
-const std::string	Dir::GetValidFileName()
+const std::vector<std::string>	Dir::GetFileNameList() const
 {
 	if (dir_ == NULL)
 		throw std::runtime_error("dir error");
 
-	std::string		name;
+	std::vector<std::string>	names;
+	std::string					name;
+	struct dirent*				dirent;
 
-	while ((dirent_ = readdir(dir_)) != NULL)
+	while ((dirent = readdir(dir_)) != NULL)
 	{
-		name = dirent_->d_name;
+		name = dirent->d_name;
 		if (name == "." || name == "..")
 			continue;
-		else if (dirent_->d_type != DT_REG && dirent_->d_type != DT_DIR)
+		else if (dirent->d_type != DT_REG && dirent->d_type != DT_DIR)
 			continue;
-
-		if (dirent_->d_type == DT_DIR)
+		if (dirent->d_type == DT_DIR)
 			name += "/";
-		return (name);
+		names.push_back(name);
 	}
-	return ("");
+	return (names);
 }

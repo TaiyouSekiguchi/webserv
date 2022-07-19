@@ -151,7 +151,7 @@ void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end
 		found_ptr = std::find(valid_methods, &valid_methods[3], *itr);
 		if (found_ptr == &valid_methods[3])
 			throw std::runtime_error("conf syntax error");
-		if (Utils::isNotFound(allowed_methods_, *itr))
+		if (Utils::IsNotFound(allowed_methods_, *itr))
 			allowed_methods_.push_back(*itr);
 		itr++;
 	}
@@ -178,7 +178,7 @@ void	LocationDirective::ParseCGIEnableExtension(Tokens::citr begin, Tokens::citr
 		found_ptr = std::find(valid_extensions, &valid_extensions[1], *itr);
 		if (found_ptr == &valid_extensions[1])
 			throw std::runtime_error("conf syntax error");
-		if (Utils::isNotFound(cgi_enable_extension_, *itr))
+		if (Utils::IsNotFound(cgi_enable_extension_, *itr))
 			cgi_enable_extension_.push_back(*itr);
 		itr++;
 	}

@@ -1,4 +1,3 @@
-#include <sstream>
 #include <sys/time.h>
 #include "utils.hpp"
 
@@ -66,16 +65,15 @@ bool	Utils::MyisLower(const char ch)
     return std::islower(static_cast<unsigned char>(ch));
 }
 
-std::string	Utils::toString(const long n)
+bool	Utils::IsNotFound(const std::vector<std::string>& vec, const std::string& val)
 {
-	std::stringstream	ss;
-	ss << n;
-	return (ss.str());
+	std::vector<std::string>::const_iterator	end = vec.end();
+	return (std::find(vec.begin(), end, val) == end);
 }
 
 std::string		Utils::GetMicroSecondTime()
 {
 	timeval		t;
 	gettimeofday(&t, NULL);
-	return (toString(t.tv_sec * 1000000 + t.tv_usec));
+	return (ToString(t.tv_sec * 1000000 + t.tv_usec));
 }

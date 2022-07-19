@@ -76,12 +76,12 @@ TEST_F(POSTTest, Upload1Test)
 {
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(status_code_, 201);
-	EXPECT_NE(method_.GetLocation(), "");
+	EXPECT_NE(method_.GetLocation().find("/upload/16"), std::string::npos);
 }
 
 TEST_F(POSTTest, Upload2Test)
 {
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(status_code_, 201);
-	EXPECT_NE(method_.GetLocation(), "");
+	EXPECT_NE(method_.GetLocation().find("/upload/16"), std::string::npos);
 }

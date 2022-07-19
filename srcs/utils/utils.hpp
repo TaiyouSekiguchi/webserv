@@ -3,6 +3,7 @@
 
 # include <string>
 # include <vector>
+# include <sstream>
 
 namespace Utils
 {
@@ -11,18 +12,19 @@ namespace Utils
 	std::string		MyTrim
 		(const std::string& str, const char* set = " \t\v\r\n");
 	bool 			MyisLower(const char ch);
-	std::string		toString(const long n);
 	std::string		GetMicroSecondTime();
+	bool			IsNotFound(const std::vector<std::string>& vec, const std::string& val);
 
 	template <typename T>
-	bool	isNotFound(const std::vector<T> container, const T value);
+	std::string		ToString(const T& n);
 }  // namespace Utils
 
 template <typename T>
-bool	Utils::isNotFound(const std::vector<T> container, const T value)
+std::string		Utils::ToString(const T& n)
 {
-	typename std::vector<T>::const_iterator	end = container.end();
-	return (std::find(container.begin(), end, value) == end);
+	std::stringstream	ss;
+	ss << n;
+	return (ss.str());
 }
 
 #endif

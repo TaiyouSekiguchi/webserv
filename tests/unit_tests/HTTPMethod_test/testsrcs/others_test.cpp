@@ -77,16 +77,10 @@ TEST_F(OthersTest, AutoIndexTest)
 {
 	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(status_code_, 200);
-	EXPECT_EQ(method_.GetBody(),
-		"<html>\r\n"
-		"<head><title>Index of /</title></head>\r\n"
-		"<body>\r\n"
-		"<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\r\n"
-		"<a href=\"hoge/\">hoge/</a>\t\tSun Jul 17 15:57:27 2022\t-\r\n"
-		"<a href=\"index.html\">index.html</a>\t\tSun Jul 17 15:57:00 2022\t21\r\n"
-		"<a href=\"noindex/\">noindex/</a>\t\tSun Jul 17 15:57:27 2022\t-\r\n"
-		"<a href=\"sub1.html\">sub1.html</a>\t\tSun Jul 17 15:57:00 2022\t20\r\n"
-		"</pre><hr></body>\r\n"
-		"</html>\r\n"
-	);
+	const std::string&	body = method_.GetBody();
+	EXPECT_NE(body.find("<head><title>Index of /sub1/</title></head>"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"hoge/\">hoge/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"index.html\">index.html</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"noindex/\">noindex/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"sub1.html\">sub1.html</a>\t\t"), std::string::npos);
 }

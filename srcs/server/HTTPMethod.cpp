@@ -75,22 +75,27 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 		return (false);
 
 	std::stringstream	body_stream;
-	std::string			name;
 	body_stream
-		<< "<html>\r\n" << "<head><title>Index of /</title></head>\r\n"
+		<< "<html>\r\n"
+		<< "<head><title>Index of " << req_->GetTarget() << "</title></head>\r\n"
 		<< "<body>\r\n" << "<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\r\n";
 
 	Dir		dir(access_path);
 	if (dir.Fail())
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
-	while ((name = dir.GetValidFileName()).size() != 0)
+
+	const std::vector<std::string>&				names = dir.GetFileNameList();
+	std::vector<std::string>::const_iterator	itr = names.begin();
+	std::vector<std::string>::const_iterator	end = names.end();
+	while (itr != end)
 	{
-		Stat st(access_path + "/" + name);
+		Stat st(access_path + *itr);
 		if (st.Fail())
 			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 		body_stream
-			<< "<a href=\"" << name << "\">" << name << "</a>\t\t"
+			<< "<a href=\"" << *itr << "\">" << *itr << "</a>\t\t"
 			<< st.GetModifyTime() << "\t" << st.GetSize() << "\r\n";
+		++itr;
 	}
 
 	body_stream << "</pre><hr></body>\r\n" << "</html>\r\n";
@@ -101,8 +106,6 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
 {
 	const std::string&	access_path = st.GetPath();
-	std::string			host;
-	std::string			ip;
 
 	if (st.IsRegularFile())
 	{
@@ -114,8 +117,8 @@ int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location
 	{
 		if (*(req_->GetTarget().rbegin()) != '/')
 		{
-			host = req_->GetHost().first;
-			ip = Utils::toString(server_conf_->GetListen().second);
+			const std::string& host = req_->GetHost().first;
+			const std::string& ip = Utils::ToString(server_conf_->GetListen().second);
 			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", 301));
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
@@ -149,7 +152,7 @@ int		HTTPMethod::ExecPOSTMethod(const Stat& st)
 		throw HTTPError(HTTPError::CONFLICT);
 
 	std::fstream		output_fstream;
-	const std::string	timestamp = Utils::GetMicroSecondTime();
+	const std::string&	timestamp = Utils::GetMicroSecondTime();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
 	Stat	check_st(file_path);
@@ -179,7 +182,7 @@ bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& locatio
 	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
 		return (false);
 	extension = access_path.substr(dot_pos + 1);
-	if (Utils::isNotFound(location.GetCGIEnableExtension(), extension))
+	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
 		return (false);
 	return (true);
 }
@@ -225,7 +228,7 @@ int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& s
 	if (redirect.first != -1)
 		return (Redirect(redirect.second, redirect.first));
 
-	if (Utils::isNotFound(location.GetAllowedMethods(), req.GetMethod()))
+	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
 		throw HTTPError(HTTPError::METHOD_NOT_ALLOWED);
 
 	Stat	cgi_st(location.GetRoot() + req.GetTarget());
