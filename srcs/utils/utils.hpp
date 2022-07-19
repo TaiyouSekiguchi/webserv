@@ -14,7 +14,6 @@ namespace Utils
 	std::string		toString(const long n);
 	std::string		GetMicroSecondTime();
 
-
 	template <typename T>
 	bool	isNotFound(const std::vector<T> container, const T value);
 }  // namespace Utils
