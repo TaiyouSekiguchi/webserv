@@ -14,7 +14,6 @@ class Dir
 		const std::string	GetValidFileName();
 
 	private:
-		bool			failed_;
 		DIR*			dir_;
 		struct dirent*	dirent_;
 };

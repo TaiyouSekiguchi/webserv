@@ -4,25 +4,23 @@
 
 Dir::Dir(const std::string& file_path)
 {
-	failed_ = false;
 	dir_ = opendir(file_path.c_str());
-	if (dir_ == NULL)
-		failed_ = true;
 }
 
 Dir::~Dir()
 {
-	closedir(dir_);
+	if (dir_)
+		closedir(dir_);
 }
 
 bool	Dir::Fail() const
 {
-	return (failed_);
+	return (dir_ == NULL);
 }
 
 const std::string	Dir::GetValidFileName()
 {
-	if (failed_)
+	if (dir_ == NULL)
 		throw std::runtime_error("dir error");
 
 	std::string		name;
