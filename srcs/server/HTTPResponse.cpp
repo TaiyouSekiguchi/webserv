@@ -4,9 +4,11 @@
 
 HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req,
 							const HTTPMethod &method, const ServerDirective &server_conf)
+	: req_(req), method_(method), server_conf_(server_conf), status_code_(status_code)
 {
-	AppendHeader(&status_code, req, method, server_conf);
-	res_msg_ = CreateResponse(status_code);
+	SelectBody();
+	AppendHeaders();
+	res_msg_ = CreateResponse();
 }
 
 HTTPResponse::~HTTPResponse()
@@ -18,13 +20,20 @@ void HTTPResponse::SendResponse(ServerSocket *ssocket)
 	ssocket->SendData(res_msg_);
 }
 
-void HTTPResponse::AppendHeader(int *status_code, const HTTPRequest &req,
-									const HTTPMethod &method, const ServerDirective &server_conf)
+void HTTPResponse::AppendHeaders()
 {
-	headers_["Server"] = "Webserv";
-	headers_["Date"] = GetDate();
-	headers_["Connection"] = req.GetConnection() ? "keep-alive" : "close";
-	ParseHeader(status_code, method, server_conf);
+	AppendHeader("Server", "Webserv");
+	AppendHeader("Date", GetDate());
+	AppendHeader("Connection", req_.GetConnection() ? "keep-alive" : "close");
+	AppendHeader("Content-type", method_.GetContentType());
+	AppendHeader("Location", method_.GetLocation());
+	// AppendHeader("Content-Length", body_);
+}
+
+void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
+{
+	if (value.empty())
+		headers_[key] = value;
 }
 
 std::string HTTPResponse::GetDate() const
@@ -38,85 +47,64 @@ std::string HTTPResponse::GetDate() const
     return (str);
 }
 
-void HTTPResponse::ParseHeader(int *status_code, const HTTPMethod &method, const ServerDirective &server_conf)
+void HTTPResponse::SelectBody()
 {
-	if (!method.GetContentType().empty())
+	if (!IsNormalStatus())
 	{
-		headers_["Content-type"] = method.GetContentType();
-	}
-	if (!method.GetLocation().empty())
-	{
-		headers_["Location"] = method.GetLocation();
-	}
-	SelectBody(status_code, method, server_conf);
-	if (!body_.empty())
-	{
-		std::stringstream ss;
-
-		ss << body_.size();
-		headers_["Content-Length"] = ss.str();
-	}
-}
-
-void HTTPResponse::SelectBody(int *status_code, const HTTPMethod &method, const ServerDirective &server_conf)
-{
-	std::cout << "status_code: " << *status_code << std::endl;
-	if (!IsNormalStatus(*status_code))
-	{
-		body_ = GenerateHTML(status_code, server_conf);
+		body_ = GenerateHTML();
 		return;
 	}
-	body_ = method.GetBody();
+	body_ = method_.GetBody();
 }
 
-bool HTTPResponse::IsNormalStatus(const int &status_code) const
+bool HTTPResponse::IsNormalStatus() const
 {
-	return (status_code < 300);
+	return (status_code_ < 300);
 }
 
-std::string HTTPResponse::GenerateHTML(int *status_code, const ServerDirective &server_conf)
+std::string HTTPResponse::GenerateHTML()
 {
-	std::map<int, std::string>::const_iterator ite = server_conf.GetErrorPages().find(*status_code);
+	std::map<int, std::string>::const_iterator ite = server_conf_.GetErrorPages().find(status_code_);
 
-	if (ite != server_conf.GetErrorPages().end())
+	if (ite != server_conf_.GetErrorPages().end())
 	{
 		const std::string error_page_path = ite->second;
 		if (error_page_path.at(0) == '/')
 		{
-			std::ifstream ifs(("html" + error_page_path).c_str());
+			std::ifstream ifs("html" + error_page_path);
 			if (ifs.fail())
 			{
 				return ("");
 			}
 			std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-			return (str.c_str());
+			return (str);
 		}
-		*status_code = 302;
-		headers_["Location"] = ite->second;
+		status_code_ = 302;
+		AppendHeader("Location", ite->second);
 	}
-	std::string str = GenerateDefaultHTML(*status_code);
+	std::string str = GenerateDefaultHTML();
 	return (str);
 }
 
-std::string HTTPResponse::GenerateDefaultHTML(const int &status_code) const
+std::string HTTPResponse::GenerateDefaultHTML() const
 {
 	std::stringstream ss;
 
 	ss << "<html>\r\n";
-	ss << "<head><title>" << status_code << " " << kStatusMsg_.at(status_code) <<"</title></head>\r\n";
+	ss << "<head><title>" << status_code_ << " " << kStatusMsg_.at(status_code_) <<"</title></head>\r\n";
 	ss << "<body>\r\n";
-	ss << "<center><h1>" << status_code << " " << kStatusMsg_.at(status_code) << "</h1></center>\r\n";
+	ss << "<center><h1>" << status_code_ << " " << kStatusMsg_.at(status_code_) << "</h1></center>\r\n";
 	ss << "<hr><center>" << headers_.at("Server") << "</center>\r\n";
 	ss << "</body>\r\n";
 	ss << "</html>\r\n";
 	return (ss.str());
 }
 
-std::string HTTPResponse::CreateResponse(const int &status_code)
+std::string HTTPResponse::CreateResponse()
 {
 	std::stringstream ss;
 
-	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_.at(status_code) << "\r\n";
+	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_.at(status_code_) << "\r\n";
 	ss << HeaderFeild();
 	ss << body_;
 	return (ss.str());

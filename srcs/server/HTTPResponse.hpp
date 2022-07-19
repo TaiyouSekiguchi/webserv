@@ -19,19 +19,22 @@ class HTTPResponse
 	private:
 		static const std::pair<int, std::string> kPairs_[];
 		static const std::map<int, std::string> kStatusMsg_;
+		const HTTPRequest &req_;
+		const HTTPMethod &method_;
+		const ServerDirective &server_conf_;
 		std::string res_msg_;
 		std::map<std::string, std::string> headers_;
 		std::string body_;
+		int status_code_;
 
-		void AppendHeader(int *status_code, const HTTPRequest &req,
-			const HTTPMethod &method, const ServerDirective &server_conf);
-		void ParseHeader(int *status_code, const HTTPMethod &method, const ServerDirective &server_conf);
+		void AppendHeaders();
+		void AppendHeader(const std::string &key, const std::string &value);
 		std::string GetDate() const;
-		std::string GenerateHTML(int *status_code, const ServerDirective &server_conf);
-		std::string GenerateDefaultHTML(const int &status_code) const;
-		bool IsNormalStatus(const int &status_code) const;
-		void SelectBody(int *status_code, const HTTPMethod &method, const ServerDirective &server_conf);
-		std::string CreateResponse(const int &status_code);
+		std::string GenerateHTML();
+		std::string GenerateDefaultHTML() const;
+		bool IsNormalStatus() const;
+		void SelectBody();
+		std::string CreateResponse();
 		std::string HeaderFeild() const;
 };
 
