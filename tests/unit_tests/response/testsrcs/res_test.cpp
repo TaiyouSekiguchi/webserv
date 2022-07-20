@@ -7,41 +7,7 @@
 #include "HTTPRequest.hpp"
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
-
-/* 
-// const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
-
-TEST(RESTest, Normal)
-{
-	Config config("conf/default.conf");
-	int		status_code;
-	HTTPRequest		req;
-	HTTPMethod		method;
-	// const ServerDirective&	server_conf = ssocket->GetServerConf();
-	const ServerDirective&	server_conf = config.GetServers().at(0);
-
-	try
-	{
-		// req.ParseRequest(*ssocket, server_conf);
-		status_code = method.ExecHTTPMethod(req, server_conf);
-	}
-	catch (const ClientClosed& e)
-	{
-		// delete ssocket;
-		return;
-	}
-	catch (const HTTPError& e)
-	{
-		status_code = e.GetStatusCode();
-	}
-	req.RequestDisplay();
-	std::cout << "status_code: " << status_code << std::endl;
-	method.MethodDisplay();
-	HTTPResponse	res(status_code, req, method, server_conf);
-	// std::cout << res.GetResMsg() << std::endl;
-}
- */
-
+#include "Model.hpp"
 
 class RESTest : public ::testing::Test
 {
@@ -92,9 +58,10 @@ ClientSocket*	RESTest::csocket_ = NULL;
 
 const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
 
+/* 
 TEST_F(RESTest, BasicTest)
 {
-	RunCommunication("GET / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("GET / HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::cout << res.GetResMsg() << std::endl;
 }
@@ -106,7 +73,6 @@ TEST_F(RESTest, NotFoundTest)
 	std::cout << res.GetResMsg() << std::endl;
 }
 
-/* 
 TEST_F(RESTest, RootTest)
 {
 	RunCommunication("GET /hoge/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
@@ -166,3 +132,9 @@ TEST_F(RESTest, FileTest)
 	std::cout << res.GetResMsg() << std::endl;
 }
  */
+
+TEST(CrulTest, curl)
+{
+	Model model("localhost:8080");
+	std::cout << model.GetResponse();
+}

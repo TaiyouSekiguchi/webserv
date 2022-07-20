@@ -19,10 +19,13 @@ SRCS	=	\
 			HTTPRequest.cpp \
 			utils.cpp \
 			HTTPMethod.cpp \
+			Stat.cpp \
+			Dir.cpp \
 			HTTPResponse.cpp
-			# main.cpp \
 			
-SRCS	+=	res_test.cpp
+SRCS	+=	Buffer.cpp \
+			Model.cpp \
+			res_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
@@ -33,6 +36,8 @@ INCLUDE =	-I $(SRCSDIR)/exception \
 			-I $(SRCSDIR)/config \
 			-I $(SRCSDIR)/utils \
 			-I $(SRCSDIR)/server
+
+# INCLUDE +=	-I /usr/local/opt/curl/include -lcurl
 
 NAME	=	unit_test
 
@@ -46,7 +51,7 @@ RM		=	rm -rf
 all			:	$(NAME)
 
 $(NAME)		:	$(OBJS)
-				$(CC) $(CFLAGS) $(LINK) $(INCLUDE) -o $@ $(OBJS)
+				$(CC) $(CFLAGS) $(LINK) $(INCLUDE) -I /usr/local/opt/curl/include -lcurl -o $@ $(OBJS)
 
 $(OBJSDIR)/%.o	:	%.cpp
 			@mkdir -p $(dir $@)
