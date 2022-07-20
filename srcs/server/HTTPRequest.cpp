@@ -16,13 +16,31 @@ HTTPRequest::e_method			HTTPRequest::GetMethod(void) const { return (method_); }
 std::string						HTTPRequest::GetTarget(void) const { return (target_); }
 std::string						HTTPRequest::GetVersion(void) const { return (version_); }
 std::pair<std::string, int>		HTTPRequest::GetHost(void) const { return (host_); }
-size_t							HTTPRequest::GetContentLength(void) const { return (content_length_); }
+std::string						HTTPRequest::GetContentLength(void) const { return (content_length_); }
 std::string						HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
 std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
 bool							HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string						HTTPRequest::GetContentType(void) const { return (content_type_); }
 std::string						HTTPRequest::GetBody(void) const { return (body_); }
 
+static bool		IsBlank(char c)
+{
+	if (c == 0x20 || c == 0x09)
+		return (true);
+	return (false);
+}
+
+static void		StringToLower(std::string* str)
+{
+	for (size_t i = 0; i < *str.size(); i++)
+	{
+		char	c;
+
+		c = *str.at(i);
+		if (c >= 'A' && c <= 'Z')
+			*str.at(i) = tolower(c)
+	}
+}
 
 void	HTTPRequest::SetServerConf(const ServerDirective& server_conf)
 {
@@ -90,6 +108,9 @@ void	HTTPRequest::ParseRequestLine(const ServerSocket& ssocket)
 	std::vector<std::string>	list;
 
 	while ((line = GetLine(ssocket)) == "") { }
+
+	if (line.at(0) == ' ')
+		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	list = Utils::MySplit(line, " ");
 	if (list.size() != 3)
@@ -199,12 +220,12 @@ void HTTPRequest::ParseContentType(const std::string& content)
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
-		std::make_pair("Host", &HTTPRequest::ParseHost),
-		std::make_pair("Content-Length", &HTTPRequest::ParseContentLength),
-		std::make_pair("User-Agent", &HTTPRequest::ParseUserAgent),
-		std::make_pair("Accept-Encoding", &HTTPRequest::ParseAcceptEncoding),
-		std::make_pair("Connection", &HTTPRequest::ParseConnection),
-		std::make_pair("Content-Type", &HTTPRequest::ParseContentType)
+		std::make_pair("host", &HTTPRequest::ParseHost),
+		std::make_pair("content-length", &HTTPRequest::ParseContentLength),
+		std::make_pair("user-agent", &HTTPRequest::ParseUserAgent),
+		std::make_pair("accept-encoding", &HTTPRequest::ParseAcceptEncoding),
+		std::make_pair("connection", &HTTPRequest::ParseConnection),
+		std::make_pair("content-type", &HTTPRequest::ParseContentType)
 	};
 	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[6]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
@@ -225,11 +246,17 @@ void	HTTPRequest::ParseHeaders(const ServerSocket& ssocket)
 
 	while ((line = GetLine(ssocket)) != "")
 	{
+		if (IsBlank(line.at(0)))
+			continue;
+
 		pos = line.find(":");
 		if (pos == std::string::npos)
 			throw HTTPError(HTTPError::BAD_REQUEST);
 		field = line.substr(0, pos);
+		if (IsBlank(field.at(field.size() - 1)))
+			throw HTTPError(HTTPError::BAD_REQUEST);
 		content = line.substr(pos + 1);
+		StringToLower(&field);
 		ParseHeader(field, content);
 	}
 

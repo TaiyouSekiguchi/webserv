@@ -37,7 +37,7 @@ class HTTPRequest
 		std::string						GetTarget(void) const;
 		std::string						GetVersion(void) const;
 		std::pair<std::string, int>		GetHost(void) const;
-		size_t							GetContentLength(void) const;
+		std::string						GetContentLength(void) const;
 		std::string						GetUserAgent(void) const;
 		std::vector<std::string>		GetAcceptEncoding(void) const;
 		bool							GetConnection(void) const;
@@ -47,12 +47,14 @@ class HTTPRequest
 	private:
 		typedef	void 	(HTTPRequest::*ParseFunc)(const std::string& content);
 
+		/*
 		enum	e_status
 		{
 			REQUEST,
 			HEADER,
 			BODY,
 		};
+		*/
 
 		// server_conf
 		size_t							client_max_body_size_;
@@ -67,7 +69,7 @@ class HTTPRequest
 
 		// header
 		std::pair<std::string, int>		host_;
-		size_t							content_length_;
+		std::string						content_length_;
 		std::string						user_agent_;
 		std::vector<std::string>		accept_encoding_;
 		bool							connection_;
