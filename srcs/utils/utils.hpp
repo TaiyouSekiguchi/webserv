@@ -14,6 +14,10 @@ namespace Utils
 	bool 			MyisLower(const char ch);
 	std::string		GetMicroSecondTime();
 	bool			IsNotFound(const std::vector<std::string>& vec, const std::string& val);
+	bool			IsBlank(char c);
+	bool			IsToken(const std::string& str);
+	bool			IsTChar(char c);
+	void			StringToLower(std::string* str);
 
 	template <typename T>
 	std::string		ToString(const T& n);

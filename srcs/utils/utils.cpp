@@ -77,3 +77,63 @@ std::string		Utils::GetMicroSecondTime()
 	gettimeofday(&t, NULL);
 	return (ToString(t.tv_sec * 1000000 + t.tv_usec));
 }
+
+bool	Utils::IsBlank(char c)
+{
+	if (c == 0x20 || c == 0x09)
+		return (true);
+	return (false);
+}
+
+bool	Utils::IsToken(const std::string& str)
+{
+	std::string::const_iterator		it;
+	std::string::const_iterator		it_end;
+
+	it = str.begin();
+	it_end = str.end();
+
+	for ( ; it != it_end; ++it)
+	{
+		if (!IsTChar(*it))
+			return (false);
+	}
+	return (true);
+}
+
+bool	Utils::IsTChar(char c)
+{
+	if (c == '!'
+		|| c == '#'
+		|| c == '$'
+		|| c == '%'
+		|| c == '&'
+		|| c == '\''
+		|| c == '*'
+		|| c == '+'
+		|| c == '-'
+		|| c == '.'
+		|| c == '^'
+		|| c == '_'
+		|| c == '`'
+		|| c == '|'
+		|| c == '~'
+		|| isdigit(c)
+		|| isalpha(c))
+	{
+		return (true);
+	}
+	return (false);
+}
+
+void	Utils::StringToLower(std::string* str)
+{
+	for (size_t i = 0; i < *str.size(); i++)
+	{
+		char	c;
+
+		c = *str.at(i);
+		if (c >= 'A' && c <= 'Z')
+			*str.at(i) = tolower(c)
+	}
+}

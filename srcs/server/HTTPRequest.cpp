@@ -26,25 +26,6 @@ bool							HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string						HTTPRequest::GetContentType(void) const { return (content_type_); }
 std::string						HTTPRequest::GetBody(void) const { return (body_); }
 
-static bool		IsBlank(char c)
-{
-	if (c == 0x20 || c == 0x09)
-		return (true);
-	return (false);
-}
-
-static void		StringToLower(std::string* str)
-{
-	for (size_t i = 0; i < *str.size(); i++)
-	{
-		char	c;
-
-		c = *str.at(i);
-		if (c >= 'A' && c <= 'Z')
-			*str.at(i) = tolower(c)
-	}
-}
-
 std::string		HTTPRequest::GetLine(void)
 {
 	std::string				data;
@@ -70,12 +51,14 @@ std::string		HTTPRequest::GetLine(void)
 	return (line);
 }
 
-void	HTTPRequest::ParseMethod(std::string const & method)
+void	HTTPRequest::ParseMethod(const std::string& method)
 {
-	const char *str = method.c_str();
-	const char *found = std::find_if(str, str + method.size(), Utils::MyisLower);
-	if (found != str + method.size())
+	const char	*str = method.c_str();
+	const char	*found = std::find_if(str, str + method.size(), Utils::MyisLower);
+
+	if (found != str + method.size() || !Utils::IsToken(method))
 		throw HTTPError(HTTPError::BAD_REQUEST);
+
 	method_ = method;
 }
 
@@ -102,7 +85,7 @@ void	HTTPRequest::ParseRequestLine(void)
 
 	while ((line = GetLine()) == "") { }
 
-	if (line.at(0) == ' ')
+	if (IsBlank(line.at(0)))
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	list = Utils::MySplit(line, " ");
