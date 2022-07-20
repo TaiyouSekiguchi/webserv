@@ -1,6 +1,8 @@
 #include <sstream>
 #include <fstream>
+#include <ctime>
 #include "HTTPResponse.hpp"
+#include "utils.hpp"
 
 HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req,
 							const HTTPMethod &method, const ServerDirective &server_conf)
@@ -27,12 +29,12 @@ void HTTPResponse::AppendHeaders()
 	AppendHeader("Connection", req_.GetConnection() ? "keep-alive" : "close");
 	AppendHeader("Content-type", method_.GetContentType());
 	AppendHeader("Location", method_.GetLocation());
-	// AppendHeader("Content-Length", body_);
+	AppendHeader("Content-Length", Utils::ToString(body_.size()));
 }
 
 void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
 {
-	if (value.empty())
+	if (!value.empty())
 		headers_[key] = value;
 }
 
@@ -42,9 +44,10 @@ std::string HTTPResponse::GetDate() const
 	struct tm current_time;
 	char str[50];
 
-	asctime_r(localtime_r(&now, &current_time), str);
+	asctime_r(gmtime_r(&now, &current_time), str);
 	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
-    return (str);
+	std::cout << str << std::endl;
+	return (str);
 }
 
 void HTTPResponse::SelectBody()
@@ -69,6 +72,7 @@ std::string HTTPResponse::GenerateHTML()
 	if (ite != server_conf_.GetErrorPages().end())
 	{
 		const std::string error_page_path = ite->second;
+		std::cout << "now" << std::endl;
 		if (error_page_path.at(0) == '/')
 		{
 			std::ifstream ifs("html" + error_page_path);

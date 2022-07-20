@@ -7,6 +7,11 @@ Model::Model(std::string uri)
 	CreateResponse(uri);
 }
 
+Model::Model(std::string uri, const std::vector<std::string> &rm_headers): rm_headers_(rm_headers)
+{
+	CreateResponse(uri);
+}
+
 Model::~Model() {}
 std::string &Model::GetResponse() { return response_; }
 
@@ -42,10 +47,6 @@ void Model::CreateResponse(std::string uri)
 	response_ = ss.str();
 }
 
-// C++ではコールバック関数を static宣言するのが必須
-// buf: 受信したデータ
-// size, nmemb: サイズに関する情報
-// user_struct: 任意のデータをコールバック関数側に渡すための構造体ポインタ
 size_t Model::header_callback(char *buf, size_t size, size_t nmemb, Buffer *buff)
 {
 	std::string str(buf);
@@ -73,17 +74,13 @@ size_t Model::write_callback(char *buf, size_t size, size_t nmemb, Buffer *buff)
 
 	ss << buf;
 	buff->SetBody(ss.str());
-	// libcurlに返す最大バッファサイズ(符号なし整数型)を表し、必ずこれをreturn すること。
-	// アップロードが終了する時は0を返す。
 	return size * nmemb;
 }
 
 void Model::ModifiyHeader(std::map<std::string, std::string> *header)
 {
-	const std::vector<std::string> remove_elems = {"ETag", "Last-Modified", "Accept-Ranges", "Server"};
-
-	RemoveHeaderElem(header, remove_elems);
-	header->insert(std::make_pair("Server", "webserv\r\n"));
+	RemoveHeaderElem(header, rm_headers_);
+	header->insert(std::make_pair("Server", "Webserv\r\n"));
 }
 
 void Model::RemoveHeaderElem(std::map<std::string, std::string> *header, const std::vector<std::string> &elems)

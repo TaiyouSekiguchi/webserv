@@ -17,7 +17,7 @@ class RESTest : public ::testing::Test
 			lsocket_ = new ListenSocket(*(config_.GetServers().begin()));
 			lsocket_->ListenConnection();
 			csocket_ = new ClientSocket();
-			csocket_->ConnectServer("127.0.0.1", 8080);
+			csocket_->ConnectServer("127.0.0.1", 8085);
 			ssocket_ = new ServerSocket(lsocket_->AcceptConnection(), lsocket_->GetServerConf());
 		}
     	static void TearDownTestCase()
@@ -39,6 +39,9 @@ class RESTest : public ::testing::Test
 			{
 				status_code_ = e.GetStatusCode();
 			}
+			// req_.RequestDisplay();
+			// std::cout << "status_code: " << status_code_ << std::endl;
+			// method_.MethodDisplay();
 		}
 
 		static Config			config_;
@@ -51,20 +54,27 @@ class RESTest : public ::testing::Test
 		HTTPMethod				method_;
 };
 
-Config			RESTest::config_("conf/default.conf");
+Config			RESTest::config_("conf/sub.conf");
 ListenSocket*	RESTest::lsocket_ = NULL;
 ServerSocket*	RESTest::ssocket_ = NULL;
 ClientSocket*	RESTest::csocket_ = NULL;
 
 const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
+const std::vector<std::string> rm_headers = {"ETag", "Last-Modified", "Accept-Ranges", "Server", "Content-Type"};
 
-/* 
+TEST(CrulTest, curl)
+{
+	Model model("localhost:8080/ind.html", rm_headers);
+	std::cout << model.GetResponse();
+}
+
 TEST_F(RESTest, BasicTest)
 {
-	RunCommunication("GET / HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
+	RunCommunication("GET /ind.html HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::cout << res.GetResMsg() << std::endl;
 }
+/* 
 
 TEST_F(RESTest, NotFoundTest)
 {
@@ -132,9 +142,3 @@ TEST_F(RESTest, FileTest)
 	std::cout << res.GetResMsg() << std::endl;
 }
  */
-
-TEST(CrulTest, curl)
-{
-	Model model("localhost:8080");
-	std::cout << model.GetResponse();
-}

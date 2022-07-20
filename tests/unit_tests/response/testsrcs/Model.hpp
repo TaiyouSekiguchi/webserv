@@ -8,6 +8,7 @@ class Model
 {
 	public:
 		explicit Model(std::string uri);
+		Model(std::string uri, const std::vector<std::string> &rm_headers);
 		~Model();
 
 		std::string &GetResponse();
@@ -15,6 +16,7 @@ class Model
 	private:
 		const Buffer buf_;
 		std::string response_;
+		const std::vector<std::string> rm_headers_;
 
 		void CreateResponse(std::string uri);
 		void ModifiyHeader(std::map<std::string, std::string> *header);
