@@ -41,7 +41,7 @@ class HTTPRequest
 
 		// arg
 		const ServerSocket&					ssocket_;
-		const ServerDirective&				server_conf_;
+		//const ServerDirective&				server_conf_;
 
 		// server_conf
 		size_t								client_max_body_size_;

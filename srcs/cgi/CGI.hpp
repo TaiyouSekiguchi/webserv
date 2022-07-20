@@ -11,6 +11,7 @@
 # include <map>
 # include <utility>
 
+# include "HTTPRequest.hpp"
 # include "CGIEnv.hpp"
 # include "HTTPError.hpp"
 # include "utils.hpp"

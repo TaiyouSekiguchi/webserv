@@ -3,6 +3,7 @@
 
 # include <string>
 # include <vector>
+# include "HTTPRequest.hpp"
 
 class CGIEnv
 {

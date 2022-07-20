@@ -2,10 +2,7 @@
 
 HTTPRequest::HTTPRequest(const ServerSocket& ssocket, const ServerDirective& server_conf)
 	: ssocket_(ssocket)
-	, server_conf_(server_conf)
 	, client_max_body_size_(server_conf.GetClientMaxBodySize())
-	, method_(NONE)
-	, content_length_(0)
 	, connection_(true)
 {
 	host_ = std::make_pair("", 80);
@@ -85,7 +82,7 @@ void	HTTPRequest::ParseRequestLine(void)
 
 	while ((line = GetLine()) == "") { }
 
-	if (IsBlank(line.at(0)))
+	if (Utils::IsBlank(line.at(0)))
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	list = Utils::MySplit(line, " ");
@@ -140,16 +137,21 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 {
 	std::vector<std::string>	list;
 	char						*endptr;
+	size_t						tmp;
 
 	list = Utils::MySplit(content, " ");
 	if (list.size() != 1)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
+	tmp = std::strtoul(list.at(0).c_str(), &endptr, 10);
+
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(HTTPError::BAD_REQUEST);
-	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
+
+	if (client_max_body_size_ != 0 && tmp > client_max_body_size_)
 		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
+
+	content_length_ = list.at(0);
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -227,22 +229,22 @@ void	HTTPRequest::ReceiveHeaders(void)
 			throw HTTPError(HTTPError::BAD_REQUEST);
 
 		field = line.substr(0, pos);
-		if (IsBlank(field.at(0)) || IsBlank(field.at(field.size() - 1)))
+		if (Utils::IsBlank(field.at(0)) || Utils::IsBlank(field.at(field.size() - 1)))
 			continue;
 
 		content = line.substr(pos + 1);
-		StringToLower(&field);
+		Utils::StringToLower(&field);
 
 		if (headers_.count(field) == 0)
 		{
-			headers_[filed] = content;
+			headers_[field] = content;
 		}
 		else
 		{
 			if (field == "host")
 				throw HTTPError(HTTPError::BAD_REQUEST);
 			else
-				headers_[filed] = headers_[field] + ", " + content;
+				headers_[field] = headers_[field] + ", " + content;
 		}
 	}
 
@@ -275,7 +277,7 @@ void	HTTPRequest::ParseBody(void)
 	// if (method_ != POST)
 	// 	return;
 
-	remaining_byte = content_length_;
+	remaining_byte = std::strtoul(content_length_.c_str(), NULL, 10);
 
 	if (save_.length() != 0)
 	{

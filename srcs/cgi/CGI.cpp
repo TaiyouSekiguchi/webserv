@@ -12,7 +12,7 @@ CGI::~CGI(void)
 {
 }
 
-static void	pipe_set(int src, int dst)
+static int	pipe_set(int src, int dst)
 {
 	if (close(dst) < 0
 		|| dup2(src, dst) < 0

@@ -5,7 +5,16 @@ vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SR
 SRCS	=	CGI.cpp \
 			CGIEnv.cpp \
 			CGI_test.cpp \
-			utils.cpp
+			ASocket.cpp \
+			ListenSocket.cpp \
+			ServerSocket.cpp \
+			utils.cpp \
+			ClientSocket.cpp \
+			Config.cpp \
+			LocationDirective.cpp \
+			ServerDirective.cpp  \
+			Tokens.cpp \
+			HTTPRequest.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
@@ -15,10 +24,10 @@ INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRC
 
 NAME	=	unit_test
 
-#CC		=	c++
-CC		=	clang++
+CC		=	c++
+#CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	+=	-g -fsanitize=address
+#CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

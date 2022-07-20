@@ -47,7 +47,7 @@ char**	CGIEnv::GetEnv(void) const
 	size = env_.size();
 	exec_env = new char*[size + 1];
 	for (size_t i = 0; i < size; i++)
-		exec_env[i] = env_[i].c_str();
+		exec_env[i] = const_cast<char *>(env_[i].c_str());
 	exec_env[size] = NULL;
 
 	return (exec_env);
