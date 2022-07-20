@@ -12,7 +12,7 @@ CGIEnv::~CGIEnv(void)
 
 void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
 {
-	env_.push_back(std::make_pair(key, value));
+	env_.push_back(key + "=" + value);
 }
 
 void	CGIEnv::SetEnv(void)
@@ -47,12 +47,7 @@ char**	CGIEnv::GetEnv(void) const
 	size = env_.size();
 	exec_env = new char*[size + 1];
 	for (size_t i = 0; i < size; i++)
-	{
-		std::string	tmp;
-
-		tmp = env_[i].first + "=" + env_[i].second;
-		exec_env[i] = strdup(tmp.c_str());
-	}
+		exec_env[i] = env_[i].c_str();
 	exec_env[size] = NULL;
 
 	return (exec_env);

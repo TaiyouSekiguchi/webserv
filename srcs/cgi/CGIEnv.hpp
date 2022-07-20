@@ -1,10 +1,8 @@
 #ifndef CGIENV_HPP
 # define CGIENV_HPP
 
-# include <string.h>
 # include <string>
 # include <vector>
-# include <utility>
 
 class CGIEnv
 {
@@ -15,13 +13,11 @@ class CGIEnv
 		char**	GetEnv(void) const;
 
 	private:
-		typedef	std::pair<std::string, std::string> pair;
-
 		void	SetEnv(void);
 		void	AddEnv(const std::string& key, const std::string& value);
 
-		const HTTPRequest&		req_;
-		std::vector<pair>		env_;
+		const HTTPRequest&			req_;
+		std::vector<std::string>	env_;
 };
 
 #endif
