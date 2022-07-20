@@ -60,15 +60,15 @@ void	HTTPServer::MainLoop(EventQueue const & equeue) const
 
 void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
-	(void)ssocket;
-	int				status_code;
-	HTTPRequest		req;
-	// HTTPMethod		method;
+	//(void)ssocket;
+	int						status_code;
 	const ServerDirective&	server_conf = ssocket->GetServerConf();
+	HTTPRequest				req(ssocket, server_conf);
+	// HTTPMethod			method;
 
 	try
 	{
-		req.ParseRequest(*ssocket, server_conf);
+		req.ParseRequest();
 		req.RequestDisplay();
 	// 	status_code = method.ExecHTTPMethod(req, server_conf);
 	}
