@@ -6,6 +6,7 @@
 #include "Config.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
+#include "HTTPMethod.hpp"
 
 HTTPServer::HTTPServer()
 {
@@ -60,11 +61,10 @@ void	HTTPServer::MainLoop(EventQueue const & equeue) const
 
 void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
-	//(void)ssocket;
 	int						status_code;
 	const ServerDirective&	server_conf = ssocket->GetServerConf();
 	HTTPRequest				req(ssocket, server_conf);
-	// HTTPMethod			method;
+	HTTPMethod				method;
 
 	try
 	{
@@ -80,8 +80,10 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 	catch (const HTTPError& e)
 	{
 		status_code = e.GetStatusCode();
-		std::cerr << "status_code : " << status_code << std::endl;
 	}
+	req.RequestDisplay();
+	std::cout << "status_code: " << status_code << std::endl;
+	method.MethodDisplay();
 	// HTTPResponse	res(status_code, req, method, server_conf);
 	// res.SendResponse(ssocket);
 }

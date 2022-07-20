@@ -12,9 +12,10 @@ class HTTPError : public std::exception
 			FORBIDDEN = 403,
 			NOT_FOUND = 404,
 			METHOD_NOT_ALLOWED = 405,
+			CONFLICT = 409,
 			PAYLOAD_TOO_LARGE = 413,
 			INTERNAL_SERVER_ERROR = 500,
-			HTTP_VERSION_NOT_SUPPORTED = 505,
+			HTTP_VERSION_NOT_SUPPORTED = 505
 		};
 
 		explicit HTTPError(const int status_code) : status_code_(status_code) {}

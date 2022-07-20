@@ -1,9 +1,10 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	testsrcs:$(SRCSDIR)/config
+vpath	%.cpp	testsrcs:$(SRCSDIR)/config:$(SRCSDIR)/utils
 SRCS	=	Config.cpp \
 			Tokens.cpp \
 			LocationDirective.cpp \
-			ServerDirective.cpp
+			ServerDirective.cpp \
+			utils.cpp
 SRCS	+=	default_test.cpp \
 			lexer_test.cpp \
 			location_test.cpp \
@@ -13,7 +14,7 @@ OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I$(SRCSDIR)/config
+INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils
 NAME	=	unit_test
 
 CC		=	c++
