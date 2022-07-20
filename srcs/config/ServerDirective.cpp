@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include "ServerDirective.hpp"
+#include "utils.hpp"
 
 ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 {
@@ -15,8 +16,7 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 	Tokens::citr										itr;
 	Tokens::citr										directive_end;
 
-	SetDefaultValues();
-
+	SetInitValue();
 	itr = begin;
 	while (itr < end)
 	{
@@ -29,17 +29,18 @@ ServerDirective::ServerDirective(Tokens::citr begin, Tokens::citr end)
 		(this->*(found->second))(itr + 1, directive_end);
 		itr = directive_end + 1;
 	}
+	SetDefaultValue();
 }
 
 ServerDirective::~ServerDirective()
 {
 }
 
-const std::pair<unsigned int, int>&		ServerDirective::GetListen() const { return (listen_); }
-const std::vector<std::string>&			ServerDirective::GetServerNames() const { return(server_names_); }
-const std::map<int, std::string>&		ServerDirective::GetErrorPages() const { return (error_pages_); }
-const long&								ServerDirective::GetClientMaxBodySize() const { return (client_max_body_size_); }
-const std::vector<LocationDirective>&	ServerDirective::GetLocations() const { return (locations_); }
+const std::vector<std::pair<unsigned int, int> >&	ServerDirective::GetListen() const { return (listen_); }
+const std::vector<std::string>&						ServerDirective::GetServerNames() const { return(server_names_); }
+const std::map<int, std::string>&					ServerDirective::GetErrorPages() const { return (error_pages_); }
+const long&											ServerDirective::GetClientMaxBodySize() const { return (client_max_body_size_); }
+const std::vector<LocationDirective>&				ServerDirective::GetLocations() const { return (locations_); }
 
 Tokens::citr	ServerDirective::GetDirectiveEnd
 	(const std::string& name, Tokens::citr begin, Tokens::citr end) const
@@ -53,11 +54,22 @@ Tokens::citr	ServerDirective::GetDirectiveEnd
 	return (directive_end);
 }
 
-void	ServerDirective::SetDefaultValues()
+void	ServerDirective::SetInitValue()
 {
-	listen_ = std::make_pair(INADDR_ANY, 80);
-	server_names_.push_back("");
-	client_max_body_size_ = 1048576;
+	errno = 0;
+	client_max_body_size_ = -1;
+}
+
+void	ServerDirective::SetDefaultValue()
+{
+	if (listen_.size() == 0)
+		listen_.push_back(std::make_pair(INADDR_ANY, 8000));
+	if (server_names_.size() == 0)
+		server_names_.push_back("");
+	if (client_max_body_size_ == -1)
+		client_max_body_size_ = 1048576;
+	if (locations_.size() == 0)
+		locations_.push_back(LocationDirective());
 }
 
 void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
@@ -90,19 +102,21 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 		if (*endptr != '\0' || errno == ERANGE || port < 1 || 65535 < port)
 			throw std::runtime_error("conf syntax error");
 	}
-	listen_ = std::make_pair(ip, port);
+	std::pair<unsigned int, int>	new_listen = std::make_pair(ip, port);
+	if (!Utils::IsNotFound(listen_, new_listen))
+		throw std::runtime_error("conf syntax error");
+	listen_.push_back(new_listen);
 }
 
 void	ServerDirective::ParseServerNames(Tokens::citr begin, Tokens::citr end)
 {
-	server_names_.clear();
-
 	Tokens::citr	itr = begin;
 	while (itr != end)
 	{
 		if (Tokens::isSpecialToken(*itr))
 			throw std::runtime_error("conf syntax error");
-		server_names_.push_back(*itr);
+		if (Utils::IsNotFound(server_names_, *itr))
+			server_names_.push_back(*itr);
 		itr++;
 	}
 }
@@ -122,7 +136,8 @@ void	ServerDirective::ParseErrorPages(Tokens::citr begin, Tokens::citr end)
 		status_code = std::strtol((*itr).c_str(), &endptr, 10);
 		if (*endptr != '\0' || errno == ERANGE || status_code < 300 || 599 < status_code)
 			throw std::runtime_error("conf syntax error");
-		error_pages_[status_code] = error_file;
+		if (error_pages_.find(status_code) == error_pages_.end())
+			error_pages_[status_code] = error_file;
 		++itr;
 	}
 }
@@ -130,6 +145,8 @@ void	ServerDirective::ParseErrorPages(Tokens::citr begin, Tokens::citr end)
 void	ServerDirective::ParseClientMaxBodySize(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	else if (client_max_body_size_ != -1)
 		throw std::runtime_error("conf syntax error");
 
 	char		*endptr;

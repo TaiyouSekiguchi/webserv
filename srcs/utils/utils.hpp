@@ -13,10 +13,11 @@ namespace Utils
 		(const std::string& str, const char* set = " \t\v\r\n");
 	bool 			MyisLower(const char ch);
 	std::string		GetMicroSecondTime();
-	bool			IsNotFound(const std::vector<std::string>& vec, const std::string& val);
 
 	template <typename T>
 	std::string		ToString(const T& n);
+	template <typename T>
+	bool			IsNotFound(const std::vector<T>& vec, const T& val);
 }  // namespace Utils
 
 template <typename T>
@@ -25,6 +26,13 @@ std::string		Utils::ToString(const T& n)
 	std::stringstream	ss;
 	ss << n;
 	return (ss.str());
+}
+
+template <typename T>
+bool	Utils::IsNotFound(const std::vector<T>& vec, const T& val)
+{
+	typename std::vector<T>::const_iterator	end = vec.end();
+	return (std::find(vec.begin(), end, val) == end);
 }
 
 #endif

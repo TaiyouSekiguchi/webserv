@@ -6,9 +6,9 @@ SRCS	=	Config.cpp \
 			ServerDirective.cpp \
 			utils.cpp
 SRCS	+=	default_test.cpp \
+			server_test.cpp \
 			lexer_test.cpp \
-			location_test.cpp \
-			server_test.cpp
+			location_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
