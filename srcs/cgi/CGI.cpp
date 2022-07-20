@@ -12,26 +12,24 @@ CGI::~CGI(void)
 {
 }
 
-static void	pipe_set(int src, int dst, int not_use, bool child)
+static void	pipe_set(int src, int dst)
 {
-	if (close(not_use) < 0
-		|| close(dst) < 0
+	if (close(dst) < 0
 		|| dup2(src, dst) < 0
 		|| close(src) < 0)
 	{
-		if (child)
-			std::exit(EXIT_FAILURE);
-		else
-			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		return (0);
 	}
+	return (1);
 }
 
-void	CGI::DoChild(const int pipe_fd[2])
+void	CGI::SendData(const int pipe_fd[2])
 {
 	CGIEnv	env(req_);
 	char*	argv[2];
 
-	pipe_set(pipe_fd[1], 1, pipe_fd[0], true);
+	if (close(pipe_fd[0]) < 0 || !pipe_set(pipe_fd[1], 1))
+		std::exit(EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(file_path_.c_str());
 	argv[1] = NULL;
@@ -40,7 +38,7 @@ void	CGI::DoChild(const int pipe_fd[2])
 		std::exit(EXIT_FAILURE);
 }
 
-void	CGI::DoParent(const int pipe_fd[2], const pid_t pid)
+void	CGI::ReceiveData(const int pipe_fd[2], const pid_t pid)
 {
 	const size_t	buf_size = 4;
 	char			buf[buf_size + 1];
@@ -48,7 +46,8 @@ void	CGI::DoParent(const int pipe_fd[2], const pid_t pid)
 	pid_t			ret_pid;
 	int				status;
 
-	pipe_set(pipe_fd[0], 0, pipe_fd[1], false);
+	if (close(pipe_fd[1]) < 0 || !pipe_set(pipe_fd[0], 0))
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	while (1)
 	{
@@ -63,7 +62,6 @@ void	CGI::DoParent(const int pipe_fd[2], const pid_t pid)
 
 	ret_pid = waitpid(pid, &status, 0);
 	if (ret_pid < 0
-		|| ret_pid != pid
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
@@ -78,9 +76,9 @@ void	CGI::ExecuteCGI(void)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	if (pid == 0)
-		DoChild(pipe_fd);
+		SendData(pipe_fd);
 	else
-		DoParent(pipe_fd, pid);
+		ReceiveData(pipe_fd, pid);
 
 	return;
 }
@@ -125,6 +123,9 @@ void	CGI::ParseCGI(void)
 	while (1)
 	{
 		pos = data_.find("\n", offset);
+		if (pos == std::string::npos)
+			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+
 		line = data_.substr(offset, pos - offset);
 		offset = pos + 1;
 		if (line == "")
