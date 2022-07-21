@@ -6,10 +6,16 @@ int		main(int argc, char **argv)
 {
 	try
 	{
-		if (argc != 2)
-			throw std::runtime_error("Usage: ./webserv <config file>");
+		std::string		conf_path;
 
-		Config		config(argv[1]);
+		if (argc >= 3)
+			throw std::runtime_error("Usage: ./webserv <config file>");
+		else if (argc == 2)
+			conf_path = argv[1];
+		else
+			conf_path = "conf/default.conf";
+
+		Config		config(conf_path);
 		HTTPServer	hserver;
 		hserver.Start(config);
 	}
