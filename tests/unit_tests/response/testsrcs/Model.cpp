@@ -4,18 +4,21 @@
 
 Model::Model(std::string uri)
 {
-	CreateResponse(uri);
+	CurlSetup(uri);
+	CreateResponse();
 }
 
 Model::Model(std::string uri, const std::vector<std::string> &rm_headers): rm_headers_(rm_headers)
 {
-	CreateResponse(uri);
+	CurlSetup(uri);
+	CreateResponse();
 }
 
 Model::~Model() {}
 std::string &Model::GetResponse() { return response_; }
+const std::map<std::string, std::string> &Model::GetHeader() const { return header_; }
 
-void Model::CreateResponse(std::string uri)
+void Model::CurlSetup(std::string uri)
 {
 	CURL *curl;
 
@@ -30,6 +33,24 @@ void Model::CreateResponse(std::string uri)
 
 	curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
+	header_ = buf_.GetHeader();
+}
+
+void Model::CreateResponse()
+{
+	// CURL *curl;
+
+	// curl = curl_easy_init();
+	// curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
+	// curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+	// curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
+	// curl_easy_setopt(curl, CURLOPT_HEADERDATA, &buf_);
+	// curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buf_);
+	// curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
+	// curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+
+	// curl_easy_perform(curl);
+	// curl_easy_cleanup(curl);
 
 	std::map<std::string, std::string> header = buf_.GetHeader();
 
@@ -42,7 +63,7 @@ void Model::CreateResponse(std::string uri)
 	for (; ite != header.end(); ite++)
 		ss << ite->first << ": " << ite->second;
 	ss << "\r\n";
-	ss << buf_.GetBody() << std::endl;
+	ss << buf_.GetBody();
 
 	response_ = ss.str();
 }

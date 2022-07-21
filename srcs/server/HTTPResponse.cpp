@@ -28,14 +28,14 @@ void HTTPResponse::AppendHeaders()
 	AppendHeader("Date", GetDate());
 	AppendHeader("Connection", req_.GetConnection() ? "keep-alive" : "close");
 	AppendHeader("Content-type", method_.GetContentType());
-	AppendHeader("Location", method_.GetLocation());
+	AppendHeader("Location", headers_.find("Location") == headers_.end() ? method_.GetLocation() : "");
 	AppendHeader("Content-Length", Utils::ToString(body_.size()));
 }
 
 void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
 {
 	if (!value.empty())
-		headers_[key] = value;
+		headers_[key] = value + "\r\n";
 }
 
 std::string HTTPResponse::GetDate() const
@@ -46,7 +46,6 @@ std::string HTTPResponse::GetDate() const
 
 	asctime_r(gmtime_r(&now, &current_time), str);
 	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
-	std::cout << str << std::endl;
 	return (str);
 }
 
@@ -72,7 +71,6 @@ std::string HTTPResponse::GenerateHTML()
 	if (ite != server_conf_.GetErrorPages().end())
 	{
 		const std::string error_page_path = ite->second;
-		std::cout << "now" << std::endl;
 		if (error_page_path.at(0) == '/')
 		{
 			std::ifstream ifs("html" + error_page_path);
@@ -98,7 +96,7 @@ std::string HTTPResponse::GenerateDefaultHTML() const
 	ss << "<head><title>" << status_code_ << " " << kStatusMsg_.at(status_code_) <<"</title></head>\r\n";
 	ss << "<body>\r\n";
 	ss << "<center><h1>" << status_code_ << " " << kStatusMsg_.at(status_code_) << "</h1></center>\r\n";
-	ss << "<hr><center>" << headers_.at("Server") << "</center>\r\n";
+	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
 	ss << "</body>\r\n";
 	ss << "</html>\r\n";
 	return (ss.str());
@@ -121,7 +119,7 @@ std::string HTTPResponse::HeaderFeild() const
 
 	for (; ite != headers_.end(); ite++)
 	{
-		ss << ite->first << ": " << ite->second << "\r\n";
+		ss << ite->first << ": " << ite->second;
 	}
 	ss << "\r\n";
 	return (ss.str());

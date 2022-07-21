@@ -25,7 +25,8 @@ SRCS	=	\
 			
 SRCS	+=	Buffer.cpp \
 			Model.cpp \
-			res_test.cpp
+			GET_res_test.cpp
+			# DELETE_res_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))

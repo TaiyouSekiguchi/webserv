@@ -14,6 +14,7 @@ class HTTPResponse
 		~HTTPResponse();
 
 		void SendResponse(ServerSocket *ssocket);
+		const std::map<std::string, std::string> &GetHeader() const;
 		const std::string &GetResMsg() const;
 
 	private:
