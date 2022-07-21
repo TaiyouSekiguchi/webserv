@@ -54,7 +54,10 @@ void	HTTPRequest::ParseMethod(const std::string& method)
 	const char	*found = std::find_if(str, str + method.size(), Utils::MyisLower);
 
 	if (found != str + method.size() || !Utils::IsToken(method))
+	{
+		std::cerr << "ParseMethod throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	method_ = method;
 }
@@ -62,7 +65,10 @@ void	HTTPRequest::ParseMethod(const std::string& method)
 void	HTTPRequest::ParseTarget(const std::string& target)
 {
 	if (target[0] != '/')
+	{
+		std::cerr << "ParseTarget throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	target_ = target;
 }
@@ -72,7 +78,10 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	if (version == "HTTP/1.1")
 		version_ = version;
 	else
+	{
+		std::cerr << "ParseVersion throw exception." << std::endl;
 		throw HTTPError(HTTPError::HTTP_VERSION_NOT_SUPPORTED);
+	}
 }
 
 void	HTTPRequest::ParseRequestLine(void)
@@ -83,11 +92,17 @@ void	HTTPRequest::ParseRequestLine(void)
 	while ((line = GetLine()) == "") { }
 
 	if (Utils::IsBlank(line.at(0)))
+	{
+		std::cerr << "ParseRequestLine throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	list = Utils::MySplit(line, " ");
 	if (list.size() != 3)
+	{
+		std::cerr << "ParseRequestLine throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	ParseMethod(list.at(0));
 	ParseTarget(list.at(1));
@@ -108,15 +123,24 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 
 	list = Utils::MySplit(content, " ");
 	if (list.size() != 1)
+	{
+		std::cerr << "ParseContentLength throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
 
 	if (errno == ERANGE || *endptr != '\0')
+	{
+		std::cerr << "ParseContentLength throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
+	{
+		std::cerr << "ParseContentLength throw exception." << std::endl;
 		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
+	}
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -134,9 +158,7 @@ void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 	it = list.begin();
 	it_end = list.end();
 	for (; it != it_end; ++it)
-	{
 		*it = Utils::MyTrim(*it, " ");
-	}
 	accept_encoding_ = list;
 }
 
@@ -196,12 +218,12 @@ void	HTTPRequest::ReceiveHeaders(void)
 		"connection",
 		"content-type"
 	};
-	std::vector<std::string>	header_list;
+	std::vector<std::string>			header_list;
 	std::vector<std::string>::iterator	it;
-	std::string				line;
-	std::string				field;
-	std::string				content;
-	std::string::size_type	pos;
+	std::string							line;
+	std::string							field;
+	std::string							content;
+	std::string::size_type				pos;
 
 	header_list.insert(header_list.begin(), array, array + 6);
 
@@ -209,10 +231,14 @@ void	HTTPRequest::ReceiveHeaders(void)
 	{
 		pos = line.find(":");
 		if (pos == std::string::npos)
+		{
+			std::cerr << "ReceiveHeaders throw exception." << std::endl;
 			throw HTTPError(HTTPError::BAD_REQUEST);
+		}
 
 		field = line.substr(0, pos);
-		if (Utils::IsBlank(field.at(0)) || Utils::IsBlank(field.at(field.size() - 1)))
+		if (Utils::IsBlank(field.at(0))
+			|| Utils::IsBlank(field.at(field.size() - 1)))
 			continue;
 
 		field = Utils::StringToLower(field);
@@ -227,9 +253,15 @@ void	HTTPRequest::ReceiveHeaders(void)
 			{
 				if (field == "host"
 					|| field == "content-length")
-					throw HTTPError(HTTPError::BAD_REQUEST);
-				else
+					{
+						std::cerr << "ReceiveHeaders throw exception." << std::endl;
+						throw HTTPError(HTTPError::BAD_REQUEST);
+					}
+				else if (field == "accept-encoding"
+					|| field == "connection")
 					headers_[field] = headers_[field] + "," + content;
+				else
+					headers_[field] = content;
 			}
 		}
 	}
@@ -244,17 +276,17 @@ void	HTTPRequest::ParseHeaders(void)
 
 	it = headers_.begin();
 	it_end = headers_.end();
-
 	for ( ; it != it_end; ++it)
-	{
 		ParseHeader(it->first, it->second);
-	}
 }
 
 void	HTTPRequest::CheckHeaders(void)
 {
 	if (host_ == "")
+	{
+		std::cerr << "CheckHeaders throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 }
 
 void	HTTPRequest::ParseBody(void)
