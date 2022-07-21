@@ -17,13 +17,13 @@ void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
 
 void	CGIEnv::SetEnv(void)
 {
-	AddEnv("AUTH_TYPE", "");
-	AddEnv("CONTENT_LENGTH", req_.GetContentLength());
+	AddEnv("AUTH_TYPE", "TEST");
+	AddEnv("CONTENT_LENGTH", "TEST");
 	AddEnv("CONTENT_TYPE", "TEST");
 	AddEnv("GATEWAY_INTERFACE", "CGI/1.1");
-	AddEnv("HTTP_ACCEPT", "TEST");
-	AddEnv("HTTP_REFERER", "TEST");
-	AddEnv("HTTP_USER_AGENT", "TEST");
+	AddEnv("HTTP_ACCEPT", req_.GetContentType());
+	//AddEnv("HTTP_REFERER", "TEST");
+	AddEnv("HTTP_USER_AGENT", ret_.GetUserAgent());
 	AddEnv("PATH_INFO", "TEST");
 	AddEnv("PATH_TRANSLATED", "TEST");
 	AddEnv("QUERY_STRING", "TEST");
@@ -35,8 +35,8 @@ void	CGIEnv::SetEnv(void)
 	AddEnv("SCRIPT_NAME", "TEST");
 	AddEnv("SERVER_NAME", "TEST");
 	AddEnv("SERVER_PORT", "TEST");
-	AddEnv("SERVER_PROTOCOL", "TEST");
-	AddEnv("SERVER_SOFTWARE", "TEST");
+	AddEnv("SERVER_PROTOCOL", "HTTP/1.1");
+	AddEnv("SERVER_SOFTWARE", "42Webserv");
 }
 
 char**	CGIEnv::GetEnv(void) const
