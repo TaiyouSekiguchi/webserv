@@ -10,6 +10,8 @@
 class ServerDirective
 {
 	public:
+		typedef std::pair<unsigned int, int>	Listen;
+
 		ServerDirective(Tokens::citr begin, Tokens::citr end);
 		~ServerDirective();
 

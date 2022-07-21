@@ -174,14 +174,11 @@ void	ServerDirective::ParseLocation(Tokens::citr begin, Tokens::citr end)
 	if (begin >= end || Tokens::isSpecialToken(*begin))
 		throw std::runtime_error("conf syntax error");
 
-	const std::string 								path = *begin;
-	std::vector<LocationDirective>::const_iterator	litr = locations_.begin();
-	std::vector<LocationDirective>::const_iterator	lend = locations_.end();
-	while (litr != lend)
-	{
-		if (path == litr->GetPath())
-			throw std::runtime_error("conf syntax error");
-		++litr;
-	}
+	const std::string& 								path = *begin;
+	std::vector<LocationDirective>::const_iterator	found;
+
+	found = Utils::FindMatchMember(locations_, &LocationDirective::GetPath, path);
+	if (found != locations_.end())
+		throw std::runtime_error("conf syntax error");
 	locations_.push_back(LocationDirective(path, begin + 2, end));
 }
