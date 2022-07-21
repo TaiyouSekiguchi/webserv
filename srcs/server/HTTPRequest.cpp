@@ -3,9 +3,9 @@
 HTTPRequest::HTTPRequest(const ServerSocket& ssocket, const ServerDirective& server_conf)
 	: ssocket_(ssocket)
 	, client_max_body_size_(server_conf.GetClientMaxBodySize())
+	, content_length_(0)
 	, connection_(true)
 {
-	host_ = std::make_pair("", 80);
 }
 
 HTTPRequest::~HTTPRequest()
@@ -15,8 +15,8 @@ HTTPRequest::~HTTPRequest()
 std::string						HTTPRequest::GetMethod(void) const { return (method_); }
 std::string						HTTPRequest::GetTarget(void) const { return (target_); }
 std::string						HTTPRequest::GetVersion(void) const { return (version_); }
-std::pair<std::string, int>		HTTPRequest::GetHost(void) const { return (host_); }
-std::string						HTTPRequest::GetContentLength(void) const { return (content_length_); }
+std::string						HTTPRequest::GetHost(void) const { return (host_); }
+size_t							HTTPRequest::GetContentLength(void) const { return (content_length_); }
 std::string						HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
 std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
 bool							HTTPRequest::GetConnection(void) const { return (connection_); }
@@ -98,60 +98,25 @@ void	HTTPRequest::ParseRequestLine(void)
 
 void HTTPRequest::ParseHost(const std::string& content)
 {
-	std::vector<std::string>	list1;
-	std::vector<std::string>	list2;
-	std::string					host;
-
-	list1 = Utils::MySplit(content, " ");
-	if (list1.size() != 1)
-		throw HTTPError(HTTPError::BAD_REQUEST);
-
-	list2 = Utils::MySplit(list1.at(0), ":");
-	if (list2.size() > 2)
-		throw HTTPError(HTTPError::BAD_REQUEST);
-
-	host = list2.at(0);
-	for (size_t i = 0; i < host.size(); i++)
-	{
-		if (!isalpha(host[i])
-			&& !isdigit(host[i])
-			&& host[i] != '.'
-			&& host[i] != '-')
-			throw HTTPError(HTTPError::BAD_REQUEST);
-	}
-	host_.first = host;
-
-	if (list2.size() == 2)
-	{
-		long	port;
-		char	*endptr;
-
-		port = std::strtol(list2.at(1).c_str(), &endptr, 10);
-		if (*endptr != '\0' || errno == ERANGE || port < 1 || 65535 < port)
-			throw HTTPError(HTTPError::BAD_REQUEST);
-		host_.second = port;
-	}
+	host_ = Utils::MyTrim(content, " ");
 }
 
 void HTTPRequest::ParseContentLength(const std::string& content)
 {
 	std::vector<std::string>	list;
 	char						*endptr;
-	size_t						tmp;
 
 	list = Utils::MySplit(content, " ");
 	if (list.size() != 1)
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	tmp = std::strtoul(list.at(0).c_str(), &endptr, 10);
+	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
 
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(HTTPError::BAD_REQUEST);
 
-	if (client_max_body_size_ != 0 && tmp > client_max_body_size_)
+	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
 		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
-
-	content_length_ = list.at(0);
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -177,17 +142,23 @@ void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 
 void HTTPRequest::ParseConnection(const std::string& content)
 {
-	std::string		tmp;
+	std::vector<std::string>			list;
+	std::vector<std::string>::iterator	it;
+	std::vector<std::string>::iterator	it_end;
 
-	tmp = Utils::MyTrim(content, " ");
-	for (size_t i = 0; i < content.length(); i++)
+	list = Utils::MySplit(content, ",");
+	it = list.begin();
+	it_end = list.end();
+	for (; it != it_end; ++it)
 	{
-		if (tmp[i] >= 'A' && tmp[i] <= 'Z')
-			tmp[i] = tolower(tmp[i]);
+		*it = Utils::MyTrim(*it, " ");
+		*it = Utils::StringToLower(*it);
+		if (*it == "close")
+		{
+			connection_ = false;
+			break ;
+		}
 	}
-
-	if (tmp == "close")
-		connection_ = false;
 }
 
 void HTTPRequest::ParseContentType(const std::string& content)
@@ -217,10 +188,22 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 
 void	HTTPRequest::ReceiveHeaders(void)
 {
+	std::string				array[6] = {
+		"host",
+		"content-length",
+		"user-agent",
+		"accept-encoding",
+		"connection",
+		"content-type"
+	};
+	std::vector<std::string>	header_list;
+	std::vector<std::string>::iterator	it;
 	std::string				line;
 	std::string				field;
 	std::string				content;
 	std::string::size_type	pos;
+
+	header_list.insert(header_list.begin(), array, array + 6);
 
 	while ((line = GetLine()) != "")
 	{
@@ -232,24 +215,24 @@ void	HTTPRequest::ReceiveHeaders(void)
 		if (Utils::IsBlank(field.at(0)) || Utils::IsBlank(field.at(field.size() - 1)))
 			continue;
 
+		field = Utils::StringToLower(field);
 		content = line.substr(pos + 1);
-		Utils::StringToLower(&field);
 
-		if (headers_.count(field) == 0)
+		it = std::find(header_list.begin(), header_list.end(), field);
+		if (it != header_list.end())
 		{
-			headers_[field] = content;
-		}
-		else
-		{
-			if (field == "host")
-				throw HTTPError(HTTPError::BAD_REQUEST);
+			if (headers_.count(field) == 0)
+				headers_[field] = content;
 			else
-				headers_[field] = headers_[field] + ", " + content;
+			{
+				if (field == "host"
+					|| field == "content-length")
+					throw HTTPError(HTTPError::BAD_REQUEST);
+				else
+					headers_[field] = headers_[field] + "," + content;
+			}
 		}
 	}
-
-	if (headers_.count("host") == 0)
-		throw HTTPError(HTTPError::BAD_REQUEST);
 
 	return;
 }
@@ -263,7 +246,15 @@ void	HTTPRequest::ParseHeaders(void)
 	it_end = headers_.end();
 
 	for ( ; it != it_end; ++it)
+	{
 		ParseHeader(it->first, it->second);
+	}
+}
+
+void	HTTPRequest::CheckHeaders(void)
+{
+	if (host_ == "")
+		throw HTTPError(HTTPError::BAD_REQUEST);
 }
 
 void	HTTPRequest::ParseBody(void)
@@ -274,10 +265,10 @@ void	HTTPRequest::ParseBody(void)
 	size_t			default_recv_byte = 1024;
 	size_t			recv_byte;
 
-	// if (method_ != POST)
-	// 	return;
+	if (method_ != "POST")
+		return;
 
-	remaining_byte = std::strtoul(content_length_.c_str(), NULL, 10);
+	remaining_byte = content_length_;
 
 	if (save_.length() != 0)
 	{
@@ -307,6 +298,7 @@ void	HTTPRequest::ParseRequest(void)
 	ParseRequestLine();
 	ReceiveHeaders();
 	ParseHeaders();
+	CheckHeaders();
 	ParseBody();
 
 	return;
@@ -317,8 +309,7 @@ void	HTTPRequest::RequestDisplay(void) const
 	std::cout << "method            : " << method_ << std::endl;
 	std::cout << "target            : " << target_ << std::endl;
 	std::cout << "version           : " << version_ << std::endl;
-	std::cout << "host.first        : " << host_.first << std::endl;
-	std::cout << "host.second       : " << host_.second << std::endl;
+	std::cout << "host              : " << host_ << std::endl;
 	std::cout << "content_length    : " << content_length_ << std::endl;
 	std::cout << "[ BODY ]" << std::endl;
 	std::cout << body_ << std::endl;

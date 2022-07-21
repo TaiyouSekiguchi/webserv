@@ -61,10 +61,10 @@ void	HTTPServer::MainLoop(EventQueue const & equeue) const
 
 void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
-	int						status_code;
+	int						status_code = 0;
 	const ServerDirective&	server_conf = ssocket->GetServerConf();
-	HTTPRequest				req(ssocket, server_conf);
-	HTTPMethod				method;
+	HTTPRequest				req(*ssocket, server_conf);
+	//HTTPMethod				method;
 
 	try
 	{
@@ -81,9 +81,8 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 	{
 		status_code = e.GetStatusCode();
 	}
-	req.RequestDisplay();
 	std::cout << "status_code: " << status_code << std::endl;
-	method.MethodDisplay();
+	//method.MethodDisplay();
 	// HTTPResponse	res(status_code, req, method, server_conf);
 	// res.SendResponse(ssocket);
 }

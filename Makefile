@@ -14,8 +14,8 @@ SRCS	=	main.cpp \
 			ServerDirective.cpp \
 			Tokens.cpp \
 			HTTPRequest.cpp \
-			utils.cpp \
-			HTTPMethod.cpp \
+			utils.cpp
+			#HTTPMethod.cpp \
 			Stat.cpp \
 			Dir.cpp
 

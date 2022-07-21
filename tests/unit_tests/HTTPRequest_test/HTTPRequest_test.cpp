@@ -84,33 +84,43 @@ TEST_F(RequestTest, ParseHostTest)
 {
 	HTTPRequest		req1(*ssocket_, ssocket_->GetServerConf());
 	req1.ParseHost(" localhost:8080");
-	EXPECT_EQ("localhost", req1.GetHost().first);
-	EXPECT_EQ(8080, req1.GetHost().second);
+	EXPECT_EQ("localhost:8080", req1.GetHost());
 
 	HTTPRequest		req2(*ssocket_, ssocket_->GetServerConf());
 	req2.ParseHost(" developer.mozilla.org");
-	EXPECT_EQ("developer.mozilla.org", req2.GetHost().first);
-	EXPECT_EQ(80, req2.GetHost().second);
-
-	HTTPRequest		req3(*ssocket_, ssocket_->GetServerConf());
-	EXPECT_ANY_THROW(req3.ParseHost("localhost:8080 test"));
-
-	HTTPRequest		req4(*ssocket_, ssocket_->GetServerConf());
-	EXPECT_ANY_THROW(req4.ParseHost("localhost:80:80"));
+	EXPECT_EQ("developer.mozilla.org", req2.GetHost());
 }
 
 TEST_F(RequestTest, ParseContentLength)
 {
 	HTTPRequest		req1(*ssocket_, ssocket_->GetServerConf());
 	req1.ParseContentLength(" 123");
-	EXPECT_EQ("123", req1.GetContentLength());
+	EXPECT_EQ((size_t)123, req1.GetContentLength());
 
 	HTTPRequest		req2(*ssocket_, ssocket_->GetServerConf());
 	req2.ParseContentLength(" 0");
-	EXPECT_EQ("0", req2.GetContentLength());
+	EXPECT_EQ((size_t)0, req2.GetContentLength());
 
 	HTTPRequest		req3(*ssocket_, ssocket_->GetServerConf());
 	EXPECT_ANY_THROW(req3.ParseContentLength(" 12345abc"));
+
+	HTTPRequest		req4(*ssocket_, ssocket_->GetServerConf());
+	EXPECT_ANY_THROW(req4.ParseContentLength(""));
+
+	HTTPRequest		req5(*ssocket_, ssocket_->GetServerConf());
+	EXPECT_ANY_THROW(req5.ParseContentLength("         "));
+
+	HTTPRequest		req6(*ssocket_, ssocket_->GetServerConf());
+	EXPECT_ANY_THROW(req6.ParseContentLength("-1234"));
+
+	HTTPRequest		req7(*ssocket_, ssocket_->GetServerConf());
+	EXPECT_ANY_THROW(req7.ParseContentLength("123 456 789"));
+
+	HTTPRequest		req8(*ssocket_, ssocket_->GetServerConf());
+	EXPECT_ANY_THROW(req8.ParseContentLength("123,456,789"));
+
+	HTTPRequest		req10(*ssocket_, ssocket_->GetServerConf());
+	EXPECT_ANY_THROW(req10.ParseContentLength("111111111111"));
 }
 
 TEST_F(RequestTest, ParseUserAgent)
@@ -181,9 +191,8 @@ TEST_F(RequestTest, RequestTest)
 	EXPECT_EQ("POST", req.GetMethod());
 	EXPECT_EQ("/", req.GetTarget());
 	EXPECT_EQ("HTTP/1.1", req.GetVersion());
-	EXPECT_EQ("localhost", req.GetHost().first);
-	EXPECT_EQ(8080, req.GetHost().second);
-	EXPECT_EQ("10", req.GetContentLength());
+	EXPECT_EQ("localhost:8080", req.GetHost());
+	EXPECT_EQ((size_t)10, req.GetContentLength());
 	EXPECT_EQ(true, req.GetConnection());
 	EXPECT_EQ("debian", req.GetUserAgent());
 	EXPECT_EQ("text/html", req.GetContentType());

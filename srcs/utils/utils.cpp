@@ -126,14 +126,19 @@ bool	Utils::IsTChar(char c)
 	return (false);
 }
 
-void	Utils::StringToLower(std::string* str)
+std::string	Utils::StringToLower(const std::string& str)
 {
-	for (size_t i = 0; i < str->size(); i++)
+	std::string		ret;
+
+	ret = str;
+	for (size_t i = 0; i < ret.size(); i++)
 	{
 		char	c;
 
-		c = str->at(i);
+		c = ret.at(i);
 		if (c >= 'A' && c <= 'Z')
-			str->at(i) = tolower(c);
+			ret.at(i) = tolower(c);
 	}
+
+	return (ret);
 }

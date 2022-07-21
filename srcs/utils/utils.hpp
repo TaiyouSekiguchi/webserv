@@ -17,7 +17,7 @@ namespace Utils
 	bool			IsBlank(char c);
 	bool			IsToken(const std::string& str);
 	bool			IsTChar(char c);
-	void			StringToLower(std::string* str);
+	std::string		StringToLower(const std::string& str);
 
 	template <typename T>
 	std::string		ToString(const T& n);

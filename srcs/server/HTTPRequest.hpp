@@ -28,8 +28,8 @@ class HTTPRequest
 		std::string						GetMethod(void) const;
 		std::string						GetTarget(void) const;
 		std::string						GetVersion(void) const;
-		std::pair<std::string, int>		GetHost(void) const;
-		std::string						GetContentLength(void) const;
+		std::string						GetHost(void) const;
+		size_t							GetContentLength(void) const;
 		std::string						GetUserAgent(void) const;
 		std::vector<std::string>		GetAcceptEncoding(void) const;
 		bool							GetConnection(void) const;
@@ -56,8 +56,8 @@ class HTTPRequest
 
 		// header
 		std::map<std::string, std::string>	headers_;
-		std::pair<std::string, int>			host_;
-		std::string							content_length_;
+		std::string							host_;
+		size_t								content_length_;
 		std::string							user_agent_;
 		std::vector<std::string>			accept_encoding_;
 		bool								connection_;
@@ -74,6 +74,7 @@ class HTTPRequest
 		void			ParseVersion(const std::string& version);
 		void			ReceiveHeaders(void);
 		void			ParseHeaders(void);
+		void			CheckHeaders(void);
 		void			ParseHeader(const std::string& field, const std::string& content);
 		void			ParseHost(const std::string& content);
 		void			ParseContentLength(const std::string& content);
