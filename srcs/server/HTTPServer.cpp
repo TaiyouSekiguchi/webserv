@@ -27,9 +27,9 @@ void	HTTPServer::RegisterListenSockets(const Config& config, EventQueue* equeue)
 
 	while (sitr != send)
 	{
-		const std::vector<std::pair<unsigned int, int> >&			listens = sitr->GetListen();
-		std::vector<std::pair<unsigned int, int> >::const_iterator	litr = listens.begin();
-		std::vector<std::pair<unsigned int, int> >::const_iterator	lend = listens.end();
+		const std::vector<ServerDirective::Listen>&				listens = sitr->GetListen();
+		std::vector<ServerDirective::Listen>::const_iterator	litr = listens.begin();
+		std::vector<ServerDirective::Listen>::const_iterator	lend = listens.end();
 		while (litr != lend)
 		{
 			same_listen_lsocket = Utils::FindMatchMember(lsockets_, &ListenSocket::GetListen, *litr);
