@@ -93,9 +93,9 @@ std::string HTTPResponse::GenerateDefaultHTML() const
 	std::stringstream ss;
 
 	ss << "<html>\r\n";
-	ss << "<head><title>" << status_code_ << " " << kStatusMsg_.at(status_code_) <<"</title></head>\r\n";
+	ss << "<head><title>" << status_code_ << " " << kStatusMsg_[status_code_] <<"</title></head>\r\n";
 	ss << "<body>\r\n";
-	ss << "<center><h1>" << status_code_ << " " << kStatusMsg_.at(status_code_) << "</h1></center>\r\n";
+	ss << "<center><h1>" << status_code_ << " " << kStatusMsg_[status_code_] << "</h1></center>\r\n";
 	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
 	ss << "</body>\r\n";
 	ss << "</html>\r\n";
@@ -106,7 +106,7 @@ std::string HTTPResponse::CreateResponse()
 {
 	std::stringstream ss;
 
-	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_.at(status_code_) << "\r\n";
+	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_[status_code_] << "\r\n";
 	ss << HeaderFeild();
 	ss << body_;
 	return (ss.str());
@@ -152,8 +152,7 @@ const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 	std::make_pair(402, "Payment Required"),
 	std::make_pair(403, "Forbidden"),
 	std::make_pair(404, "Not Found"),
-	std::make_pair(405, "Not Allowed"),
-	// std::make_pair(405, "Method Not Allowed"),
+	std::make_pair(405, "Method Not Allowed"),
 	std::make_pair(406, "Not Acceptable"),
 	std::make_pair(407, "Proxy Authentication Required"),
 	std::make_pair(408, "Request Timeout"),
@@ -190,12 +189,12 @@ const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 	std::make_pair(511, "Network Authentication Required")
 };
 
-const std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[61]);
+std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[61]);
 const std::map<std::string, std::string> &HTTPResponse::GetHeader() const { return headers_; }
 const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
 const std::string HTTPResponse::GetResStatus() const
 {
 	std::stringstream ss;
-	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_.at(status_code_) << "\r\n";
+	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_[status_code_] << "\r\n";
 	return (ss.str());
 }

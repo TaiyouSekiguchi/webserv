@@ -20,7 +20,7 @@ class HTTPResponse
 
 	private:
 		static const std::pair<int, std::string> kPairs_[];
-		static const std::map<int, std::string> kStatusMsg_;
+		static std::map<int, std::string> kStatusMsg_;
 		const HTTPRequest &req_;
 		const HTTPMethod &method_;
 		const ServerDirective &server_conf_;
