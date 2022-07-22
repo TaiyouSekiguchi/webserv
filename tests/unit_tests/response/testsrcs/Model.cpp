@@ -2,28 +2,43 @@
 #include <iostream>
 #include <sstream>
 
-Model::Model(std::string uri)
+Model::Model(const std::string &method, std::string uri)
 {
-	CurlSetup(uri);
+	CurlSetup(method, uri);
 	CreateResponse();
 }
 
-Model::Model(std::string uri, const std::vector<std::string> &rm_headers): rm_headers_(rm_headers)
+Model::Model(const std::string &method, std::string uri, const std::vector<std::string> &rm_headers)
+	: rm_headers_(rm_headers)
 {
-	CurlSetup(uri);
+	CurlSetup(method, uri);
 	CreateResponse();
 }
 
 Model::~Model() {}
-std::string &Model::GetResponse() { return response_; }
+const std::string &Model::GetResponse() { return response_; }
 const std::map<std::string, std::string> &Model::GetHeader() const { return header_; }
+const std::string &Model::GetStatus() { return status_; }
 
-void Model::CurlSetup(std::string uri)
+void Model::CurlSetup(const std::string &method, std::string uri)
 {
 	CURL *curl;
 
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
+
+	if (method == "DELETE")
+	{
+		curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+	}
+	else if (method == "POST")
+	{
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, uri.c_str());
+	}
+	else
+	{
+		curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
+	}
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &buf_);
@@ -33,25 +48,13 @@ void Model::CurlSetup(std::string uri)
 
 	curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
+
+	status_ = buf_.GetStatus();
 	header_ = buf_.GetHeader();
 }
 
 void Model::CreateResponse()
 {
-	// CURL *curl;
-
-	// curl = curl_easy_init();
-	// curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
-	// curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-	// curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
-	// curl_easy_setopt(curl, CURLOPT_HEADERDATA, &buf_);
-	// curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buf_);
-	// curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
-	// curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-
-	// curl_easy_perform(curl);
-	// curl_easy_cleanup(curl);
-
 	std::map<std::string, std::string> header = buf_.GetHeader();
 
 	ModifiyHeader(&header);
@@ -59,7 +62,7 @@ void Model::CreateResponse()
 	std::map<std::string, std::string>::const_iterator ite = header.begin();
 	std::stringstream ss;
 
-	ss << buf_.GetStatus();
+	ss << status_;
 	for (; ite != header.end(); ite++)
 		ss << ite->first << ": " << ite->second;
 	ss << "\r\n";

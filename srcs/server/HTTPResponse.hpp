@@ -16,6 +16,7 @@ class HTTPResponse
 		void SendResponse(ServerSocket *ssocket);
 		const std::map<std::string, std::string> &GetHeader() const;
 		const std::string &GetResMsg() const;
+		const std::string GetResStatus() const;
 
 	private:
 		static const std::pair<int, std::string> kPairs_[];
