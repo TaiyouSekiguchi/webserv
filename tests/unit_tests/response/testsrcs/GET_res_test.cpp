@@ -17,7 +17,7 @@ class GETRESTest : public ::testing::Test
 			lsocket_ = new ListenSocket(*(config_.GetServers().begin()));
 			lsocket_->ListenConnection();
 			csocket_ = new ClientSocket();
-			csocket_->ConnectServer("127.0.0.1", 8085);
+			csocket_->ConnectServer("127.0.0.1", 8080);
 			ssocket_ = new ServerSocket(lsocket_->AcceptConnection(), lsocket_->GetServerConf());
 		}
     	static void TearDownTestCase()
@@ -39,9 +39,6 @@ class GETRESTest : public ::testing::Test
 			{
 				status_code_ = e.GetStatusCode();
 			}
-			// req_.RequestDisplay();
-			// std::cout << "status_code: " << status_code_ << std::endl;
-			// method_.MethodDisplay();
 		}
 
 		static Config			config_;
@@ -62,32 +59,7 @@ ClientSocket*	GETRESTest::csocket_ = NULL;
 const std::vector<std::string> rm_headers = {"ETag", "Last-Modified", "Accept-Ranges", "Server", "Content-Type"};
 const std::vector<std::string> cmp_headers = {"Connection", "Date", "Location"};
 
-// static void HeaderCmp(std::map<std::string, std::string> model_header, std::map<std::string, std::string> res_header)
-void HeaderCmp(std::map<std::string, std::string> model_header, std::map<std::string, std::string> res_header)
-{
-	std::vector<std::string>::const_iterator ite = cmp_headers.begin();
-	for (; ite != cmp_headers.end(); ite++)
-	{
-		EXPECT_EQ(model_header[*ite], res_header[*ite]);
-		// std::cout << *ite << ": " << model_header[*ite];
-		// std::cout << *ite << ": " << res_header[*ite];
-	}
-}
-
-// static void HeaderCmp(std::vector<std::string> cmp_head,
-void HeaderCmp(std::vector<std::string> cmp_head,
-		std::map<std::string, std::string> model_header, std::map<std::string, std::string> res_header)
-{
-	std::vector<std::string>::const_iterator ite = cmp_head.begin();
-	for (; ite != cmp_head.end(); ite++)
-	{
-		EXPECT_EQ(model_header[*ite], res_header[*ite]);
-		// std::cout << *ite << ": " << model_header[*ite];
-		// std::cout << *ite << ": " << res_header[*ite];
-	}
-}
-
-const std::string RemoveDate(std::string res_msg)
+static const std::string RemoveDate(std::string res_msg)
 {
 	std::string::size_type pos_s = res_msg.find("Date");
 	std::string s = res_msg.erase(pos_s, 37);
@@ -98,61 +70,58 @@ TEST_F(GETRESTest, BasicTest)
 {
 	RunCommunication("GET /ind.html HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	// Model model("GET", "localhost:8080/ind.html", rm_headers);
-	std::ifstream ifs("samp/Get/Basic");
-	// std::ifstream ifs("samp/Get/Basic.txt");
+	std::ifstream ifs("samp/GET/Basic");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	RemoveDate(res.GetResMsg());
-	// std::cout << RemoveDate(res.GetResMsg()) << std::endl;
-	// std::cout << samp << std::endl;
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
-	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
 }
 
-/* 
 TEST_F(GETRESTest, NotFoundTest)
 {
 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	Model model("GET", "localhost:8080/no", rm_headers);
-	HeaderCmp(model.GetHeader(), res.GetHeader());
-	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
+	std::ifstream ifs("samp/GET/NotFound");
+	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	RemoveDate(res.GetResMsg());
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
 TEST_F(GETRESTest, RootTest)
 {
 	RunCommunication("GET /hoge/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	Model model("GET", "localhost:8080/hoge/", rm_headers);
-	EXPECT_EQ(model.GetResponse(), res.GetResMsg());
+	std::ifstream ifs("samp/GET/Root");
+	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	RemoveDate(res.GetResMsg());
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
 TEST_F(GETRESTest, DirRedirectTest)
 {
-	const std::vector<std::string> cmp_head = {"Connection", "Date"};
-	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
+	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	Model model("GET", "localhost:8080/sub1", rm_headers);
-	HeaderCmp(cmp_head, model.GetHeader(), res.GetHeader());
-	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
+	std::ifstream ifs("samp/GET/DirRedirect");
+	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	RemoveDate(res.GetResMsg());
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
 TEST_F(GETRESTest, IndexTest)
 {
-	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
+	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	Model model("GET", "localhost:8080/sub1/", rm_headers);
-	HeaderCmp(model.GetHeader(), res.GetHeader());
-	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
-	// std::cout << model.GetResponse();
+	std::ifstream ifs("samp/GET/Index");
+	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	RemoveDate(res.GetResMsg());
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
 TEST_F(GETRESTest, DirForbiddenTest)
 {
-	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
+	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	Model model("GET", "localhost:8080/sub2/", rm_headers);
-	HeaderCmp(model.GetHeader(), res.GetHeader());
-	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
+	std::ifstream ifs("samp/GET/DirForbidden");
+	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	RemoveDate(res.GetResMsg());
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
- */
