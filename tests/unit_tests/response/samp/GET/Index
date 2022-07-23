@@ -1,0 +1,6 @@
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 20
+Server: Webserv
+
+html/sub1/sub1.html

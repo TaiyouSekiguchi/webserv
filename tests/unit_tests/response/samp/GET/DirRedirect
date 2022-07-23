@@ -1,0 +1,13 @@
+HTTP/1.1 301 Moved Permanently
+Connection: keep-alive
+Content-Length: 164
+Location: http://localhost:8080/sub1/
+Server: Webserv
+
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>Webserv</center>
+</body>
+</html>

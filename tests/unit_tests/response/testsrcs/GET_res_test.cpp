@@ -87,14 +87,29 @@ void HeaderCmp(std::vector<std::string> cmp_head,
 	}
 }
 
+const std::string RemoveDate(std::string res_msg)
+{
+	std::string::size_type pos_s = res_msg.find("Date");
+	std::string s = res_msg.erase(pos_s, 37);
+	return (s);
+}
+
 TEST_F(GETRESTest, BasicTest)
 {
 	RunCommunication("GET /ind.html HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	Model model("GET", "localhost:8080/ind.html", rm_headers);
-	EXPECT_EQ(model.GetResponse(), res.GetResMsg());
+	// Model model("GET", "localhost:8080/ind.html", rm_headers);
+	std::ifstream ifs("samp/Get/Basic");
+	// std::ifstream ifs("samp/Get/Basic.txt");
+	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	RemoveDate(res.GetResMsg());
+	// std::cout << RemoveDate(res.GetResMsg()) << std::endl;
+	// std::cout << samp << std::endl;
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
 }
 
+/* 
 TEST_F(GETRESTest, NotFoundTest)
 {
 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
@@ -129,7 +144,6 @@ TEST_F(GETRESTest, IndexTest)
 	Model model("GET", "localhost:8080/sub1/", rm_headers);
 	HeaderCmp(model.GetHeader(), res.GetHeader());
 	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
-	// std::cout << res.GetResMsg();
 	// std::cout << model.GetResponse();
 }
 
@@ -141,3 +155,4 @@ TEST_F(GETRESTest, DirForbiddenTest)
 	HeaderCmp(model.GetHeader(), res.GetHeader());
 	// EXPECT_EQ(model.GetResponse(), res.GetResMsg());
 }
+ */
