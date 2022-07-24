@@ -79,6 +79,7 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 
 	in_addr_t						ip = INADDR_ANY;
 	long							port = 80;
+	std::string						port_str;
 	char							*endptr;
 	const std::string&				s = *begin;
 	const std::string::size_type	colon = s.find(':');
@@ -96,9 +97,10 @@ void	ServerDirective::ParseListen(Tokens::citr begin, Tokens::citr end)
 	if (colon != std::string::npos || period == std::string::npos)
 	{
 		if (colon != std::string::npos)
-			port = std::strtol(s.substr(colon + 1).c_str(), &endptr, 10);
+			port_str = s.substr(colon + 1);
 		else
-			port = std::strtol(s.c_str(), &endptr, 10);
+			port_str = s;
+		port = std::strtol(port_str.c_str(), &endptr, 10);
 		if (*endptr != '\0' || errno == ERANGE || port < 1 || 65535 < port)
 			throw std::runtime_error("conf syntax error");
 	}

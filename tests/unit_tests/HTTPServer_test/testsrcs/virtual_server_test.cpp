@@ -40,7 +40,8 @@ class VirtualServerTest : public ::testing::Test
 
 TEST_F(VirtualServerTest, BasicTest)
 {
-	RuncRegisterListenSockets(Config("conf/virtual_server.conf"));
+	Config	conf("conf/virtual_server.conf");
+	RuncRegisterListenSockets(conf);
 	EXPECT_EQ(lsockets_.size(), (size_t)3);
 	EXPECT_EQ(lsockets_[0]->GetListen(), std::make_pair(INADDR_ANY, 8080));
 	EXPECT_EQ(lsockets_[0]->GetServerConfs().size(), (size_t)2);
