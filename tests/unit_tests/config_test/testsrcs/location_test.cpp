@@ -5,48 +5,54 @@
 TEST(LocationTest, Valid)
 {
 	Config	config("conf/location/location/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
-	EXPECT_EQ(locations.size(), (size_t)3);
+	EXPECT_EQ(litr->GetPath(), "/");
+	EXPECT_EQ(++litr, sitr->GetLocations().end());
+	litr = (++sitr)->GetLocations().begin();
 	EXPECT_EQ(litr->GetPath(), "/");
 	EXPECT_EQ((++litr)->GetPath(), "a");
 	EXPECT_EQ((++litr)->GetPath(), "/a");
+	EXPECT_EQ(++litr, sitr->GetLocations().end());
 }
 TEST(LocationTest, Error)
 {
 	EXPECT_ANY_THROW({Config config("conf/location/location/err_braces.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/location/err_special.conf");});
-	EXPECT_ANY_THROW({Config config("conf/location/location/err_same_path.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/location/err_duplicate.conf");});
 }
 
 // root
 TEST(RootTest, Valid)
 {
 	Config	config("conf/location/root/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
 	EXPECT_EQ(litr->GetRoot(), "html");
+	EXPECT_EQ((++litr)->GetRoot(), "html/");
 	EXPECT_EQ((++litr)->GetRoot(), "1");
 }
 TEST(RootTest, Error)
 {
 	EXPECT_ANY_THROW({Config config("conf/location/root/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/root/err_special.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/root/err_duplicate.conf");});
 }
 
 // index
 TEST(IndexTest, Valid)
 {
 	Config	config("conf/location/index/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
 	const std::string	s1[2] = {"index.html", "index.htm"};
 	const std::string	s2[1] = {"a"};
 	std::vector<std::string> expected;
-	expected.assign(s1, s1 + 2);	EXPECT_EQ(litr->GetIndex(), expected);
+	expected.assign(s1, s1 + 1);	EXPECT_EQ(litr->GetIndex(), expected);
+	expected.assign(s1, s1 + 2);	EXPECT_EQ((++litr)->GetIndex(), expected);
 	expected.assign(s2, s2 + 1);	EXPECT_EQ((++litr)->GetIndex(), expected);
 }
 TEST(IndexTest, Error)
@@ -59,8 +65,8 @@ TEST(IndexTest, Error)
 TEST(ReturnTest, Valid)
 {
 	Config	config("conf/location/return/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
 	EXPECT_EQ(litr->GetReturn(), std::make_pair(301, std::string("http://localhost:8080")));
 	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(301, std::string("")));
@@ -79,10 +85,11 @@ TEST(ReturnTest, Error)
 TEST(AutoIndexTest, Valid)
 {
 	Config	config("conf/location/autoindex/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
-	EXPECT_EQ(litr->GetAutoIndex(), true);
+	EXPECT_EQ(litr->GetAutoIndex(), false);
+	EXPECT_EQ((++litr)->GetAutoIndex(), true);
 	EXPECT_EQ((++litr)->GetAutoIndex(), false);
 }
 TEST(AutoIndexTest, Error)
@@ -90,22 +97,22 @@ TEST(AutoIndexTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/location/autoindex/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/autoindex/err_num.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/autoindex/err_arg_num.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/autoindex/err_duplicate.conf");});
 }
 
 // allowed_methods
 TEST(AllowedMethodsTest, Valid)
 {
 	Config	config("conf/location/allowed_methods/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
-	const std::string	s1[1] = {"GET"};
-	const std::string	s2[3] = {"GET", "POST", "DELETE"};
-	const std::string	s3[1] = {"GET"};
+	const std::string	s[3] = {"GET", "POST", "DELETE"};
 	std::vector<std::string> expected;
-	expected.assign(s1, s1 + 1);	EXPECT_EQ(litr->GetAllowedMethods(), expected);
-	expected.assign(s2, s2 + 3);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
-	expected.assign(s3, s3 + 1);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
+	expected.assign(s, s + 1);	EXPECT_EQ(litr->GetAllowedMethods(), expected);
+	expected.assign(s, s + 1);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
+	expected.assign(s, s + 2);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
+	expected.assign(s, s + 3);	EXPECT_EQ((++litr)->GetAllowedMethods(), expected);
 }
 TEST(AllowedMethodsTest, Error)
 {
@@ -117,24 +124,26 @@ TEST(AllowedMethodsTest, Error)
 TEST(UploadRootTest, Valid)
 {
 	Config	config("conf/location/upload_root/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
 	EXPECT_EQ(litr->GetUploadRoot(), "html");
+	EXPECT_EQ((++litr)->GetUploadRoot(), "html/");
 	EXPECT_EQ((++litr)->GetUploadRoot(), "1");
 }
 TEST(UploadRootTest, Error)
 {
 	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_special.conf");});
+	EXPECT_ANY_THROW({Config config("conf/location/upload_root/err_duplicate.conf");});
 }
 
 // cgi_enable_extension
 TEST(CGIEnableExtensionTest, Valid)
 {
 	Config	config("conf/location/cgi_enable_extension/valid.conf");
-	const std::vector<LocationDirective>&			locations = config.GetServers().begin()->GetLocations();
-	std::vector<LocationDirective>::const_iterator	litr = locations.begin();
+	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
+	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
 	const std::string	s[1] = {"pl"};
 	std::vector<std::string> expected;

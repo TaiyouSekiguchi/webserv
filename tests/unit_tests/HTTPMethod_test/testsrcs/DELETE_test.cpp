@@ -6,17 +6,16 @@
 #include "Config.hpp"
 #include "HTTPRequest.hpp"
 #include "HTTPMethod.hpp"
-
 class DELETETest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
 		{
-			lsocket_ = new ListenSocket(*(config_.GetServers().begin()));
+			lsocket_ = new ListenSocket(server_conf_.GetListen()[0], server_conf_);
 			lsocket_->ListenConnection();
 			csocket_ = new ClientSocket();
 			csocket_->ConnectServer("127.0.0.1", 8080);
-			ssocket_ = new ServerSocket(lsocket_->AcceptConnection(), lsocket_->GetServerConf());
+			ssocket_ = new ServerSocket(*lsocket_);
 		}
     	static void TearDownTestCase()
 		{
@@ -30,8 +29,8 @@ class DELETETest : public ::testing::Test
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_.ParseRequest(*ssocket_, ssocket_->GetServerConf());
-				status_code_ = method_.ExecHTTPMethod(req_, ssocket_->GetServerConf());
+				req_.ParseRequest(*ssocket_, server_conf_);
+				status_code_ = method_.ExecHTTPMethod(req_, server_conf_);
 			}
 			catch (const HTTPError& e)
 			{
@@ -39,20 +38,22 @@ class DELETETest : public ::testing::Test
 			}
 		}
 
-		static Config			config_;
-		static ListenSocket		*lsocket_;
-		static ServerSocket 	*ssocket_;
-		static ClientSocket		*csocket_;
+		static Config					config_;
+		static const ServerDirective&	server_conf_;
+		static ListenSocket*			lsocket_;
+		static ServerSocket*			ssocket_;
+		static ClientSocket*			csocket_;
 
 		int						status_code_;
 		HTTPRequest				req_;
 		HTTPMethod				method_;
 };
 
-Config			DELETETest::config_("conf/delete.conf");
-ListenSocket*	DELETETest::lsocket_ = NULL;
-ServerSocket*	DELETETest::ssocket_ = NULL;
-ClientSocket*	DELETETest::csocket_ = NULL;
+Config					DELETETest::config_("conf/delete.conf");
+const ServerDirective&	DELETETest::server_conf_ = *(config_.GetServers().begin());
+ListenSocket*			DELETETest::lsocket_ = NULL;
+ServerSocket*			DELETETest::ssocket_ = NULL;
+ClientSocket*			DELETETest::csocket_ = NULL;
 
 TEST_F(DELETETest, NotAllowedTest)
 {

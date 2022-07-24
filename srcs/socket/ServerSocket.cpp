@@ -2,8 +2,8 @@
 #include <sys/socket.h>
 #include "ServerSocket.hpp"
 
-ServerSocket::ServerSocket(const int fd, const ServerDirective& server_conf)
-	: ASocket(fd, server_conf)
+ServerSocket::ServerSocket(const ListenSocket& lsocket)
+	: ASocket(lsocket.AcceptConnection(), lsocket.GetListen(), lsocket.GetServerConfs())
 {
 }
 

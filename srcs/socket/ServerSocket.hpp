@@ -2,12 +2,12 @@
 # define SERVERSOCKET_HPP
 
 # include <string>
-# include "ASocket.hpp"
+# include "ListenSocket.hpp"
 
 class ServerSocket : public ASocket
 {
 	public:
-		explicit ServerSocket(const int fd, const ServerDirective& server_conf);
+		explicit ServerSocket(const ListenSocket& lsocket);
 		~ServerSocket();
 
 		std::string	RecvData(const ssize_t size = 1048576) const;
