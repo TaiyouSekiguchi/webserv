@@ -7,9 +7,8 @@
 #include "HTTPRequest.hpp"
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
-#include "Model.hpp"
 
-class GETRESTest : public ::testing::Test
+class GETResTest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
@@ -51,13 +50,10 @@ class GETRESTest : public ::testing::Test
 		HTTPMethod				method_;
 };
 
-Config			GETRESTest::config_("conf/get.conf");
-ListenSocket*	GETRESTest::lsocket_ = NULL;
-ServerSocket*	GETRESTest::ssocket_ = NULL;
-ClientSocket*	GETRESTest::csocket_ = NULL;
-
-const std::vector<std::string> rm_headers = {"ETag", "Last-Modified", "Accept-Ranges", "Server", "Content-Type"};
-const std::vector<std::string> cmp_headers = {"Connection", "Date", "Location"};
+Config			GETResTest::config_("conf/get.conf");
+ListenSocket*	GETResTest::lsocket_ = NULL;
+ServerSocket*	GETResTest::ssocket_ = NULL;
+ClientSocket*	GETResTest::csocket_ = NULL;
 
 static const std::string RemoveDate(std::string res_msg)
 {
@@ -66,7 +62,7 @@ static const std::string RemoveDate(std::string res_msg)
 	return (s);
 }
 
-TEST_F(GETRESTest, BasicTest)
+TEST_F(GETResTest, BasicTest)
 {
 	RunCommunication("GET /ind.html HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
@@ -76,7 +72,7 @@ TEST_F(GETRESTest, BasicTest)
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
-TEST_F(GETRESTest, NotFoundTest)
+TEST_F(GETResTest, NotFoundTest)
 {
 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
@@ -86,7 +82,7 @@ TEST_F(GETRESTest, NotFoundTest)
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
-TEST_F(GETRESTest, RootTest)
+TEST_F(GETResTest, RootTest)
 {
 	RunCommunication("GET /hoge/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
@@ -96,7 +92,7 @@ TEST_F(GETRESTest, RootTest)
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
-TEST_F(GETRESTest, DirRedirectTest)
+TEST_F(GETResTest, DirRedirectTest)
 {
 	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
@@ -106,7 +102,7 @@ TEST_F(GETRESTest, DirRedirectTest)
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
-TEST_F(GETRESTest, IndexTest)
+TEST_F(GETResTest, IndexTest)
 {
 	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
@@ -116,7 +112,7 @@ TEST_F(GETRESTest, IndexTest)
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
-TEST_F(GETRESTest, DirForbiddenTest)
+TEST_F(GETResTest, DirForbiddenTest)
 {
 	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());

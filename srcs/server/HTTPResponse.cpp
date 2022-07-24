@@ -190,11 +190,4 @@ const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 };
 
 std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[61]);
-const std::map<std::string, std::string> &HTTPResponse::GetHeader() const { return headers_; }
 const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
-const std::string HTTPResponse::GetResStatus() const
-{
-	std::stringstream ss;
-	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_[status_code_] << "\r\n";
-	return (ss.str());
-}

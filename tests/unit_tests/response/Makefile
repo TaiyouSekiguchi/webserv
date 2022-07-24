@@ -25,8 +25,8 @@ SRCS	=	\
 			
 SRCS	+=	Buffer.cpp \
 			Model.cpp \
-			GET_res_test.cpp
-			# DELETE_res_test.cpp
+			GET_res_test.cpp \
+			DELETE_res_test.cpp
 			# POST_res_test.cpp
 
 OBJSDIR	=	./objs
