@@ -68,7 +68,7 @@ bool	Utils::MyisLower(const char ch)
 bool	Utils::MyisUpper(const char ch)
 {
 	return std::isupper(static_cast<unsigned char>(ch));
-}r
+}
 
 bool	Utils::IsNotFound(const std::vector<std::string>& vec, const std::string& val)
 {
