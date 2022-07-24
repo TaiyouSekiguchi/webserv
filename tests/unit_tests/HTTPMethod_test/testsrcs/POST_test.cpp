@@ -12,11 +12,11 @@ class POSTTest : public ::testing::Test
 	protected:
 		static void SetUpTestCase()
 		{
-			lsocket_ = new ListenSocket(*(config_.GetServers().begin()));
+			lsocket_ = new ListenSocket(server_conf_.GetListen()[0], server_conf_);
 			lsocket_->ListenConnection();
 			csocket_ = new ClientSocket();
 			csocket_->ConnectServer("127.0.0.1", 8080);
-			ssocket_ = new ServerSocket(lsocket_->AcceptConnection(), lsocket_->GetServerConf());
+			ssocket_ = new ServerSocket(*lsocket_);
 		}
     	static void TearDownTestCase()
 		{
@@ -30,8 +30,8 @@ class POSTTest : public ::testing::Test
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_.ParseRequest(*ssocket_, ssocket_->GetServerConf());
-				status_code_ = method_.ExecHTTPMethod(req_, ssocket_->GetServerConf());
+				req_.ParseRequest(*ssocket_, server_conf_);
+				status_code_ = method_.ExecHTTPMethod(req_, server_conf_);
 			}
 			catch (const HTTPError& e)
 			{
@@ -39,20 +39,22 @@ class POSTTest : public ::testing::Test
 			}
 		}
 
-		static Config			config_;
-		static ListenSocket		*lsocket_;
-		static ServerSocket 	*ssocket_;
-		static ClientSocket		*csocket_;
+		static Config					config_;
+		static const ServerDirective&	server_conf_;
+		static ListenSocket*			lsocket_;
+		static ServerSocket*			ssocket_;
+		static ClientSocket*			csocket_;
 
 		int						status_code_;
 		HTTPRequest				req_;
 		HTTPMethod				method_;
 };
 
-Config			POSTTest::config_("conf/post.conf");
-ListenSocket*	POSTTest::lsocket_ = NULL;
-ServerSocket*	POSTTest::ssocket_ = NULL;
-ClientSocket*	POSTTest::csocket_ = NULL;
+Config					POSTTest::config_("conf/post.conf");
+const ServerDirective&	POSTTest::server_conf_ = *(config_.GetServers().begin());
+ListenSocket*			POSTTest::lsocket_ = NULL;
+ServerSocket*			POSTTest::ssocket_ = NULL;
+ClientSocket*			POSTTest::csocket_ = NULL;
 
 TEST_F(POSTTest, NotAllowedTest)
 {
