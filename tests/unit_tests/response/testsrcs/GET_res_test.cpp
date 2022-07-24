@@ -58,8 +58,8 @@ ClientSocket*	GETResTest::csocket_ = NULL;
 static const std::string RemoveDate(std::string res_msg)
 {
 	std::string::size_type pos_s = res_msg.find("Date");
-	std::string s = res_msg.erase(pos_s, 37);
-	return (s);
+	std::string str = res_msg.erase(pos_s, 37);
+	return (str);
 }
 
 TEST_F(GETResTest, BasicTest)
@@ -68,7 +68,6 @@ TEST_F(GETResTest, BasicTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/GET/Basic");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -78,7 +77,6 @@ TEST_F(GETResTest, NotFoundTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/GET/NotFound");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -88,7 +86,6 @@ TEST_F(GETResTest, RootTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/GET/Root");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -98,7 +95,6 @@ TEST_F(GETResTest, DirRedirectTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/GET/DirRedirect");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -108,7 +104,6 @@ TEST_F(GETResTest, IndexTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/GET/Index");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -118,6 +113,5 @@ TEST_F(GETResTest, DirForbiddenTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/GET/DirForbidden");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }

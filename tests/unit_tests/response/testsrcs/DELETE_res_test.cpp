@@ -68,7 +68,6 @@ TEST_F(DELETEResTest, NotAllowedTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/DELETE/NotAllowed");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -78,7 +77,6 @@ TEST_F(DELETEResTest, NotFoundTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/DELETE/NotFound");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -88,7 +86,6 @@ TEST_F(DELETEResTest, NotSlashEndDirTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/DELETE/NotSlashEndDir");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -98,7 +95,6 @@ TEST_F(DELETEResTest, NotEmptyDirTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/DELETE/NotEmptyDir");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -110,7 +106,6 @@ TEST_F(DELETEResTest, FileTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/DELETE/DeleteFile");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
 
@@ -121,6 +116,5 @@ TEST_F(DELETEResTest, EmptyDirTest)
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
 	std::ifstream ifs("samp/DELETE/EmptyDir");
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	RemoveDate(res.GetResMsg());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }

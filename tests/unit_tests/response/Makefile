@@ -23,9 +23,7 @@ SRCS	=	\
 			Dir.cpp \
 			HTTPResponse.cpp
 			
-SRCS	+=	Buffer.cpp \
-			Model.cpp \
-			GET_res_test.cpp \
+SRCS	+=	GET_res_test.cpp \
 			DELETE_res_test.cpp \
 			POST_res_test.cpp
 
@@ -38,8 +36,6 @@ INCLUDE =	-I $(SRCSDIR)/exception \
 			-I $(SRCSDIR)/config \
 			-I $(SRCSDIR)/utils \
 			-I $(SRCSDIR)/server
-
-# INCLUDE +=	-I /usr/local/opt/curl/include -lcurl
 
 NAME	=	unit_test
 
