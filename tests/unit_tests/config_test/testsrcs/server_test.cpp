@@ -24,13 +24,15 @@ TEST(ListenTest, Valid)
 	const std::vector<ServerDirective>&				servers = config.GetServers();
 	std::vector<ServerDirective>::const_iterator	sitr = servers.begin();
 
-	EXPECT_EQ(sitr->GetListen(), std::make_pair(inet_addr("127.0.0.1"), 8080));
-	EXPECT_EQ((++sitr)->GetListen(), std::make_pair(inet_addr("127.0.0.1"), 80));
-	EXPECT_EQ((++sitr)->GetListen(), std::make_pair(INADDR_ANY, 8080));
-	EXPECT_EQ((++sitr)->GetListen(), std::make_pair(inet_addr("1"), 8080));
-	EXPECT_EQ((++sitr)->GetListen(), std::make_pair(inet_addr("1.1"), 80));
-	EXPECT_EQ((++sitr)->GetListen(), std::make_pair(INADDR_ANY, 1));
-	EXPECT_EQ((++sitr)->GetListen(), std::make_pair(INADDR_ANY, 65535));
+	EXPECT_EQ(sitr->GetListen()[0], std::make_pair(INADDR_ANY, 8000));
+	EXPECT_EQ((++sitr)->GetListen()[0], std::make_pair(inet_addr("127.0.0.1"), 8080));
+	EXPECT_EQ((++sitr)->GetListen()[0], std::make_pair(inet_addr("127.0.0.1"), 80));
+	EXPECT_EQ((++sitr)->GetListen()[0], std::make_pair(INADDR_ANY, 8080));
+	EXPECT_EQ((++sitr)->GetListen()[0], std::make_pair(inet_addr("1"), 8080));
+	EXPECT_EQ((++sitr)->GetListen()[0], std::make_pair(inet_addr("1.1"), 80));
+	EXPECT_EQ((++sitr)->GetListen().size(), (size_t)2);
+	EXPECT_EQ(sitr->GetListen()[0], std::make_pair(INADDR_ANY, 1));
+	EXPECT_EQ(sitr->GetListen()[1], std::make_pair(INADDR_ANY, 65535));
 }
 TEST(ListenTest, Error)
 {
@@ -39,6 +41,7 @@ TEST(ListenTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/server/listen/err_ip.conf");});
 	EXPECT_ANY_THROW({Config config("conf/server/listen/err_port_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/server/listen/err_port_limit.conf");});
+	EXPECT_ANY_THROW({Config config("conf/server/listen/err_duplicate.conf");});
 }
 
 // server_name
@@ -50,9 +53,10 @@ TEST(ServerNameTest, Valid)
 
 	const std::string	s[3] = {"a", "b", "c"};
 	std::vector<std::string> expected;
-	expected.assign(s, s + 1); EXPECT_EQ(sitr->GetServerNames(), expected);
-	expected.assign(s, s + 2); EXPECT_EQ((++sitr)->GetServerNames(), expected);
-	expected.assign(s, s + 3); EXPECT_EQ((++sitr)->GetServerNames(), expected);
+	expected.push_back(""); 	EXPECT_EQ(sitr->GetServerNames(), expected);
+	expected.assign(s, s + 1);	EXPECT_EQ((++sitr)->GetServerNames(), expected);
+	expected.assign(s, s + 2);	EXPECT_EQ((++sitr)->GetServerNames(), expected);
+	expected.assign(s, s + 3);	EXPECT_EQ((++sitr)->GetServerNames(), expected);
 }
 TEST(ServerNameTest, Error)
 {
@@ -90,7 +94,8 @@ TEST(ClientMaxBodySizeTest, Valid)
 	const std::vector<ServerDirective>&				servers = config.GetServers();
 	std::vector<ServerDirective>::const_iterator	sitr = servers.begin();
 
-	EXPECT_EQ(sitr->GetClientMaxBodySize(), 1 * 1024);
+	EXPECT_EQ(sitr->GetClientMaxBodySize(), 1 * 1024 * 1024);
+	EXPECT_EQ((++sitr)->GetClientMaxBodySize(), 1 * 1024);
 	EXPECT_EQ((++sitr)->GetClientMaxBodySize(), 1 * 1024 * 1024);
 	EXPECT_EQ((++sitr)->GetClientMaxBodySize(), 1 * 1024 * 1024 * 1024);
 	EXPECT_EQ((++sitr)->GetClientMaxBodySize(), 0);
@@ -101,4 +106,5 @@ TEST(ClientMaxBodySizeTest, Error)
 	EXPECT_ANY_THROW({Config config("conf/server/client_max_body_size/err_empty.conf");});
 	EXPECT_ANY_THROW({Config config("conf/server/client_max_body_size/err_char.conf");});
 	EXPECT_ANY_THROW({Config config("conf/server/client_max_body_size/err_over.conf");});
+	EXPECT_ANY_THROW({Config config("conf/server/client_max_body_size/err_duplicate.conf");});
 }

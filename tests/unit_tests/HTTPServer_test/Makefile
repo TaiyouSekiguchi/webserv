@@ -1,20 +1,30 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	testsrcs:$(SRCSDIR)/config:$(SRCSDIR)/utils
-SRCS	=	Config.cpp \
+vpath	%.cpp	srcs:\
+				testsrcs:\
+				$(SRCSDIR)/config:\
+				$(SRCSDIR)/socket:\
+				$(SRCSDIR)/utils
+SRCS	=	ListenSocket.cpp \
+			ServerSocket.cpp \
+			ASocket.cpp \
+			Config.cpp \
 			Tokens.cpp \
-			LocationDirective.cpp \
 			ServerDirective.cpp \
-			utils.cpp
-SRCS	+=	default_test.cpp \
-			server_test.cpp \
-			lexer_test.cpp \
-			location_test.cpp
+			LocationDirective.cpp \
+			utils.cpp \
+			Stat.cpp \
+			Dir.cpp
+
+SRCS	+=	virtual_server_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils
+INCLUDE =	-I./srcs \
+			-I$(SRCSDIR)/config \
+			-I$(SRCSDIR)/socket \
+			-I$(SRCSDIR)/utils
 NAME	=	unit_test
 
 CC		=	c++

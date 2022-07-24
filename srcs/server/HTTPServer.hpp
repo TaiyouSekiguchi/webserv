@@ -12,11 +12,14 @@ class HTTPServer
 		HTTPServer();
 		~HTTPServer();
 
-		void	Start(const Config& config) const;
+		void	Start(const Config& config);
 
 	private:
-		void	MainLoop(EventQueue const & equeue) const;
-		void	Communication(ServerSocket *ssocket) const;
+		void	RegisterListenSockets(const Config& config, EventQueue* equeue);
+		void	MainLoop(const EventQueue& equeue) const;
+		void	Communication(const ServerSocket *ssocket) const;
+
+		std::vector<ListenSocket*>	lsockets_;
 };
 
 #endif  // HTTPSERVER_HPP

@@ -65,12 +65,6 @@ bool	Utils::MyisLower(const char ch)
     return std::islower(static_cast<unsigned char>(ch));
 }
 
-bool	Utils::IsNotFound(const std::vector<std::string>& vec, const std::string& val)
-{
-	std::vector<std::string>::const_iterator	end = vec.end();
-	return (std::find(vec.begin(), end, val) == end);
-}
-
 std::string		Utils::GetMicroSecondTime()
 {
 	timeval		t;

@@ -5,7 +5,8 @@
 LocationDirective::LocationDirective()
 	: path_("/")
 {
-	SetDefaultValues();
+	SetInitValue();
+	SetDefaultValue();
 }
 
 LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin, Tokens::citr end)
@@ -25,8 +26,7 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 	Tokens::citr										itr;
 	Tokens::citr										directive_end;
 
-	SetDefaultValues();
-
+	SetInitValue();
 	itr = begin;
 	while (itr < end)
 	{
@@ -39,6 +39,7 @@ LocationDirective::LocationDirective(const std::string& path, Tokens::citr begin
 		(this->*(found->second))(itr + 1, directive_end);
 		itr = directive_end + 1;
 	}
+	SetDefaultValue();
 }
 
 LocationDirective::~LocationDirective()
@@ -49,7 +50,7 @@ const std::string&					LocationDirective::GetPath() const { return (path_); }
 const std::string&					LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&		LocationDirective::GetIndex() const { return (index_); }
 const std::pair<int, std::string>&	LocationDirective::GetReturn() const { return (return_); }
-const bool&							LocationDirective::GetAutoIndex() const { return (autoindex_); }
+const int&							LocationDirective::GetAutoIndex() const { return (autoindex_); }
 const std::vector<std::string>&		LocationDirective::GetAllowedMethods() const { return (allowed_methods_); }
 const std::string&					LocationDirective::GetUploadRoot() const { return (upload_root_); }
 const std::vector<std::string>&		LocationDirective::GetCGIEnableExtension() const { return (cgi_enable_extension_); }
@@ -64,19 +65,32 @@ Tokens::citr	LocationDirective::GetDirectiveEnd
 	return (directive_end);
 }
 
-void	LocationDirective::SetDefaultValues()
+void	LocationDirective::SetInitValue()
 {
-	root_ = "html";
-	index_.push_back("index.html");
+	root_ = "";
 	return_ = std::make_pair(-1, "");
-	autoindex_ = false;
+	autoindex_ = -1;
 	allowed_methods_.push_back("GET");
-	upload_root_ = "html";
+	upload_root_ = "";
+}
+
+void	LocationDirective::SetDefaultValue()
+{
+	if (root_ == "")
+		root_ = "html";
+	if (index_.size() == 0)
+		index_.push_back("index.html");
+	if (autoindex_ == -1)
+		autoindex_ = false;
+	if (upload_root_ == "")
+		upload_root_ = "html";
 }
 
 void	LocationDirective::ParseRoot(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	else if (root_ != "")
 		throw std::runtime_error("conf syntax error");
 	else if (Tokens::isSpecialToken(*begin))
 		throw std::runtime_error("conf syntax error");
@@ -85,14 +99,13 @@ void	LocationDirective::ParseRoot(Tokens::citr begin, Tokens::citr end)
 
 void	LocationDirective::ParseIndex(Tokens::citr begin, Tokens::citr end)
 {
-	index_.clear();
-
 	Tokens::citr	itr = begin;
 	while (itr != end)
 	{
 		if (Tokens::isSpecialToken(*itr))
 			throw std::runtime_error("conf syntax error");
-		index_.push_back(*itr);
+		if (Utils::IsNotFound(index_, *itr))
+			index_.push_back(*itr);
 		itr++;
 	}
 }
@@ -124,12 +137,15 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 		if (Tokens::isSpecialToken(url))
 			throw std::runtime_error("conf syntax error");
 	}
-	return_ = std::make_pair(status_code, url);
+	if (return_.first == -1)
+		return_ = std::make_pair(status_code, url);
 }
 
 void	LocationDirective::ParseAutoIndex(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	else if (autoindex_ != -1)
 		throw std::runtime_error("conf syntax error");
 	if (*begin == "on")
 		autoindex_ = true;
@@ -141,9 +157,9 @@ void	LocationDirective::ParseAutoIndex(Tokens::citr begin, Tokens::citr end)
 
 void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end)
 {
-	const std::string	valid_methods[3] = {"GET", "POST", "DELETE"};
-	Tokens::citr								itr;
-	const std::string*							found_ptr;
+	const std::string		valid_methods[3] = {"GET", "POST", "DELETE"};
+	Tokens::citr			itr;
+	const std::string*		found_ptr;
 
 	itr = begin;
 	while (itr != end)
@@ -160,6 +176,8 @@ void	LocationDirective::ParseAllowedMethods(Tokens::citr begin, Tokens::citr end
 void	LocationDirective::ParseUploadRoot(Tokens::citr begin, Tokens::citr end)
 {
 	if (begin + 1 != end)
+		throw std::runtime_error("conf syntax error");
+	else if (upload_root_ != "")
 		throw std::runtime_error("conf syntax error");
 	else if (Tokens::isSpecialToken(*begin))
 		throw std::runtime_error("conf syntax error");
