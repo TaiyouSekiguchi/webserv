@@ -63,7 +63,7 @@ void	HTTPServer::Communication(ServerSocket *ssocket) const
 {
 	int						status_code = 0;
 	const ServerDirective&	server_conf = ssocket->GetServerConf();
-	HTTPRequest				req(*ssocket, server_conf);
+	HTTPRequest				req(*ssocket);
 	//HTTPMethod				method;
 
 	try

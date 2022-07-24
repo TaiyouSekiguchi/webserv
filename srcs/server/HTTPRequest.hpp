@@ -18,7 +18,7 @@
 class HTTPRequest
 {
 	public:
-		HTTPRequest(const ServerSocket& ssocket, const ServerDirective& server_conf);
+		HTTPRequest(const ServerSocket& ssocket);
 		~HTTPRequest();
 
 		void	ParseRequest(void);
@@ -41,12 +41,14 @@ class HTTPRequest
 
 		// arg
 		const ServerSocket&					ssocket_;
+		const ServerDirective&				server_conf_;
+		const ServerDirective&				server_info_;
 
 		// server_conf
 		size_t								client_max_body_size_;
 
 		// GetLine
-		std::string							save_;
+		static std::string							save_;
 
 		// request line
 		std::string							method_;

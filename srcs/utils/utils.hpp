@@ -12,6 +12,7 @@ namespace Utils
 	std::string		MyTrim
 		(const std::string& str, const char* set = " \t\v\r\n");
 	bool 			MyisLower(const char ch);
+	bool 			MyisUpper(const char ch);
 	std::string		GetMicroSecondTime();
 	bool			IsNotFound(const std::vector<std::string>& vec, const std::string& val);
 	bool			IsBlank(char c);

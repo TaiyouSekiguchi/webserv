@@ -1,8 +1,9 @@
 #include "CGI.hpp"
 
-CGI::CGI(const std::string& file_path, const HTTPRequest& req)
+CGI::CGI(const std::string& file_path, const HTTPRequest& req, const ServerDirective& server_conf)
 	: file_path_(file_path)
 	, req_(req)
+	, server_conf_(server_conf)
 {
 	ExecuteCGI();
 	ParseCGI();
@@ -25,7 +26,7 @@ static int	pipe_set(int src, int dst)
 
 void	CGI::SendData(const int pipe_fd[2])
 {
-	CGIEnv	env(req_);
+	CGIEnv	env(req_, server_conf_);
 	char*	argv[2];
 
 	if (close(pipe_fd[0]) < 0 || !pipe_set(pipe_fd[1], 1))

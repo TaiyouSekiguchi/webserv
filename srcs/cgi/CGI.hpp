@@ -19,7 +19,7 @@
 class CGI
 {
 	public:
-		CGI(const std::string& file_path, const HTTPRequest& req);
+		CGI(const std::string& file_path, const HTTPRequest& req, const ServerDirective& server_conf);
 		~CGI(void);
 
 		std::string		GetData(void) const;
@@ -38,6 +38,7 @@ class CGI
 
 		const std::string		file_path_;
 		const HTTPRequest&		req_;
+		const ServerDirective&	server_conf_;
 		std::string				data_;
 		std::string				content_type_;
 		std::string				body_;

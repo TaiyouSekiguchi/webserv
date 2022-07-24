@@ -1,8 +1,9 @@
 #include "HTTPRequest.hpp"
 
-HTTPRequest::HTTPRequest(const ServerSocket& ssocket, const ServerDirective& server_conf)
+HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
 	: ssocket_(ssocket)
-	, client_max_body_size_(server_conf.GetClientMaxBodySize())
+	, server_conf_(ssocket->GetServerConf());
+	, client_max_body_size_(0)
 	, content_length_(0)
 	, connection_(true)
 {
@@ -22,6 +23,9 @@ std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (a
 bool							HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string						HTTPRequest::GetContentType(void) const { return (content_type_); }
 std::string						HTTPRequest::GetBody(void) const { return (body_); }
+
+
+std::string		save_ = "";
 
 std::string		HTTPRequest::GetLine(void)
 {
@@ -50,13 +54,18 @@ std::string		HTTPRequest::GetLine(void)
 
 void	HTTPRequest::ParseMethod(const std::string& method)
 {
-	const char	*str = method.c_str();
-	const char	*found = std::find_if(str, str + method.size(), Utils::MyisLower);
+	const std::string::const_iterator	it;
+	const stc::string::const_iterator	it_end;
 
-	if (found != str + method.size() || !Utils::IsToken(method))
+	it = method.begin();
+	it_end = method.end();
+	for ( ; it != it_end; ++it)
 	{
-		std::cerr << "ParseMethod throw exception." << std::endl;
-		throw HTTPError(HTTPError::BAD_REQUEST);
+		if (!std::isupper(*it))
+		{
+			std::cerr << "ParseMethod throw exception." << std::endl;
+			throw HTTPError(HTTPError::BAD_REQUEST);
+		}
 	}
 
 	method_ = method;
@@ -121,15 +130,9 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 	std::vector<std::string>	list;
 	char						*endptr;
 
-	list = Utils::MySplit(content, " ");
-	if (list.size() != 1)
-	{
-		std::cerr << "ParseContentLength throw exception." << std::endl;
-		throw HTTPError(HTTPError::BAD_REQUEST);
-	}
+	list = Utils::MyTrim(content, " ");
 
 	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
-
 	if (errno == ERANGE || *endptr != '\0')
 	{
 		std::cerr << "ParseContentLength throw exception." << std::endl;
@@ -218,28 +221,27 @@ void	HTTPRequest::ReceiveHeaders(void)
 		"connection",
 		"content-type"
 	};
-	std::vector<std::string>			header_list;
+	std::vector<std::string>			header_list(array, array + 6);
 	std::vector<std::string>::iterator	it;
 	std::string							line;
 	std::string							field;
 	std::string							content;
 	std::string::size_type				pos;
 
-	header_list.insert(header_list.begin(), array, array + 6);
-
 	while ((line = GetLine()) != "")
 	{
 		pos = line.find(":");
 		if (pos == std::string::npos)
 		{
-			std::cerr << "ReceiveHeaders throw exception." << std::endl;
-			throw HTTPError(HTTPError::BAD_REQUEST);
+			continue;
+			//std::cerr << "ReceiveHeaders throw exception." << std::endl;
+			//throw HTTPError(HTTPError::BAD_REQUEST);
 		}
 
 		field = line.substr(0, pos);
-		if (Utils::IsBlank(field.at(0))
-			|| Utils::IsBlank(field.at(field.size() - 1)))
-			continue;
+		//if (Utils::IsBlank(field.at(0))
+			//|| Utils::IsBlank(field.at(field.size() - 1)))
+			//continue;
 
 		field = Utils::StringToLower(field);
 		content = line.substr(pos + 1);
@@ -297,9 +299,6 @@ void	HTTPRequest::ParseBody(void)
 	size_t			default_recv_byte = 1024;
 	size_t			recv_byte;
 
-	if (method_ != "POST")
-		return;
-
 	remaining_byte = content_length_;
 
 	if (save_.length() != 0)
@@ -320,13 +319,15 @@ void	HTTPRequest::ParseBody(void)
 		tmp += data;
 	}
 
-	body_ = tmp;
+	if (method_ == "POST")
+		body_ = tmp;
 
 	return;
 }
 
 void	HTTPRequest::ParseRequest(void)
 {
+	FindServerDirective();
 	ParseRequestLine();
 	ReceiveHeaders();
 	ParseHeaders();

@@ -65,6 +65,11 @@ bool	Utils::MyisLower(const char ch)
     return std::islower(static_cast<unsigned char>(ch));
 }
 
+bool	Utils::MyisUpper(const char ch)
+{
+	return std::isupper(static_cast<unsigned char>(ch));
+}r
+
 bool	Utils::IsNotFound(const std::vector<std::string>& vec, const std::string& val)
 {
 	std::vector<std::string>::const_iterator	end = vec.end();

@@ -1,7 +1,8 @@
 #include "CGIEnv.hpp"
 
-CGIEnv::CGIEnv(const HTTPRequest& req)
+CGIEnv::CGIEnv(const HTTPRequest& req, const ServerDirective& server_conf)
 	: req_(req)
+	: server_conf_(server_conf)
 {
 	SetEnv();
 }
@@ -28,13 +29,13 @@ void	CGIEnv::SetEnv(void)
 	AddEnv("PATH_TRANSLATED", "TEST");
 	AddEnv("QUERY_STRING", "TEST");
 	AddEnv("REMOTE_ADDR", "TEST");
-	AddEnv("REMOTE_HOST", "TEST");
-	AddEnv("REMOTE_IDENT", "TEST");
-	AddEnv("REMOTE_USER", "TEST");
-	AddEnv("REQUEST_METHOD", "TEST");
+	AddEnv("REMOTE_HOST", "");
+	AddEnv("REMOTE_IDENT", "");
+	AddEnv("REMOTE_USER", "");
+	AddEnv("REQUEST_METHOD", req_.GetMethod());
 	AddEnv("SCRIPT_NAME", "TEST");
-	AddEnv("SERVER_NAME", "TEST");
-	AddEnv("SERVER_PORT", "TEST");
+	AddEnv("SERVER_NAME", server_conf_.GetServerNames.at(0));
+	AddEnv("SERVER_PORT", Utils::ToString(server_conf_.GetListen().second));
 	AddEnv("SERVER_PROTOCOL", "HTTP/1.1");
 	AddEnv("SERVER_SOFTWARE", "42Webserv");
 }
