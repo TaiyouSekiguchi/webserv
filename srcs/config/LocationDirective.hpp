@@ -18,7 +18,7 @@ class LocationDirective
 		const std::string&					GetRoot() const;
 		const std::vector<std::string>&		GetIndex() const;
 		const std::pair<int, std::string>&	GetReturn() const;
-		const bool&							GetAutoIndex() const;
+		const int&							GetAutoIndex() const;
 		const std::vector<std::string>&		GetAllowedMethods() const;
 		const std::string&					GetUploadRoot() const;
 		const std::vector<std::string>&		GetCGIEnableExtension() const;
@@ -27,7 +27,8 @@ class LocationDirective
 		typedef void (LocationDirective::*ParseFunc)(Tokens::citr, Tokens::citr);
 
 		Tokens::citr	GetDirectiveEnd(const std::string& name, Tokens::citr begin, Tokens::citr end) const;
-		void			SetDefaultValues();
+		void			SetInitValue();
+		void			SetDefaultValue();
 
 		// Parse Directive Variable
 		void	ParseRoot(Tokens::citr begin, Tokens::citr end);
@@ -45,7 +46,7 @@ class LocationDirective
 		std::string					root_;
 		std::vector<std::string>	index_;
 		std::pair<int, std::string>	return_;
-		bool						autoindex_;
+		int							autoindex_;
 		std::vector<std::string>	allowed_methods_;
 		std::string					upload_root_;
 		std::vector<std::string>	cgi_enable_extension_;

@@ -20,20 +20,18 @@ LocationDirective	HTTPMethod::SelectLocation
 {
 	std::vector<LocationDirective>::const_iterator	itr = locations.begin();
 	std::vector<LocationDirective>::const_iterator	end = locations.end();
-	std::vector<LocationDirective>::const_iterator 	longest = end;
+	std::vector<LocationDirective>::const_iterator 	longest = itr++;
 	const std::string& 								target = req_->GetTarget();
 
 	while (itr != end)
 	{
 		if (target.find(itr->GetPath()) != std::string::npos)
 		{
-			if (longest == end || longest->GetPath().size() < itr->GetPath().size())
+			if (longest->GetPath().size() < itr->GetPath().size())
 				longest = itr;
 		}
 		++itr;
 	}
-	if (longest == end)
-		return (LocationDirective());
 	return (*longest);
 }
 
@@ -118,7 +116,8 @@ int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location
 		if (*(req_->GetTarget().rbegin()) != '/')
 		{
 			const std::string& host = req_->GetHost().first;
-			const std::string& ip = Utils::ToString(server_conf_->GetListen().second);
+			// const std::string& ip = Utils::ToString(req_->GetListen().second);
+			const std::string& ip = Utils::ToString(server_conf_->GetListen()[0].second);
 			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", 301));
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
