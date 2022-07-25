@@ -7,8 +7,8 @@
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
 #include "HTTPMethod.hpp"
-#include "utils.hpp"
 #include "HTTPResponse.hpp"
+#include "utils.hpp"
 
 HTTPServer::HTTPServer()
 {
@@ -107,7 +107,7 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 		status_code = e.GetStatusCode();
 	}
 	std::cout << "status_code: " << status_code << std::endl;
-	//method.MethodDisplay();
+	// method.MethodDisplay();
 	// HTTPResponse	res(status_code, req, method);
 	// res.SendResponse(ssocket);
 }
