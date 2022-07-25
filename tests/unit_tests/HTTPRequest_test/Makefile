@@ -7,7 +7,7 @@ SRCS	=	HTTPRequest.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
 			utils.cpp \
-			HTTPRequest_test_1.cpp \
+			HTTPRequest_test_2.cpp \
 			ClientSocket.cpp \
 			Config.cpp \
 			LocationDirective.cpp \
