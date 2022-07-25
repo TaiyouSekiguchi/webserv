@@ -51,7 +51,7 @@ class HTTPRequest
 		size_t								client_max_body_size_;
 
 		// GetLine
-		static std::string							save_;
+		std::string					save_;
 
 		// request line
 		std::string							method_;
