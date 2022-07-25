@@ -25,6 +25,11 @@ class RequestTest : public ::testing::Test
 				++itr;
 			}
 		}
+		virtual void TearDown()
+		{
+			delete req_;
+			delete ssocket_;
+		}
 
 		static void	MyRegisterListenSockets(const Config& config)
 		{
@@ -65,9 +70,8 @@ class RequestTest : public ::testing::Test
 			const ServerDirective::Listen				listen = std::make_pair(host, port);
 			target_lsocket = Utils::FindMatchMember(lsockets_, &ListenSocket::GetListen, listen);
 
-			ServerSocket	ssocket(**target_lsocket);
-
-			req_ = new HTTPRequest(ssocket);
+			ssocket_ = new ServerSocket(**target_lsocket);
+			req_ = new HTTPRequest(*ssocket_);
 			try
 			{
 				csocket.SendRequest(msg);
@@ -85,6 +89,7 @@ class RequestTest : public ::testing::Test
 
 		int									status_code_;
 		HTTPRequest*						req_;
+		ServerSocket*						ssocket_;
 };
 
 Config						RequestTest::config_("default.conf");
