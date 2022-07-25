@@ -7,11 +7,8 @@
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
 #include "HTTPMethod.hpp"
-<<<<<<< HEAD
 #include "HTTPResponse.hpp"
-=======
 #include "utils.hpp"
->>>>>>> develop
 
 HTTPServer::HTTPServer()
 {
@@ -111,11 +108,6 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 	req.RequestDisplay();
 	std::cout << "status_code: " << status_code << std::endl;
 	method.MethodDisplay();
-<<<<<<< HEAD
-	HTTPResponse	res(status_code, req, method, server_conf);
-	res.SendResponse(ssocket);
-=======
 	// HTTPResponse	res(status_code, req, method);
 	// res.SendResponse(ssocket);
->>>>>>> develop
 }
