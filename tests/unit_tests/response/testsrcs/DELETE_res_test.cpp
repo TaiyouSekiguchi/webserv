@@ -118,3 +118,33 @@ TEST_F(DELETEResTest, EmptyDirTest)
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
+
+static const std::string *NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 166\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>405 Method Not Allowed</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>405 Method Not Allowed</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>";
+
+static const std::string *NotFoud = "HTTP/1.1 404 Not Found\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 148\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>404 Not Found</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>404 Not Found</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>\r\n";
+
+static const std::string *NotSlashEndDir = "HTTP/1.1 409 Conflict\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 146\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>409 Conflict</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>409 Conflict</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>";
+
+static const std::string *NotEmptyDir = "HTTP/1.1 403 Forbidden\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 148\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>403 Forbidden</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>403 Forbidden</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>";
+
+static const std::string *File = "HTTP/1.1 204 No Content\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 0\r\n" + "Server: Webserv\r\n\r\n";
+
+static const std::string *EmptyDir = "HTTP/1.1 204 No Content\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 0\r\n" + "Server: Webserv\r\n\r\n";

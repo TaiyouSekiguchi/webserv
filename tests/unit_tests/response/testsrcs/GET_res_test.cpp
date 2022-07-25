@@ -115,3 +115,34 @@ TEST_F(GETResTest, DirForbiddenTest)
 	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
 }
+
+static const std::string *Basic = "HTTP/1.1 200 OK\r\n"
++ "Connection: keep-alive\r\n"+ "Content-Length: 9\r\n" + "Server: Webserv\r\n\r\n"
++ "ind.html\n"
+
+static const std::string *NotFound = "HTTP/1.1 404 Not Found\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 148\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>404 Not Found</title></head>\r\n"
++ "<body>\r\n" + "<center><h1>404 Not Found</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>\r\n";
+
+static const std::string *Root = "HTTP/1.1 200 OK\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 26\r\n" + "Server: Webserv\r\n\r\n"
++ "html/sub1/hoge/index.html\n";
+
+static const std::string *DirRiderect = "HTTP/1.1 301 Moved Permanently\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 164\r\n"
++ "Location: http://localhost:8080/sub1/\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>301 Moved Permanently</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>301 Moved Permanently</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>";
+
+static const std::string *Index = "HTTP/1.1 200 OK\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 20\r\n" + "Server: Webserv\r\n\r\n"
++ "html/sub1/sub1.html\n";
+
+static const std::string *DirForbidden = "HTTP/1.1 403 Forbidden\r\n"
+"Connection: keep-alive\r\n" + "Content-Length: 148\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>403 Forbidden</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>403 Forbidden</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>\r\n";

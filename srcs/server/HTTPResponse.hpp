@@ -9,8 +9,7 @@
 class HTTPResponse
 {
 	public:
-		HTTPResponse(int status_code, const HTTPRequest &req,
-						const HTTPMethod &method, const ServerDirective &server_conf);
+		HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method);
 		~HTTPResponse();
 
 		void SendResponse(ServerSocket *ssocket);
@@ -23,7 +22,7 @@ class HTTPResponse
 		static std::map<int, std::string> kStatusMsg_;
 		const HTTPRequest &req_;
 		const HTTPMethod &method_;
-		const ServerDirective &server_conf_;
+		const ServerDirective *server_conf_;
 		std::string res_msg_;
 		std::map<std::string, std::string> headers_;
 		std::string body_;

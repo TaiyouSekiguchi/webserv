@@ -92,7 +92,7 @@ TEST_F(POSTRESTest, NotDirTest)
 	EXPECT_EQ(RemoveHeader(res.GetResMsg()), samp);
 }
 
-TEST_F(POSTRESTest, Upload1Test)
+TEST_F(POSTRESTest, UploadTest)
 {
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
@@ -101,3 +101,24 @@ TEST_F(POSTRESTest, Upload1Test)
 	EXPECT_EQ(RemoveHeader(res.GetResMsg()), samp);
 	EXPECT_NE(res.GetResMsg().find("/upload/16"), std::string::npos);
 }
+
+static const std::string *NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 166\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>405 Method Not Allowed</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>405 Method Not Allowed</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>\r\n";
+
+static const std::string *NotFound = "HTTP/1.1 404 Not Found\r\n"
+"Connection: keep-alive\r\n" + "Content-Length: 148\r\n" + "Server: Webserv\r\n"
+"<html>\r\n" + "<head><title>404 Not Found</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>404 Not Found</h1></center>\r\n"
++ "<hr><center>Webserv</center>\r\n" + "</body>\r\n" + "</html>\r\n";
+
+static const std::string *NotDir = "HTTP/1.1 409 Conflict\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 146\r\n" + "Server: Webserv\r\n\r\n"
++ "<html>\r\n" + "<head><title>409 Conflict</title></head>\r\n" + "<body>\r\n"
++ "<center><h1>409 Conflict</h1></center>\r\n" + "<hr><center>Webserv</center>\r\n"
++ "</body>\r\n" + "</html>\r\n";
+
+static const std::string *UploadTest = "HTTP/1.1 201 Created\r\n"
++ "Connection: keep-alive\r\n" + "Content-Length: 0\r\n" + "Server: Webserv\r\n\r\n";
