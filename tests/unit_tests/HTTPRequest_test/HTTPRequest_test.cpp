@@ -4,7 +4,10 @@
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"
+#include "EventQueue.hpp"
+#include "HTTPServer.hpp"
 
+/*
 class RequestTest : public ::testing::Test
 {
   protected:
@@ -21,17 +24,116 @@ class RequestTest : public ::testing::Test
 		csocket_->ConnectServer("127.0.0.1", 8080);
 		ssocket_ = new ServerSocket(lsocket_->AcceptConnection(), lsocket_->GetServerConf());
 	}
+
 	virtual void TearDown()
 	{
 		delete lsocket_;
 		delete ssocket_;
 		delete csocket_;
 	}
-		ListenSocket *lsocket_;
-		ServerSocket *ssocket_;
-		ClientSocket *csocket_;
+
+	ListenSocket *lsocket_;
+	ServerSocket *ssocket_;
+	ClientSocket *csocket_;
+};
+*/
+
+class RequestTest : public ::testing::Test
+{
+  protected:
+	virtual void SetUp()
+	{
+		config_ = new Config("./default.conf");
+		equeue_ = new EventQueue();
+
+		RegisterListenSockets(*config_, equeue_);
+		MainLoop(*equeue_);
+	}
+
+	virtual void TearDown()
+	{
+		delete config_;
+		delete equeue_;
+	}
+
+
+
+	void	MainLoop(const EventQueue& equeue)
+	{
+		while (1)
+		{
+			udata = equeue.WaitEvent();
+			asocket = static_cast<ASocket*>(udata);
+			lsocket = dynamic_cast<ListenSocket*>(asocket);
+			ssocket = dynamic_cast<ServerSocket*>(asocket);
+			if (lsocket)
+			{
+				std::cout << "Accept!!" << std::endl;
+				new_ssocket = new ServerSocket(*lsocket);
+				equeue.RegisterEvent(new_ssocket->GetFd(), new_ssocket);
+			}
+			else
+				Communication(ssocket);
+		}
+	}
+
+	void	Communication(const ServerSocket *ssocket)
+	{
+		int	status_code = 0;
+		req = new HTTPRequest(*ssocket);
+
+		try
+		{
+			req.ParseRequest();
+			req.RequestDisplay();
+		}
+		catch (const ClientClosed& e)
+		{
+			delete ssocket;
+			return;
+		}
+		catch (const HTTPError& e)
+		{
+			status_code = e.GetStatusCode();
+		}
+		std::cout << "status_code: " << status_code << std::endl;
+	}
+
+	Config			*config_;
+	EventQueue		*equeue_;
+
+	void			*udata;
+	ASocket			*asocket;
+	ListenSocket	*lsocket;
+	ServerSocket	*ssocket;
+	ServerSocket 	*new_ssocket;
+
+	HTTPRequest		*req;
 };
 
+TEST_F(RequestTest, test)
+{
+	ClientSocket*	csocket_;
+
+	csocket_ = new ClientSocket();
+	csocket_->ConnectServer("127.0.0.1", 8080);
+
+	const char	*msg1 = "GET / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n";
+	csocket_->SendRequest(msg1);
+
+	EXPECT_EQ("GET / HTTP/1.1", req.GetLine());
+	EXPECT_EQ("Host: localhost:8080", req.GetLine());
+	EXPECT_EQ("", req.GetLine());
+
+	const char	*msg2 = "aaaaa\r\nbbbbb\r\nccccc\r\n";
+	csocket_->SendRequest(msg2);
+
+	EXPECT_EQ("aaaaa", req.GetLine());
+	EXPECT_EQ("bbbbb", req.GetLine());
+	EXPECT_EQ("ccccc", req.GetLine());
+}
+
+/*
 TEST_F(RequestTest, ParseMethodTest)
 {
 	HTTPRequest		req1(*ssocket_, ssocket_->GetServerConf());
@@ -198,3 +300,4 @@ TEST_F(RequestTest, RequestTest)
 	EXPECT_EQ("text/html", req.GetContentType());
 	EXPECT_EQ("aaaaaaaaaa", req.GetBody());
 }
+*/
