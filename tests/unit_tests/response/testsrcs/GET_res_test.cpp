@@ -58,6 +58,37 @@ ListenSocket*			GETResTest::lsocket_ = NULL;
 ServerSocket*			GETResTest::ssocket_ = NULL;
 ClientSocket*			GETResTest::csocket_ = NULL;
 
+static const std::string Basic = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 9\r\n\
+Server: Webserv\r\n\r\nind.html\n";
+
+static const std::string NotFound = "HTTP/1.1 404 Not Found\r\n\
+Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n\
+<html>\r\n<head><title>404 Not Found</title></head>\r\n<body>\r\n\
+<center><h1>404 Not Found</h1></center>\r\n\
+<hr><center>Webserv</center>\r\n\
+</body>\r\n</html>\r\n";
+
+static const std::string Root = "HTTP/1.1 200 OK\r\n\
+Connection: keep-alive\r\nContent-Length: 26\r\nServer: Webserv\r\n\r\n\
+html/sub1/hoge/index.html\n";
+
+static const std::string DirRiderect = "HTTP/1.1 301 Moved Permanently\r\n\
+Connection: keep-alive\r\nContent-Length: 164\r\n\
+Location: http://localhost:8080/sub1/\r\nServer: Webserv\r\n\r\n\
+<html>\r\n<head><title>301 Moved Permanently</title></head>\r\n\
+<body>\r\n<center><h1>301 Moved Permanently</h1></center>\r\n\
+<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+
+static const std::string Index = "HTTP/1.1 200 OK\r\n\
+Connection: keep-alive\r\nContent-Length: 20\r\nServer: Webserv\r\n\r\n\
+html/sub1/sub1.html\n";
+
+static const std::string DirForbidden = "HTTP/1.1 403 Forbidden\r\n\
+Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n\
+<html>\r\n<head><title>403 Forbidden</title></head>\r\n\
+<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n\
+<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+
 static const std::string RemoveDate(std::string res_msg)
 {
 	std::string::size_type pos_s = res_msg.find("Date");
@@ -69,53 +100,40 @@ TEST_F(GETResTest, BasicTest)
 {
 	RunCommunication("GET /ind.html HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	std::ifstream ifs("samp/GET/Basic");
-	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), Basic);
 }
-/* 
+
 TEST_F(GETResTest, NotFoundTest)
 {
 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	std::ifstream ifs("samp/GET/NotFound");
-	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	HTTPResponse res(status_code_, req_, method_, server_conf_);
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), NotFound);
 }
 
 TEST_F(GETResTest, RootTest)
 {
 	RunCommunication("GET /hoge/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	std::ifstream ifs("samp/GET/Root");
-	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	HTTPResponse res(status_code_, req_, method_, server_conf_);
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), Root);
 }
 
 TEST_F(GETResTest, DirRedirectTest)
 {
 	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	std::ifstream ifs("samp/GET/DirRedirect");
-	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	HTTPResponse res(status_code_, req_, method_, server_conf_);
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), DirRiderect);
 }
 
 TEST_F(GETResTest, IndexTest)
 {
 	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	std::ifstream ifs("samp/GET/Index");
-	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	HTTPResponse res(status_code_, req_, method_, server_conf_);
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), Index);
 }
 
 TEST_F(GETResTest, DirForbiddenTest)
 {
 	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, ssocket_->GetServerConf());
-	std::ifstream ifs("samp/GET/DirForbidden");
-	std::string samp((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), samp);
+	HTTPResponse res(status_code_, req_, method_, server_conf_);
+	EXPECT_EQ(RemoveDate(res.GetResMsg()), DirForbidden);
 }
- */
