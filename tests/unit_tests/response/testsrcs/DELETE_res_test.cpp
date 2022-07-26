@@ -26,18 +26,25 @@ class DELETEResTest : public ::testing::Test
 			delete csocket_;
 		}
 
+		virtual void TearDown()
+		{
+			delete req_;
+		}
+
 		void	RunCommunication(const std::string& msg)
 		{
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_.ParseRequest(*ssocket_, server_conf_);
-				status_code_ = method_.ExecHTTPMethod(req_, server_conf_);
+				req_ = new HTTPRequest(*ssocket_);
+				req_->ParseRequest();
+				status_code_ = method_.ExecHTTPMethod(*req_, server_conf_);
 			}
 			catch (const HTTPError& e)
 			{
 				status_code_ = e.GetStatusCode();
 			}
+			res_ = new HTTPResponse(status_code_, *req_, method_, server_conf_);
 		}
 
 		static Config					config_;
@@ -47,8 +54,9 @@ class DELETEResTest : public ::testing::Test
 		static ClientSocket*			csocket_;
 
 		int						status_code_;
-		HTTPRequest				req_;
+		HTTPRequest*			req_;
 		HTTPMethod				method_;
+		HTTPResponse*			res_;
 };
 
 Config					DELETEResTest::config_("conf/delete.conf");
@@ -97,29 +105,25 @@ const std::string RemoveDate(std::string res_msg)
 TEST_F(DELETEResTest, NotAllowedTest)
 {
 	RunCommunication("DELETE /hoge/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), NotAllowed);
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotAllowed);
 }
 
 TEST_F(DELETEResTest, NotFoundTest)
 {
 	RunCommunication("DELETE /sub1/no.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), NotFoud);
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotFoud);
 }
 
 TEST_F(DELETEResTest, NotSlashEndDirTest)
 {
 	RunCommunication("DELETE /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), NotSlashEndDir);
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotSlashEndDir);
 }
 
 TEST_F(DELETEResTest, NotEmptyDirTest)
 {
 	RunCommunication("DELETE /sub1/hoge/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), NotEmptyDir);
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotEmptyDir);
 }
 
 TEST_F(DELETEResTest, FileTest)
@@ -127,14 +131,12 @@ TEST_F(DELETEResTest, FileTest)
 	std::fstream	output_fstream;
 	output_fstream.open("../../../html/sub1/delete.html", std::ios_base::out);
 	RunCommunication("DELETE /sub1/delete.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), DeleteFile);
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DeleteFile);
 }
 
 TEST_F(DELETEResTest, EmptyDirTest)
 {
 	mkdir("../../../html/sub1/empty", 0777);
 	RunCommunication("DELETE /sub1/empty/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveDate(res.GetResMsg()), EmptyDir);
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), EmptyDir);
 }

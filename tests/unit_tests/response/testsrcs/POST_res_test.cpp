@@ -26,18 +26,25 @@ class POSTResTest : public ::testing::Test
 			delete csocket_;
 		}
 
+		virtual void TearDown()
+		{
+			delete req_;
+		}
+
 		void	RunCommunication(const std::string& msg)
 		{
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_.ParseRequest(*ssocket_, server_conf_);
-				status_code_ = method_.ExecHTTPMethod(req_, server_conf_);
+				req_ = new HTTPRequest(*ssocket_);
+				req_->ParseRequest();
+				status_code_ = method_.ExecHTTPMethod(*req_, server_conf_);
 			}
 			catch (const HTTPError& e)
 			{
 				status_code_ = e.GetStatusCode();
 			}
+			res_ = new HTTPResponse(status_code_, *req_, method_, server_conf_);
 		}
 
 		static Config					config_;
@@ -47,8 +54,9 @@ class POSTResTest : public ::testing::Test
 		static ClientSocket*			csocket_;
 
 		int						status_code_;
-		HTTPRequest				req_;
+		HTTPRequest*			req_;
 		HTTPMethod				method_;
+		HTTPResponse*			res_;
 };
 
 Config					POSTResTest::config_("conf/post.conf");
@@ -91,28 +99,24 @@ static const std::string RemoveHeader(std::string res_msg)
 TEST_F(POSTResTest, NotAllowedTest)
 {
 	RunCommunication("POST / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveHeader(res.GetResMsg()), NotAllowed);
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotAllowed);
 }
 
 TEST_F(POSTResTest, NotFoundTest)
 {
 	RunCommunication("POST /upload/no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveHeader(res.GetResMsg()), NotFound);
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotFound);
 }
 
 TEST_F(POSTResTest, NotDirTest)
 {
 	RunCommunication("POST /upload/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveHeader(res.GetResMsg()), NotDir);
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotDir);
 }
 
 TEST_F(POSTResTest, UploadTest)
 {
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	HTTPResponse res(status_code_, req_, method_, server_conf_);
-	EXPECT_EQ(RemoveHeader(res.GetResMsg()), Upload);
-	EXPECT_NE(res.GetResMsg().find("/upload/16"), std::string::npos);
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), Upload);
+	EXPECT_NE(res_->GetResMsg().find("/upload/16"), std::string::npos);
 }
