@@ -147,3 +147,17 @@ TEST_F(RequestTest, test4)
 	EXPECT_EQ(8080, req_->GetListen().second);
 	EXPECT_EQ("webserv2", req_->GetServerConf()->GetServerNames()[0]);
 }
+
+TEST_F(RequestTest, test5)
+{
+	RunCommunication("GET / HTTP/1.1\r\nHost: webserv1:8080\r\nContent-Length: 5\r\n\r\naaaaa", 8080);
+	EXPECT_EQ("GET", req_->GetMethod());
+	EXPECT_EQ("/", req_->GetTarget());
+	EXPECT_EQ("HTTP/1.1", req_->GetVersion());
+	EXPECT_EQ("webserv1", req_->GetHost().first);
+	EXPECT_EQ("8080", req_->GetHost().second);
+	EXPECT_EQ(INADDR_ANY, req_->GetListen().first);
+	EXPECT_EQ(8080, req_->GetListen().second);
+	EXPECT_EQ("webserv1", req_->GetServerConf()->GetServerNames()[0]);
+	EXPECT_EQ((size_t)5, req_->GetContentLength());
+}

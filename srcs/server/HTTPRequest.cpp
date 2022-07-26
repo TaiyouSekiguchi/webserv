@@ -27,9 +27,6 @@ bool								HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string							HTTPRequest::GetContentType(void) const { return (content_type_); };
 std::string							HTTPRequest::GetBody(void) const { return (body_); }
 
-
-//std::string		save_ = "";
-
 std::string		HTTPRequest::GetLine(void)
 {
 	std::string				data;
@@ -131,7 +128,9 @@ void HTTPRequest::ParseHost(const std::string& content)
 
 	host_.first = Utils::MyTrim(list.at(0), " ");
 	if (list.size() >= 2)
-		host_.second= Utils::MyTrim(list.at(1), " ");
+		host_.second = Utils::MyTrim(list.at(1), " ");
+
+	FindServerConf();
 }
 
 void HTTPRequest::ParseContentLength(const std::string& content)
@@ -146,12 +145,6 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 		std::cerr << "ParseContentLength throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
 	}
-
-	//if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
-	//{
-		//std::cerr << "ParseContentLength throw exception." << std::endl;
-		//throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
-	//}
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -189,7 +182,7 @@ void HTTPRequest::ParseConnection(const std::string& content)
 		if (*it == "close")
 		{
 			connection_ = false;
-			break ;
+			break;
 		}
 	}
 }
@@ -240,17 +233,9 @@ void	HTTPRequest::ReceiveHeaders(void)
 	{
 		pos = line.find(":");
 		if (pos == std::string::npos)
-		{
 			continue;
-			//std::cerr << "ReceiveHeaders throw exception." << std::endl;
-			//throw HTTPError(HTTPError::BAD_REQUEST);
-		}
 
 		field = line.substr(0, pos);
-		//if (Utils::IsBlank(field.at(0))
-			//|| Utils::IsBlank(field.at(field.size() - 1)))
-			//continue;
-
 		field = Utils::StringToLower(field);
 		content = line.substr(pos + 1);
 
@@ -275,8 +260,6 @@ void	HTTPRequest::ReceiveHeaders(void)
 			}
 		}
 	}
-
-	return;
 }
 
 void	HTTPRequest::ParseHeaders(void)
@@ -296,6 +279,13 @@ void	HTTPRequest::CheckHeaders(void)
 	{
 		std::cerr << "CheckHeaders throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
+
+	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
+	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
+	{
+		std::cerr << "CheckHeaders throw exception." << std::endl;
+		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
 	}
 }
 
@@ -329,8 +319,6 @@ void	HTTPRequest::ParseBody(void)
 
 	if (method_ == "POST")
 		body_ = tmp;
-
-	return;
 }
 
 void	HTTPRequest::FindServerConf(void)
@@ -354,7 +342,7 @@ void	HTTPRequest::FindServerConf(void)
 			if (*sn_it == host_.first)
 			{
 				server_conf_ = *sd_it;
-				return ;
+				return;
 			}
 		}
 	}
@@ -367,8 +355,6 @@ void	HTTPRequest::ParseRequest(void)
 	ParseHeaders();
 	CheckHeaders();
 	ParseBody();
-	FindServerConf();
-	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 
 	return;
 }
