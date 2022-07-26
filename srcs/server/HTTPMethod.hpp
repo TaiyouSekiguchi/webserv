@@ -13,7 +13,7 @@ class HTTPMethod
 		HTTPMethod();
 		~HTTPMethod();
 
-		int		ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf);
+		int		ExecHTTPMethod(const HTTPRequest& req);
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;

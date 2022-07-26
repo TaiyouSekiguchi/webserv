@@ -17,20 +17,25 @@ class GETTest : public ::testing::Test
 			csocket_->ConnectServer("127.0.0.1", 8080);
 			ssocket_ = new ServerSocket(*lsocket_);
 		}
-    	static void TearDownTestCase()
+		static void TearDownTestCase()
 		{
 			delete lsocket_;
 			delete ssocket_;
 			delete csocket_;
 		}
+		virtual void TearDown()
+		{
+			delete req_;
+		}
 
 		void	RunCommunication(const std::string& msg)
 		{
+			req_ = new HTTPRequest(*ssocket_);
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_.ParseRequest(*ssocket_, server_conf_);
-				status_code_ = method_.ExecHTTPMethod(req_, server_conf_);
+				req_->ParseRequest();
+				status_code_ = method_.ExecHTTPMethod(*req_);
 			}
 			catch (const HTTPError& e)
 			{
@@ -45,7 +50,7 @@ class GETTest : public ::testing::Test
 		static ClientSocket*			csocket_;
 
 		int						status_code_;
-		HTTPRequest				req_;
+		HTTPRequest*			req_;
 		HTTPMethod				method_;
 };
 
