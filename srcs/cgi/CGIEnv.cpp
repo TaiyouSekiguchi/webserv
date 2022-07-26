@@ -1,8 +1,8 @@
 #include "CGIEnv.hpp"
 
-CGIEnv::CGIEnv(const HTTPRequest& req, const ServerDirective& server_conf)
+CGIEnv::CGIEnv(const HTTPRequest& req)
 	: req_(req)
-	: server_conf_(server_conf)
+	: server_conf_(req.GetServerConf())
 {
 	SetEnv();
 }
@@ -19,23 +19,23 @@ void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
 void	CGIEnv::SetEnv(void)
 {
 	AddEnv("AUTH_TYPE", "TEST");
-	AddEnv("CONTENT_LENGTH", "TEST");
-	AddEnv("CONTENT_TYPE", "TEST");
+	AddEnv("CONTENT_LENGTH", req_.GetContentLength());
+	AddEnv("CONTENT_TYPE", req_GetContentType());
 	AddEnv("GATEWAY_INTERFACE", "CGI/1.1");
-	AddEnv("HTTP_ACCEPT", req_.GetContentType());
-	//AddEnv("HTTP_REFERER", "TEST");
+	AddEnv("HTTP_ACCEPT", "TEST");
+	// AddEnv("HTTP_REFERER", "TEST");
 	AddEnv("HTTP_USER_AGENT", ret_.GetUserAgent());
 	AddEnv("PATH_INFO", "TEST");
 	AddEnv("PATH_TRANSLATED", "TEST");
 	AddEnv("QUERY_STRING", "TEST");
-	AddEnv("REMOTE_ADDR", "TEST");
+	AddEnv("REMOTE_ADDR", "");
 	AddEnv("REMOTE_HOST", "");
 	AddEnv("REMOTE_IDENT", "");
 	AddEnv("REMOTE_USER", "");
 	AddEnv("REQUEST_METHOD", req_.GetMethod());
 	AddEnv("SCRIPT_NAME", "TEST");
-	AddEnv("SERVER_NAME", server_conf_.GetServerNames.at(0));
-	AddEnv("SERVER_PORT", Utils::ToString(server_conf_.GetListen().second));
+	AddEnv("SERVER_NAME", server_conf_->GetServerNames.at(0));
+	AddEnv("SERVER_PORT", Utils::ToString(req_.GetListen().second));
 	AddEnv("SERVER_PROTOCOL", "HTTP/1.1");
 	AddEnv("SERVER_SOFTWARE", "42Webserv");
 }

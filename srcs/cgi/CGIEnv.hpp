@@ -18,7 +18,7 @@ class CGIEnv
 		void	AddEnv(const std::string& key, const std::string& value);
 
 		const HTTPRequest&			req_;
-		const ServerDirective&		server_conf_;
+		const ServerDirective*		server_conf_;
 		std::vector<std::string>	env_;
 };
 

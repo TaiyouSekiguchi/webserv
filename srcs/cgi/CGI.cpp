@@ -1,9 +1,9 @@
 #include "CGI.hpp"
 
-CGI::CGI(const std::string& file_path, const HTTPRequest& req, const ServerDirective& server_conf)
+CGI::CGI(const std::string& file_path, const HTTPRequest& req)
 	: file_path_(file_path)
 	, req_(req)
-	, server_conf_(server_conf)
+	, server_conf_(req.GetServerConf())
 {
 	ExecuteCGI();
 	ParseCGI();
@@ -29,7 +29,7 @@ void	CGI::SendData(const int pipe_fd[2])
 	CGIEnv	env(req_, server_conf_);
 	char*	argv[2];
 
-	if (close(pipe_fd[0]) < 0 || !pipe_set(pipe_fd[1], 1))
+	if (close(pipe_fd[0]) < 0 || !pipe_set(pipe_fd[1], STDOUT_FILENO))
 		std::exit(EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(file_path_.c_str());
@@ -47,7 +47,7 @@ void	CGI::ReceiveData(const int pipe_fd[2], const pid_t pid)
 	pid_t			ret_pid;
 	int				status;
 
-	if (close(pipe_fd[1]) < 0 || !pipe_set(pipe_fd[0], 0))
+	if (close(pipe_fd[1]) < 0 || !pipe_set(pipe_fd[0], STDIN_FILENO))
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	while (1)
@@ -72,6 +72,11 @@ void	CGI::ExecuteCGI(void)
 {
 	int		pipe_fd[2];
 	pid_t	pid;
+	int		stdin_save;
+	int		stdout_save;
+
+	stdin_save = dup(STDIN_FILENO);
+	stdout_save = dup(STDOUT_FILENO);
 
 	if (pipe(pipe_fd) < 0 || (pid = fork()) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
@@ -80,6 +85,11 @@ void	CGI::ExecuteCGI(void)
 		SendData(pipe_fd);
 	else
 		ReceiveData(pipe_fd, pid);
+
+	dup2(stdin_save, STDIN_FILENO);
+	dup2(stdout_save, STDOUT_FILENO);
+	close(stdin_save);
+	close(stdout_save);
 
 	return;
 }
