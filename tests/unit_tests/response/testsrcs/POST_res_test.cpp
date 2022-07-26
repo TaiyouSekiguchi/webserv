@@ -57,26 +57,26 @@ ListenSocket*			POSTResTest::lsocket_ = NULL;
 ServerSocket*			POSTResTest::ssocket_ = NULL;
 ClientSocket*			POSTResTest::csocket_ = NULL;
 
-static const std::string NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n\
-Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n\
-<html>\r\n<head><title>405 Method Not Allowed</title></head>\r\n\
-<body>\r\n<center><h1>405 Method Not Allowed</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotAllowed[] = "HTTP/1.1 405 Method Not Allowed\r\n"
+	"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>405 Method Not Allowed</title></head>\r\n"
+	"<body>\r\n<center><h1>405 Method Not Allowed</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string NotFound = "HTTP/1.1 404 Not Found\r\n\
-Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\
-<html>\r\n<head><title>404 Not Found</title></head>\r\n\
-<body>\r\n<center><h1>404 Not Found</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotFound[] = "HTTP/1.1 404 Not Found\r\n"
+	"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>404 Not Found</title></head>\r\n"
+	"<body>\r\n<center><h1>404 Not Found</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string NotDir = "HTTP/1.1 409 Conflict\r\n\
-Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n\
-<html>\r\n<head><title>409 Conflict</title></head>\r\n\
-<body>\r\n<center><h1>409 Conflict</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotDir[] = "HTTP/1.1 409 Conflict\r\n"
+	"Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>409 Conflict</title></head>\r\n"
+	"<body>\r\n<center><h1>409 Conflict</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string UploadTest = "HTTP/1.1 201 Created\r\n\
-Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
+static const char Upload[] = "HTTP/1.1 201 Created\r\n"
+	"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
 
 static const std::string RemoveHeader(std::string res_msg)
 {

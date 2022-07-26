@@ -57,35 +57,35 @@ ListenSocket*			DELETEResTest::lsocket_ = NULL;
 ServerSocket*			DELETEResTest::ssocket_ = NULL;
 ClientSocket*			DELETEResTest::csocket_ = NULL;
 
-static const std::string NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n\
-Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n\
-<html>\r\n<head><title>405 Method Not Allowed</title></head>\r\n\
-<body>\r\n<center><h1>405 Method Not Allowed</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotAllowed[] = "HTTP/1.1 405 Method Not Allowed\r\n"
+	"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>405 Method Not Allowed</title></head>\r\n"
+	"<body>\r\n<center><h1>405 Method Not Allowed</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string NotFoud = "HTTP/1.1 404 Not Found\r\n\
-Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n\
-<html>\r\n<head><title>404 Not Found</title></head>\r\n\
-<body>\r\n<center><h1>404 Not Found</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotFoud[] = "HTTP/1.1 404 Not Found\r\n"
+	"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>404 Not Found</title></head>\r\n"
+	"<body>\r\n<center><h1>404 Not Found</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string NotSlashEndDir = "HTTP/1.1 409 Conflict\r\n\
-Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n\
-<html>\r\n<head><title>409 Conflict</title></head>\r\n\
-<body>\r\n<center><h1>409 Conflict</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotSlashEndDir[] = "HTTP/1.1 409 Conflict\r\n"
+	"Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>409 Conflict</title></head>\r\n"
+	"<body>\r\n<center><h1>409 Conflict</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string NotEmptyDir = "HTTP/1.1 403 Forbidden\r\n\
-Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n\
-<html>\r\n<head><title>403 Forbidden</title></head>\r\n\
-<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n\
-<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
+static const char NotEmptyDir[] = "HTTP/1.1 403 Forbidden\r\n"
+	"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
+	"<html>\r\n<head><title>403 Forbidden</title></head>\r\n"
+	"<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n"
+	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 
-static const std::string DeleteFile = "HTTP/1.1 204 No Content\r\n\
-Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
+static const char DeleteFile[] = "HTTP/1.1 204 No Content\r\n"
+	"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
 
-static const std::string EmptyDir = "HTTP/1.1 204 No Content\r\n\
-Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
+static const char EmptyDir[] = "HTTP/1.1 204 No Content\r\n"
+	"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
 
 const std::string RemoveDate(std::string res_msg)
 {
