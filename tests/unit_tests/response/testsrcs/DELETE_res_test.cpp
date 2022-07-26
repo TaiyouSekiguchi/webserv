@@ -65,36 +65,6 @@ ListenSocket*			DELETEResTest::lsocket_ = NULL;
 ServerSocket*			DELETEResTest::ssocket_ = NULL;
 ClientSocket*			DELETEResTest::csocket_ = NULL;
 
-static const char NotAllowed[] = "HTTP/1.1 405 Method Not Allowed\r\n"
-	"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
-	"<html>\r\n<head><title>405 Method Not Allowed</title></head>\r\n"
-	"<body>\r\n<center><h1>405 Method Not Allowed</h1></center>\r\n"
-	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
-
-static const char NotFoud[] = "HTTP/1.1 404 Not Found\r\n"
-	"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
-	"<html>\r\n<head><title>404 Not Found</title></head>\r\n"
-	"<body>\r\n<center><h1>404 Not Found</h1></center>\r\n"
-	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
-
-static const char NotSlashEndDir[] = "HTTP/1.1 409 Conflict\r\n"
-	"Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n"
-	"<html>\r\n<head><title>409 Conflict</title></head>\r\n"
-	"<body>\r\n<center><h1>409 Conflict</h1></center>\r\n"
-	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
-
-static const char NotEmptyDir[] = "HTTP/1.1 403 Forbidden\r\n"
-	"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
-	"<html>\r\n<head><title>403 Forbidden</title></head>\r\n"
-	"<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n"
-	"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
-
-static const char DeleteFile[] = "HTTP/1.1 204 No Content\r\n"
-	"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
-
-static const char EmptyDir[] = "HTTP/1.1 204 No Content\r\n"
-	"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
-
 const std::string RemoveDate(std::string res_msg)
 {
 	std::string::size_type pos_s = res_msg.find("Date");
@@ -104,30 +74,52 @@ const std::string RemoveDate(std::string res_msg)
 
 TEST_F(DELETEResTest, NotAllowedTest)
 {
+	const std::string NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n"
+		"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
+		"<html>\r\n<head><title>405 Method Not Allowed</title></head>\r\n"
+		"<body>\r\n<center><h1>405 Method Not Allowed</h1></center>\r\n"
+		"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 	RunCommunication("DELETE /hoge/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotAllowed);
 }
 
 TEST_F(DELETEResTest, NotFoundTest)
 {
+	const std::string NotFoud = "HTTP/1.1 404 Not Found\r\n"
+		"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
+		"<html>\r\n<head><title>404 Not Found</title></head>\r\n"
+		"<body>\r\n<center><h1>404 Not Found</h1></center>\r\n"
+		"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 	RunCommunication("DELETE /sub1/no.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotFoud);
 }
 
 TEST_F(DELETEResTest, NotSlashEndDirTest)
 {
+	const std::string NotSlashEndDir = "HTTP/1.1 409 Conflict\r\n"
+		"Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n"
+		"<html>\r\n<head><title>409 Conflict</title></head>\r\n"
+		"<body>\r\n<center><h1>409 Conflict</h1></center>\r\n"
+		"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 	RunCommunication("DELETE /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotSlashEndDir);
 }
 
 TEST_F(DELETEResTest, NotEmptyDirTest)
 {
+	const std::string NotEmptyDir = "HTTP/1.1 403 Forbidden\r\n"
+		"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
+		"<html>\r\n<head><title>403 Forbidden</title></head>\r\n"
+		"<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n"
+		"<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n";
 	RunCommunication("DELETE /sub1/hoge/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotEmptyDir);
 }
 
 TEST_F(DELETEResTest, FileTest)
 {
+	const std::string DeleteFile = "HTTP/1.1 204 No Content\r\n"
+		"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
 	std::fstream	output_fstream;
 	output_fstream.open("../../../html/sub1/delete.html", std::ios_base::out);
 	RunCommunication("DELETE /sub1/delete.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
@@ -136,6 +128,8 @@ TEST_F(DELETEResTest, FileTest)
 
 TEST_F(DELETEResTest, EmptyDirTest)
 {
+	const std::string EmptyDir = "HTTP/1.1 204 No Content\r\n"
+		"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
 	mkdir("../../../html/sub1/empty", 0777);
 	RunCommunication("DELETE /sub1/empty/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), EmptyDir);
