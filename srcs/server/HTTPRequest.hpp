@@ -71,6 +71,8 @@ class HTTPRequest
 		std::string									body_;
 
 		// func
+		bool			IsToken(const std::string& str);
+		bool			IsTChar(char c);
 		std::string		GetLine(void);
 		void			ParseRequestLine(void);
 		void			ParseMethod(const std::string& method);

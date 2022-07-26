@@ -60,22 +60,6 @@ std::string		Utils::MyTrim
 	return (result);
 }
 
-bool	Utils::MyisLower(const char ch)
-{
-    return std::islower(static_cast<unsigned char>(ch));
-}
-
-bool	Utils::MyisUpper(const char ch)
-{
-	return std::isupper(static_cast<unsigned char>(ch));
-}
-
-bool	Utils::IsNotFound(const std::vector<std::string>& vec, const std::string& val)
-{
-	std::vector<std::string>::const_iterator	end = vec.end();
-	return (std::find(vec.begin(), end, val) == end);
-}
-
 std::string		Utils::GetMicroSecondTime()
 {
 	timeval		t;
@@ -87,47 +71,6 @@ bool	Utils::IsBlank(char c)
 {
 	if (c == 0x20 || c == 0x09)
 		return (true);
-	return (false);
-}
-
-bool	Utils::IsToken(const std::string& str)
-{
-	std::string::const_iterator		it;
-	std::string::const_iterator		it_end;
-
-	it = str.begin();
-	it_end = str.end();
-
-	for ( ; it != it_end; ++it)
-	{
-		if (!IsTChar(*it))
-			return (false);
-	}
-	return (true);
-}
-
-bool	Utils::IsTChar(char c)
-{
-	if (c == '!'
-		|| c == '#'
-		|| c == '$'
-		|| c == '%'
-		|| c == '&'
-		|| c == '\''
-		|| c == '*'
-		|| c == '+'
-		|| c == '-'
-		|| c == '.'
-		|| c == '^'
-		|| c == '_'
-		|| c == '`'
-		|| c == '|'
-		|| c == '~'
-		|| isdigit(c)
-		|| isalpha(c))
-	{
-		return (true);
-	}
 	return (false);
 }
 

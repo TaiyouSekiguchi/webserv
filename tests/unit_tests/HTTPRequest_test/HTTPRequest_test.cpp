@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <arpa/inet.h>
-#include "./HTTPRequest.hpp"
+#include "HTTPRequest.hpp"
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"

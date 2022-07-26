@@ -27,6 +27,47 @@ bool								HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string							HTTPRequest::GetContentType(void) const { return (content_type_); };
 std::string							HTTPRequest::GetBody(void) const { return (body_); }
 
+bool	HTTPRequest::IsToken(const std::string& str)
+{
+	std::string::const_iterator		it;
+	std::string::const_iterator		it_end;
+
+	it = str.begin();
+	it_end = str.end();
+
+	for ( ; it != it_end; ++it)
+	{
+		if (!IsTChar(*it))
+			return (false);
+	}
+	return (true);
+}
+
+bool	HTTPRequest::IsTChar(char c)
+{
+	if (c == '!'
+		|| c == '#'
+		|| c == '$'
+		|| c == '%'
+		|| c == '&'
+		|| c == '\''
+		|| c == '*'
+		|| c == '+'
+		|| c == '-'
+		|| c == '.'
+		|| c == '^'
+		|| c == '_'
+		|| c == '`'
+		|| c == '|'
+		|| c == '~'
+		|| isdigit(c)
+		|| isalpha(c))
+	{
+		return (true);
+	}
+	return (false);
+}
+
 std::string		HTTPRequest::GetLine(void)
 {
 	std::string				data;
