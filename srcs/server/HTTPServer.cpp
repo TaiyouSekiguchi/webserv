@@ -85,8 +85,8 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 {
 	int						status_code = 0;
 	HTTPRequest				req(*ssocket);
-	//HTTPMethod				method;
-	//const ServerDirective&	server_conf = *(ssocket->GetServerConfs()[0]);
+	// HTTPMethod				method;
+	// const ServerDirective&	server_conf = *(ssocket->GetServerConfs()[0]);
 
 	try
 	{
@@ -94,7 +94,7 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 		req.RequestDisplay();
 		// req.ParseRequest(*ssocket, server_conf);
 		// status_code = method.ExecHTTPMethod(req);
-		//status_code = method.ExecHTTPMethod(req, server_conf);
+		// status_code = method.ExecHTTPMethod(req, server_conf);
 	}
 	catch (const ClientClosed& e)
 	{
@@ -106,7 +106,7 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 		status_code = e.GetStatusCode();
 	}
 	std::cout << "status_code: " << status_code << std::endl;
-	//method.MethodDisplay();
+	// method.MethodDisplay();
 	// HTTPResponse	res(status_code, req, method);
 	// res.SendResponse(ssocket);
 }

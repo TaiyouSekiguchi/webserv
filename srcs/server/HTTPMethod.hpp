@@ -1,6 +1,9 @@
 #ifndef HTTPMETHOD_HPP
 # define HTTPMETHOD_HPP
 
+# include <string>
+# include <vector>
+# include <utility>
 # include "HTTPRequest.hpp"
 # include "Stat.hpp"
 
