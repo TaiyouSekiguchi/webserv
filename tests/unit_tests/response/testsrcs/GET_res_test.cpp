@@ -19,32 +19,32 @@ class GETResTest : public ::testing::Test
 			csocket_->ConnectServer("127.0.0.1", 8080);
 			ssocket_ = new ServerSocket(*lsocket_);
 		}
-    	static void TearDownTestCase()
+		static void TearDownTestCase()
 		{
 			delete lsocket_;
 			delete ssocket_;
 			delete csocket_;
 		}
-
 		virtual void TearDown()
 		{
 			delete req_;
+			delete res_;
 		}
 
 		void	RunCommunication(const std::string& msg)
 		{
+			req_ = new HTTPRequest(*ssocket_);
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_ = new HTTPRequest(*ssocket_);
 				req_->ParseRequest();
-				status_code_ = method_.ExecHTTPMethod(*req_, server_conf_);
+				status_code_ = method_.ExecHTTPMethod(*req_);
 			}
 			catch (const HTTPError& e)
 			{
 				status_code_ = e.GetStatusCode();
 			}
-			res_ = new HTTPResponse(status_code_, *req_, method_, server_conf_);
+			res_ = new HTTPResponse(status_code_, *req_, method_);
 		}
 
 		static Config					config_;
@@ -58,7 +58,6 @@ class GETResTest : public ::testing::Test
 		HTTPMethod				method_;
 		HTTPResponse*			res_;
 };
-
 
 Config					GETResTest::config_("conf/get.conf");
 const ServerDirective&	GETResTest::server_conf_ = *(config_.GetServers().begin());

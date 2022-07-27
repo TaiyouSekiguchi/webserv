@@ -105,6 +105,6 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 	}
 	std::cout << "status_code: " << status_code << std::endl;
 	method.MethodDisplay();
-	// HTTPResponse	res(status_code, req, method);
-	// res.SendResponse(ssocket);
+	HTTPResponse	res(status_code, req, method);
+	res.SendResponse(ssocket);
 }

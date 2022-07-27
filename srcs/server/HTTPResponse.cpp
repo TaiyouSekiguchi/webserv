@@ -4,17 +4,8 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 
-/* HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method)
+HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method)
 	: req_(req), method_(method), server_conf_(req.GetServerConf()), status_code_(status_code)
-{
-	SelectBody();
-	AppendHeaders();
-	res_msg_ = CreateResponse();
-} */
-
-HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req,
-								const HTTPMethod &method, const ServerDirective &server_conf)
-	: req_(req), method_(method), server_conf_(server_conf), status_code_(status_code)
 {
 	SelectBody();
 	AppendHeaders();
@@ -25,7 +16,7 @@ HTTPResponse::~HTTPResponse()
 {
 }
 
-void HTTPResponse::SendResponse(ServerSocket *ssocket)
+void HTTPResponse::SendResponse(const ServerSocket *ssocket)
 {
 	ssocket->SendData(res_msg_);
 }
@@ -74,9 +65,9 @@ bool HTTPResponse::IsNormalStatus() const
 
 std::string HTTPResponse::GenerateHTML()
 {
-	std::map<int, std::string>::const_iterator ite = server_conf_.GetErrorPages().find(status_code_);
+	std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
 
-	if (ite != server_conf_.GetErrorPages().end())
+	if (ite != server_conf_->GetErrorPages().end())
 	{
 		const std::string error_page_path = ite->second;
 		if (error_page_path.at(0) == '/')

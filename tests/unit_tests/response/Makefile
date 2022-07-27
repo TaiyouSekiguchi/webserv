@@ -5,8 +5,7 @@ vpath	%.cpp	testsrcs: \
 				$(SRCSDIR)/utils: \
 				$(SRCSDIR)/server
 
-SRCS	=	\
-			ASocket.cpp \
+SRCS	=	ASocket.cpp \
 			EventQueue.cpp \
 			ClientSocket.cpp \
 			ServerSocket.cpp \
