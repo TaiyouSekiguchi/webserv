@@ -1,6 +1,9 @@
 #ifndef HTTPMETHOD_HPP
 # define HTTPMETHOD_HPP
 
+# include <string>
+# include <vector>
+# include <utility>
 # include "HTTPRequest.hpp"
 # include "Stat.hpp"
 
@@ -10,7 +13,7 @@ class HTTPMethod
 		HTTPMethod();
 		~HTTPMethod();
 
-		int		ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf);
+		int		ExecHTTPMethod(const HTTPRequest& req);
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;

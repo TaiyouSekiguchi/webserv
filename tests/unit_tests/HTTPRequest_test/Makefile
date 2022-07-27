@@ -13,8 +13,7 @@ SRCS	=	HTTPRequest.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp  \
 			Tokens.cpp \
-			EventQueue.cpp \
-			HTTPServer.cpp
+			EventQueue.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))

@@ -116,8 +116,7 @@ int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location
 		if (*(req_->GetTarget().rbegin()) != '/')
 		{
 			const std::string& host = req_->GetHost().first;
-			// const std::string& ip = Utils::ToString(req_->GetListen().second);
-			const std::string& ip = Utils::ToString(server_conf_->GetListen()[0].second);
+			const std::string& ip = Utils::ToString(req_->GetListen().second);
 			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", 301));
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
@@ -217,11 +216,11 @@ int		HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
 		return (ExecPOSTMethod(st));
 }
 
-int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req, const ServerDirective& server_conf)
+int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 {
 	req_ = &req;
-	server_conf_ = &server_conf;
-	const LocationDirective&	location = SelectLocation(server_conf.GetLocations());
+	server_conf_ = req.GetServerConf();
+	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
 	const std::pair<int, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != -1)
