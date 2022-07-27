@@ -125,13 +125,32 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
-	if (version == "HTTP/1.1")
-		version_ = version;
-	else
+	std::string		cmp = "HTTP/1.1";
+	size_t			i;
+
+	i = 0;
+	if (version.at(i) != cmp.at(i))
 	{
 		std::cerr << "ParseVersion throw exception." << std::endl;
-		throw HTTPError(HTTPError::HTTP_VERSION_NOT_SUPPORTED);
+		throw HTTPError(HTTPError::Not_Found);
 	}
+
+	if (version.size() != cmp.size())
+	{
+		std::cerr << "ParseVersion throw exception." << std::endl;
+		throw HTTPError(HTTPError::Bad_Request);
+	}
+
+	for (i = 1; i < cmp.size(); ++i)
+	{
+		if (version.at(i) != cmp.at(i))
+		{
+			std::cerr << "ParseVersion throw exception." << std::endl;
+			throw HTTPError(HTTPError::Bad_Request);
+		}
+	}
+
+	version_ = version;
 }
 
 void	HTTPRequest::ParseRequestLine(void)
