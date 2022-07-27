@@ -23,14 +23,19 @@ class DELETETest : public ::testing::Test
 			delete ssocket_;
 			delete csocket_;
 		}
+		virtual void TearDown()
+		{
+			delete req_;
+		}
 
 		void	RunCommunication(const std::string& msg)
 		{
+			req_ = new HTTPRequest(*ssocket_);
 			try
 			{
 				csocket_->SendRequest(msg);
-				req_.ParseRequest(*ssocket_, server_conf_);
-				status_code_ = method_.ExecHTTPMethod(req_, server_conf_);
+				req_->ParseRequest();
+				status_code_ = method_.ExecHTTPMethod(*req_);
 			}
 			catch (const HTTPError& e)
 			{
@@ -45,7 +50,7 @@ class DELETETest : public ::testing::Test
 		static ClientSocket*			csocket_;
 
 		int						status_code_;
-		HTTPRequest				req_;
+		HTTPRequest*			req_;
 		HTTPMethod				method_;
 };
 

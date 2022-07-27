@@ -60,14 +60,33 @@ std::string		Utils::MyTrim
 	return (result);
 }
 
-bool	Utils::MyisLower(const char ch)
-{
-    return std::islower(static_cast<unsigned char>(ch));
-}
-
 std::string		Utils::GetMicroSecondTime()
 {
 	timeval		t;
 	gettimeofday(&t, NULL);
 	return (ToString(t.tv_sec * 1000000 + t.tv_usec));
+}
+
+bool	Utils::IsBlank(char c)
+{
+	if (c == 0x20 || c == 0x09)
+		return (true);
+	return (false);
+}
+
+std::string	Utils::StringToLower(const std::string& str)
+{
+	std::string		ret;
+
+	ret = str;
+	for (size_t i = 0; i < ret.size(); i++)
+	{
+		char	c;
+
+		c = ret.at(i);
+		if (c >= 'A' && c <= 'Z')
+			ret.at(i) = tolower(c);
+	}
+
+	return (ret);
 }

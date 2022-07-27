@@ -18,65 +18,69 @@
 class HTTPRequest
 {
 	public:
-		HTTPRequest();
+		explicit HTTPRequest(const ServerSocket& ssocket);
 		~HTTPRequest();
 
-		void	ParseRequest(const ServerSocket& ssocket, const ServerDirective& server_conf);
+		void	ParseRequest(void);
 		void	RequestDisplay(void) const;
 
 		// Getter
-		std::string						GetMethod(void) const;
-		std::string						GetTarget(void) const;
-		std::string						GetVersion(void) const;
-		std::pair<std::string, int>		GetHost(void) const;
-		size_t							GetContentLength(void) const;
-		std::string						GetUserAgent(void) const;
-		std::vector<std::string>		GetAcceptEncoding(void) const;
-		bool							GetConnection(void) const;
-		std::string						GetContentType(void) const;
-		std::string						GetBody(void) const;
+		const ServerDirective::Listen&			GetListen(void) const;
+		const ServerDirective*					GetServerConf(void) const;
+		std::string								GetMethod(void) const;
+		std::string								GetTarget(void) const;
+		std::string								GetVersion(void) const;
+		std::pair<std::string, std::string>		GetHost(void) const;
+		size_t									GetContentLength(void) const;
+		std::string								GetUserAgent(void) const;
+		std::vector<std::string>				GetAcceptEncoding(void) const;
+		bool									GetConnection(void) const;
+		std::string								GetContentType(void) const;
+		std::string								GetBody(void) const;
 
 	private:
-		typedef	void 	(HTTPRequest::*ParseFunc)(const std::string& content);
+		typedef void (HTTPRequest::*ParseFunc)(const std::string& content);
 
-		enum	e_status
-		{
-			REQUEST,
-			HEADER,
-			BODY,
-		};
+		// arg
+		const ServerSocket&							ssocket_;
+		const ServerDirective::Listen&				listen_;
+		const std::vector<const ServerDirective*>&	server_confs_;
+		const ServerDirective*						server_conf_;
 
 		// server_conf
-		size_t							client_max_body_size_;
+		size_t										client_max_body_size_;
 
 		// GetLine
-		std::string						save_;
+		std::string									save_;
 
 		// request line
-		std::string						method_;
-		std::string						target_;
-		std::string						version_;
+		std::string									method_;
+		std::string									target_;
+		std::string									version_;
 
 		// header
-		std::pair<std::string, int>		host_;
-		size_t							content_length_;
-		std::string						user_agent_;
-		std::vector<std::string>		accept_encoding_;
-		bool							connection_;
-		std::string						content_type_;
+		std::map<std::string, std::string>			headers_;
+		std::pair<std::string, std::string>			host_;
+		size_t										content_length_;
+		std::string									user_agent_;
+		std::vector<std::string>					accept_encoding_;
+		bool										connection_;
+		std::string									content_type_;
 
 		// body
-		std::string		body_;
+		std::string									body_;
 
 		// func
-		void			SetServerConf(const ServerDirective& server_conf);
-		std::string		GetLine(const ServerSocket& ssocket);
-		void			ParseRequestLine(ServerSocket const & ssocket);
+		bool			IsToken(const std::string& str);
+		bool			IsTChar(char c);
+		std::string		GetLine(void);
+		void			ParseRequestLine(void);
 		void			ParseMethod(const std::string& method);
 		void			ParseTarget(const std::string& target);
 		void			ParseVersion(const std::string& version);
-
-		void			ParseHeaders(const ServerSocket& ssocket);
+		void			ReceiveHeaders(void);
+		void			ParseHeaders(void);
+		void			CheckHeaders(void);
 		void			ParseHeader(const std::string& field, const std::string& content);
 		void			ParseHost(const std::string& content);
 		void			ParseContentLength(const std::string& content);
@@ -84,8 +88,8 @@ class HTTPRequest
 		void			ParseAcceptEncoding(const std::string& content);
 		void			ParseConnection(const std::string& content);
 		void			ParseContentType(const std::string& content);
-
-		void			ParseBody(const ServerSocket& ssocket);
+		void			ParseBody(void);
+		void			FindServerConf(void);
 };
 
 #endif

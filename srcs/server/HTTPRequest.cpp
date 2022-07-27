@@ -1,34 +1,74 @@
 #include "HTTPRequest.hpp"
 
-HTTPRequest::HTTPRequest()
-	: content_length_(0)
+HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
+	: ssocket_(ssocket)
+	, listen_(ssocket.GetListen())
+	, server_confs_(ssocket.GetServerConfs())
+	, client_max_body_size_(0)
+	, content_length_(0)
 	, connection_(true)
 {
-	host_ = std::make_pair("", 80);
 }
 
 HTTPRequest::~HTTPRequest()
 {
 }
 
-std::string						HTTPRequest::GetMethod(void) const { return (method_); }
-std::string						HTTPRequest::GetTarget(void) const { return (target_); }
-std::string						HTTPRequest::GetVersion(void) const { return (version_); }
-std::pair<std::string, int>		HTTPRequest::GetHost(void) const { return (host_); }
-size_t							HTTPRequest::GetContentLength(void) const { return (content_length_); }
-std::string						HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
-std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
-bool							HTTPRequest::GetConnection(void) const { return (connection_); }
-std::string						HTTPRequest::GetContentType(void) const { return (content_type_); }
-std::string						HTTPRequest::GetBody(void) const { return (body_); }
+const ServerDirective::Listen&		HTTPRequest::GetListen(void) const { return (listen_); }
+const ServerDirective*				HTTPRequest::GetServerConf(void) const { return (server_conf_); }
+std::string							HTTPRequest::GetMethod(void) const { return (method_); }
+std::string							HTTPRequest::GetTarget(void) const { return (target_); }
+std::string							HTTPRequest::GetVersion(void) const { return (version_); }
+std::pair<std::string, std::string>	HTTPRequest::GetHost(void) const { return (host_); }
+size_t								HTTPRequest::GetContentLength(void) const { return (content_length_); }
+std::string							HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
+std::vector<std::string>			HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
+bool								HTTPRequest::GetConnection(void) const { return (connection_); }
+std::string							HTTPRequest::GetContentType(void) const { return (content_type_); };
+std::string							HTTPRequest::GetBody(void) const { return (body_); }
 
-
-void	HTTPRequest::SetServerConf(const ServerDirective& server_conf)
+bool	HTTPRequest::IsToken(const std::string& str)
 {
-	client_max_body_size_ = server_conf.GetClientMaxBodySize();
+	std::string::const_iterator		it;
+	std::string::const_iterator		it_end;
+
+	it = str.begin();
+	it_end = str.end();
+
+	for ( ; it != it_end; ++it)
+	{
+		if (!IsTChar(*it))
+			return (false);
+	}
+	return (true);
 }
 
-std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
+bool	HTTPRequest::IsTChar(char c)
+{
+	if (c == '!'
+		|| c == '#'
+		|| c == '$'
+		|| c == '%'
+		|| c == '&'
+		|| c == '\''
+		|| c == '*'
+		|| c == '+'
+		|| c == '-'
+		|| c == '.'
+		|| c == '^'
+		|| c == '_'
+		|| c == '`'
+		|| c == '|'
+		|| c == '~'
+		|| isdigit(c)
+		|| isalpha(c))
+	{
+		return (true);
+	}
+	return (false);
+}
+
+std::string		HTTPRequest::GetLine(void)
 {
 	std::string				data;
 	std::string				line;
@@ -41,7 +81,7 @@ std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 
 	while ((pos = save_.find(separator)) == std::string::npos)
 	{
-		data = ssocket.RecvData();
+		data = ssocket_.RecvData();
 		if (data.size() == 0)
 			throw ClientClosed();
 		save_ += data;
@@ -53,19 +93,32 @@ std::string		HTTPRequest::GetLine(ServerSocket const & ssocket)
 	return (line);
 }
 
-void	HTTPRequest::ParseMethod(std::string const & method)
+void	HTTPRequest::ParseMethod(const std::string& method)
 {
-	const char *str = method.c_str();
-	const char *found = std::find_if(str, str + method.size(), Utils::MyisLower);
-	if (found != str + method.size())
-		throw HTTPError(HTTPError::BAD_REQUEST);
+	std::string::const_iterator	it;
+	std::string::const_iterator	it_end;
+
+	it = method.begin();
+	it_end = method.end();
+	for ( ; it != it_end; ++it)
+	{
+		if (!std::isupper(*it))
+		{
+			std::cerr << "ParseMethod throw exception." << std::endl;
+			throw HTTPError(HTTPError::BAD_REQUEST);
+		}
+	}
+
 	method_ = method;
 }
 
 void	HTTPRequest::ParseTarget(const std::string& target)
 {
 	if (target[0] != '/')
+	{
+		std::cerr << "ParseTarget throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	target_ = target;
 }
@@ -75,19 +128,31 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	if (version == "HTTP/1.1")
 		version_ = version;
 	else
+	{
+		std::cerr << "ParseVersion throw exception." << std::endl;
 		throw HTTPError(HTTPError::HTTP_VERSION_NOT_SUPPORTED);
+	}
 }
 
-void	HTTPRequest::ParseRequestLine(const ServerSocket& ssocket)
+void	HTTPRequest::ParseRequestLine(void)
 {
 	std::string					line;
 	std::vector<std::string>	list;
 
-	while ((line = GetLine(ssocket)) == "") { }
+	while ((line = GetLine()) == "") { }
+
+	if (Utils::IsBlank(line.at(0)))
+	{
+		std::cerr << "ParseRequestLine throw exception." << std::endl;
+		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	list = Utils::MySplit(line, " ");
 	if (list.size() != 3)
+	{
+		std::cerr << "ParseRequestLine throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
 
 	ParseMethod(list.at(0));
 	ParseTarget(list.at(1));
@@ -98,55 +163,29 @@ void	HTTPRequest::ParseRequestLine(const ServerSocket& ssocket)
 
 void HTTPRequest::ParseHost(const std::string& content)
 {
-	std::vector<std::string>	list1;
-	std::vector<std::string>	list2;
-	std::string					host;
+	std::vector<std::string>	list;
 
-	list1 = Utils::MySplit(content, " ");
-	if (list1.size() != 1)
-		throw HTTPError(HTTPError::BAD_REQUEST);
+	list = Utils::MySplit(content, ":");
 
-	list2 = Utils::MySplit(list1.at(0), ":");
-	if (list2.size() > 2)
-		throw HTTPError(HTTPError::BAD_REQUEST);
+	host_.first = Utils::MyTrim(list.at(0), " ");
+	if (list.size() >= 2)
+		host_.second = Utils::MyTrim(list.at(1), " ");
 
-	host = list2.at(0);
-	for (size_t i = 0; i < host.size(); i++)
-	{
-		if (!isalpha(host[i])
-			&& !isdigit(host[i])
-			&& host[i] != '.'
-			&& host[i] != '-')
-			throw HTTPError(HTTPError::BAD_REQUEST);
-	}
-	host_.first = host;
-
-	if (list2.size() == 2)
-	{
-		long	port;
-		char	*endptr;
-
-		port = std::strtol(list2.at(1).c_str(), &endptr, 10);
-		if (*endptr != '\0' || errno == ERANGE || port < 1 || 65535 < port)
-			throw HTTPError(HTTPError::BAD_REQUEST);
-		host_.second = port;
-	}
+	FindServerConf();
 }
 
 void HTTPRequest::ParseContentLength(const std::string& content)
 {
-	std::vector<std::string>	list;
-	char						*endptr;
+	std::string		tmp;
+	char			*endptr;
 
-	list = Utils::MySplit(content, " ");
-	if (list.size() != 1)
-		throw HTTPError(HTTPError::BAD_REQUEST);
-
-	content_length_ = std::strtoul(list.at(0).c_str(), &endptr, 10);
+	tmp = Utils::MyTrim(content, " ");
+	content_length_ = std::strtoul(tmp.c_str(), &endptr, 10);
 	if (errno == ERANGE || *endptr != '\0')
+	{
+		std::cerr << "ParseContentLength throw exception." << std::endl;
 		throw HTTPError(HTTPError::BAD_REQUEST);
-	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
-		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
+	}
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -164,25 +203,29 @@ void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 	it = list.begin();
 	it_end = list.end();
 	for (; it != it_end; ++it)
-	{
 		*it = Utils::MyTrim(*it, " ");
-	}
 	accept_encoding_ = list;
 }
 
 void HTTPRequest::ParseConnection(const std::string& content)
 {
-	std::string		tmp;
+	std::vector<std::string>			list;
+	std::vector<std::string>::iterator	it;
+	std::vector<std::string>::iterator	it_end;
 
-	tmp = Utils::MyTrim(content, " ");
-	for (size_t i = 0; i < content.length(); i++)
+	list = Utils::MySplit(content, ",");
+	it = list.begin();
+	it_end = list.end();
+	for (; it != it_end; ++it)
 	{
-		if (tmp[i] >= 'A' && tmp[i] <= 'Z')
-			tmp[i] = tolower(tmp[i]);
+		*it = Utils::MyTrim(*it, " ");
+		*it = Utils::StringToLower(*it);
+		if (*it == "close")
+		{
+			connection_ = false;
+			break;
+		}
 	}
-
-	if (tmp == "close")
-		connection_ = false;
 }
 
 void HTTPRequest::ParseContentType(const std::string& content)
@@ -193,12 +236,12 @@ void HTTPRequest::ParseContentType(const std::string& content)
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
-		std::make_pair("Host", &HTTPRequest::ParseHost),
-		std::make_pair("Content-Length", &HTTPRequest::ParseContentLength),
-		std::make_pair("User-Agent", &HTTPRequest::ParseUserAgent),
-		std::make_pair("Accept-Encoding", &HTTPRequest::ParseAcceptEncoding),
-		std::make_pair("Connection", &HTTPRequest::ParseConnection),
-		std::make_pair("Content-Type", &HTTPRequest::ParseContentType)
+		std::make_pair("host", &HTTPRequest::ParseHost),
+		std::make_pair("content-length", &HTTPRequest::ParseContentLength),
+		std::make_pair("user-agent", &HTTPRequest::ParseUserAgent),
+		std::make_pair("accept-encoding", &HTTPRequest::ParseAcceptEncoding),
+		std::make_pair("connection", &HTTPRequest::ParseConnection),
+		std::make_pair("content-type", &HTTPRequest::ParseContentType)
 	};
 	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[6]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
@@ -210,39 +253,90 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	return;
 }
 
-void	HTTPRequest::ParseHeaders(const ServerSocket& ssocket)
+void	HTTPRequest::ReceiveHeaders(void)
 {
-	std::string				line;
-	std::string				field;
-	std::string				content;
-	std::string::size_type	pos;
+	std::string				array[6] = {
+		"host",
+		"content-length",
+		"user-agent",
+		"accept-encoding",
+		"connection",
+		"content-type"
+	};
+	std::vector<std::string>			header_list(array, array + 6);
+	std::vector<std::string>::iterator	it;
+	std::string							line;
+	std::string							field;
+	std::string							content;
+	std::string::size_type				pos;
 
-	while ((line = GetLine(ssocket)) != "")
+	while ((line = GetLine()) != "")
 	{
 		pos = line.find(":");
 		if (pos == std::string::npos)
-			throw HTTPError(HTTPError::BAD_REQUEST);
+			continue;
+
 		field = line.substr(0, pos);
+		field = Utils::StringToLower(field);
 		content = line.substr(pos + 1);
-		ParseHeader(field, content);
+
+		it = std::find(header_list.begin(), header_list.end(), field);
+		if (it != header_list.end())
+		{
+			if (headers_.count(field) == 0)
+				headers_[field] = content;
+			else
+			{
+				if (field == "host"
+					|| field == "content-length")
+					{
+						std::cerr << "ReceiveHeaders throw exception." << std::endl;
+						throw HTTPError(HTTPError::BAD_REQUEST);
+					}
+				else if (field == "accept-encoding"
+					|| field == "connection")
+					headers_[field] = headers_[field] + "," + content;
+				else
+					headers_[field] = content;
+			}
+		}
 	}
-
-	if (host_.first == "")
-		throw HTTPError(HTTPError::BAD_REQUEST);
-
-	return;
 }
 
-void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
+void	HTTPRequest::ParseHeaders(void)
+{
+	std::map<std::string, std::string>::const_iterator	it;
+	std::map<std::string, std::string>::const_iterator	it_end;
+
+	it = headers_.begin();
+	it_end = headers_.end();
+	for ( ; it != it_end; ++it)
+		ParseHeader(it->first, it->second);
+}
+
+void	HTTPRequest::CheckHeaders(void)
+{
+	if (host_.first == "")
+	{
+		std::cerr << "CheckHeaders throw exception." << std::endl;
+		throw HTTPError(HTTPError::BAD_REQUEST);
+	}
+
+	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
+	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
+	{
+		std::cerr << "CheckHeaders throw exception." << std::endl;
+		throw HTTPError(HTTPError::PAYLOAD_TOO_LARGE);
+	}
+}
+
+void	HTTPRequest::ParseBody(void)
 {
 	std::string		data;
 	std::string		tmp;
 	size_t			remaining_byte;
 	size_t			default_recv_byte = 1024;
 	size_t			recv_byte;
-
-	// if (method_ != POST)
-	// 	return;
 
 	remaining_byte = content_length_;
 
@@ -259,22 +353,49 @@ void	HTTPRequest::ParseBody(ServerSocket const & ssocket)
 		else
 			recv_byte = remaining_byte;
 
-		data = ssocket.RecvData(recv_byte);
+		data = ssocket_.RecvData(recv_byte);
 		remaining_byte -= data.length();
 		tmp += data;
 	}
 
-	body_ = tmp;
-
-	return;
+	if (method_ == "POST")
+		body_ = tmp;
 }
 
-void	HTTPRequest::ParseRequest(const ServerSocket& ssocket, const ServerDirective& server_conf)
+void	HTTPRequest::FindServerConf(void)
 {
-	SetServerConf(server_conf);
-	ParseRequestLine(ssocket);
-	ParseHeaders(ssocket);
-	ParseBody(ssocket);
+	std::vector<const ServerDirective*>::const_iterator	sd_it;
+	std::vector<const ServerDirective*>::const_iterator	sd_it_end;
+
+	sd_it = server_confs_.begin();
+	sd_it_end = server_confs_.end();
+	server_conf_ = *sd_it;
+	for ( ; sd_it != sd_it_end; ++sd_it)
+	{
+		const std::vector<std::string>&				server_names = (*sd_it)->GetServerNames();
+		std::vector<std::string>::const_iterator	sn_it;
+		std::vector<std::string>::const_iterator	sn_it_end;
+
+		sn_it = server_names.begin();
+		sn_it_end = server_names.end();
+		for ( ; sn_it != sn_it_end; ++sn_it)
+		{
+			if (*sn_it == host_.first)
+			{
+				server_conf_ = *sd_it;
+				return;
+			}
+		}
+	}
+}
+
+void	HTTPRequest::ParseRequest(void)
+{
+	ParseRequestLine();
+	ReceiveHeaders();
+	ParseHeaders();
+	CheckHeaders();
+	ParseBody();
 
 	return;
 }
