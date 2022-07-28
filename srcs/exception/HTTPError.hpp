@@ -2,7 +2,6 @@
 # define HTTPERROR_HPP
 
 # include <stdexcept>
-//# include "HTTPStatus.hpp"
 
 class HTTPError : public std::exception
 {
@@ -25,8 +24,8 @@ class HTTPError : public std::exception
 		std::string		GetMsg() const { return (msg_ + " throw exception."); }
 
 	private:
-		int				status_code_;
-		std::string		msg_;
+		int						status_code_;
+		const std::string&		msg_;
 };
 
 #endif
