@@ -3,6 +3,7 @@
 
 enum	e_StatusCode
 {
+	INVALID = -1,
 	CONTINUE = 100,
 	SWITCHING_PROTOCOLS = 101,
 	OK = 200,

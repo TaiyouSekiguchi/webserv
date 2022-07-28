@@ -223,7 +223,7 @@ e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
 	const std::pair<int, std::string>&	redirect = location.GetReturn();
-	if (redirect.first != -1)
+	if (redirect.first != INVALID)
 		return (static_cast<e_StatusCode>(Redirect(redirect.second, redirect.first)));
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
