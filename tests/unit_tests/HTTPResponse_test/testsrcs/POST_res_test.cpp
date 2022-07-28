@@ -8,7 +8,7 @@
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
 
-class GETResTest : public ::testing::Test
+class POSTResTest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
@@ -59,16 +59,19 @@ class GETResTest : public ::testing::Test
 		HTTPResponse*			res_;
 };
 
-Config					GETResTest::config_("conf/get.conf");
-const ServerDirective&	GETResTest::server_conf_ = *(config_.GetServers().begin());
-ListenSocket*			GETResTest::lsocket_ = NULL;
-ServerSocket*			GETResTest::ssocket_ = NULL;
-ClientSocket*			GETResTest::csocket_ = NULL;
+Config					POSTResTest::config_("conf/post.conf");
+const ServerDirective&	POSTResTest::server_conf_ = *(config_.GetServers().begin());
+ListenSocket*			POSTResTest::lsocket_ = NULL;
+ServerSocket*			POSTResTest::ssocket_ = NULL;
+ClientSocket*			POSTResTest::csocket_ = NULL;
 
-static const std::string RemoveDate(std::string res_msg)
+static const std::string RemoveHeader(std::string res_msg)
 {
-	std::string::size_type pos_s = res_msg.find("Date");
-	std::string str = res_msg.erase(pos_s, 37);
+	std::string::size_type pos_date = res_msg.find("Date");
+	std::string str = res_msg.erase(pos_date, 37);
+	std::string::size_type pos_location = res_msg.find("Location");
+	if (pos_location != std::string::npos)
+		str = res_msg.erase(pos_location, 36);
 	return (str);
 }
 
@@ -155,56 +158,38 @@ static std::string GenerateDefaultHTML(int status_code)
 	return (ss.str());
 }
 
-TEST_F(GETResTest, BasicTest)
+TEST_F(POSTResTest, NotAllowedTest)
 {
-	const std::string Basic = "HTTP/1.1 200 OK\r\n"
-		"Connection: keep-alive\r\nContent-Length: 9\r\nServer: Webserv\r\n\r\nind.html\n";
-	RunCommunication("GET /ind.html HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Basic);
+	const std::string NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n"
+		"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(405);
+	RunCommunication("POST / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotAllowed);
 }
 
-TEST_F(GETResTest, NotFoundTest)
+TEST_F(POSTResTest, NotFoundTest)
 {
 	const std::string NotFound = "HTTP/1.1 404 Not Found\r\n"
 		"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
 		+ GenerateDefaultHTML(404);
-	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotFound);
+	RunCommunication("POST /upload/no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotFound);
 }
 
-TEST_F(GETResTest, RootTest)
+TEST_F(POSTResTest, NotDirTest)
 {
-	const std::string Root = "HTTP/1.1 200 OK\r\n"
-		"Connection: keep-alive\r\nContent-Length: 26\r\nServer: Webserv\r\n\r\n"
-		"html/sub1/hoge/index.html\n";
-	RunCommunication("GET /hoge/ HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Root);
+	const std::string NotDir = "HTTP/1.1 409 Conflict\r\n"
+		"Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(409);
+	RunCommunication("POST /upload/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotDir);
 }
 
-TEST_F(GETResTest, DirRedirectTest)
+TEST_F(POSTResTest, UploadTest)
 {
-	const std::string DirRiderect = "HTTP/1.1 301 Moved Permanently\r\n"
-		"Connection: keep-alive\r\nContent-Length: 164\r\n"
-		"Location: http://localhost:8080/sub1/\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(301);
-	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DirRiderect);
-}
-
-TEST_F(GETResTest, IndexTest)
-{
-	const std::string Index = "HTTP/1.1 200 OK\r\n"
-		"Connection: keep-alive\r\nContent-Length: 20\r\nServer: Webserv\r\n\r\n"
-		"html/sub1/sub1.html\n";
-	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Index);
-}
-
-TEST_F(GETResTest, DirForbiddenTest)
-{
-	const std::string DirForbidden = "HTTP/1.1 403 Forbidden\r\n"
-		"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(403);
-	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DirForbidden);
+	const std::string Upload = "HTTP/1.1 201 Created\r\n"
+		"Connection: keep-alive\r\nServer: Webserv\r\n\r\n";
+	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), Upload);
+	EXPECT_NE(res_->GetResMsg().find("/upload/16"), std::string::npos);
 }

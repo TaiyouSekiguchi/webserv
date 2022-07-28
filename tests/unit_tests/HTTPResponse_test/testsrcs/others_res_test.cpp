@@ -8,7 +8,7 @@
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
 
-class POSTResTest : public ::testing::Test
+class OthersResTest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
@@ -59,19 +59,25 @@ class POSTResTest : public ::testing::Test
 		HTTPResponse*			res_;
 };
 
-Config					POSTResTest::config_("conf/post.conf");
-const ServerDirective&	POSTResTest::server_conf_ = *(config_.GetServers().begin());
-ListenSocket*			POSTResTest::lsocket_ = NULL;
-ServerSocket*			POSTResTest::ssocket_ = NULL;
-ClientSocket*			POSTResTest::csocket_ = NULL;
+Config					OthersResTest::config_("conf/others.conf");
+const ServerDirective&	OthersResTest::server_conf_ = *(config_.GetServers().begin());
+ListenSocket*			OthersResTest::lsocket_ = NULL;
+ServerSocket*			OthersResTest::ssocket_ = NULL;
+ClientSocket*			OthersResTest::csocket_ = NULL;
 
-static const std::string RemoveHeader(std::string res_msg)
+static const std::string RemoveDate(std::string res_msg)
+{
+	std::string::size_type pos_s = res_msg.find("Date");
+	std::string str = res_msg.erase(pos_s, 37);
+	return (str);
+}
+
+static const std::string RemoveDateBody(std::string res_msg)
 {
 	std::string::size_type pos_date = res_msg.find("Date");
 	std::string str = res_msg.erase(pos_date, 37);
-	std::string::size_type pos_location = res_msg.find("Location");
-	if (pos_location != std::string::npos)
-		str = res_msg.erase(pos_location, 36);
+	std::string::size_type pos_s = res_msg.find("<html>");
+	str = res_msg.erase(pos_s);
 	return (str);
 }
 
@@ -158,38 +164,90 @@ static std::string GenerateDefaultHTML(int status_code)
 	return (ss.str());
 }
 
-TEST_F(POSTResTest, NotAllowedTest)
+TEST_F(OthersResTest, ReturnTest)
 {
-	const std::string NotAllowed = "HTTP/1.1 405 Method Not Allowed\r\n"
-		"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(405);
-	RunCommunication("POST / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotAllowed);
+	const std::string Return = "HTTP/1.1 301 Moved Permanently\r\n"
+		"Connection: keep-alive\r\nContent-Length: 164\r\n"
+		"Location: http://localhost:8080\r\nServer: Webserv\r\n\r\n" + GenerateDefaultHTML(301);
+	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Return);
 }
 
-TEST_F(POSTResTest, NotFoundTest)
+TEST_F(OthersResTest, UnknownMethodTest)
 {
-	const std::string NotFound = "HTTP/1.1 404 Not Found\r\n"
+	const std::string UnknownMethod = "HTTP/1.1 405 Method Not Allowed\r\n"
+	"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n" + GenerateDefaultHTML(405);
+	RunCommunication("AAA / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), UnknownMethod);
+}
+
+TEST_F(OthersResTest, ValidCGITest)
+{
+	const std::string ValidCGI = "HTTP/1.1 200 OK\r\n"
+		"Connection: keep-alive\r\nServer: Webserv\r\n\r\n";
+	RunCommunication("GET /cgi-bin/tohoho.pl HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), ValidCGI);
+}
+
+TEST_F(OthersResTest, AutoIndexTest)
+{
+	const std::string AutoIndex = "HTTP/1.1 200 OK\r\n"
+		"Connection: keep-alive\r\nContent-Length: 386\r\nServer: Webserv\r\n\r\n";
+	RunCommunication("GET /sub1/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDateBody(res_->GetResMsg()), AutoIndex);
+
+	const std::string&	body = res_->GetResMsg();
+	EXPECT_NE(body.find("<head><title>Index of /sub1/</title></head>"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"hoge/\">hoge/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"index.html\">index.html</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"noindex/\">noindex/</a>\t\t"), std::string::npos);
+	EXPECT_NE(body.find("<a href=\"sub1.html\">sub1.html</a>\t\t"), std::string::npos);
+}
+
+TEST_F(OthersResTest, ErrorPageRedirectTest)
+{
+	const std::string ErrorPage = "HTTP/1.1 302 Found\r\n"
+		"Connection: keep-alive\r\nContent-Length: 140\r\nLocation: 40x.html\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(302);
+	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), ErrorPage);
+}
+
+
+TEST_F(OthersResTest, BadRequestTest)
+{
+	const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
+		"Connection: keep-alive\r\nContent-Length: 152\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(400);
+	RunCommunication(" GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), BadRequest);
+}
+
+TEST_F(OthersResTest, VersionNotSupportTest)
+{
+	const std::string VersionNotSupport = "HTTP/1.1 505 HTTP Version Not Supported\r\n"
+		"Connection: keep-alive\r\nContent-Length: 182\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(505);
+	RunCommunication("GET /no HTTP/1.0\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), VersionNotSupport);
+}
+
+/* 
+TEST_F(OthersResTest, NotPermittedTest)
+{
+	const std::string NotPermitted = "HTTP/1.1 403 Forbidden\r\n"
 		"Connection: keep-alive\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(404);
-	RunCommunication("POST /upload/no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotFound);
+		+ GenerateDefaultHTML(403);
+	RunCommunication("GET /sub2/sub2.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotPermitted);
 }
 
-TEST_F(POSTResTest, NotDirTest)
+TEST_F(OthersResTest, NotPermittedAutoIndexTest)
 {
-	const std::string NotDir = "HTTP/1.1 409 Conflict\r\n"
-		"Connection: keep-alive\r\nContent-Length: 146\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(409);
-	RunCommunication("POST /upload/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), NotDir);
+	const std::string NotPermittedAutoIndex = "HTTP/1.1 500 Internal Server Error\r\n"
+		"Connection: keep-alive\r\nContent-Length: 172\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(500);
+	RunCommunication("GET /sub3/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotPermittedAutoIndex);
 }
-
-TEST_F(POSTResTest, UploadTest)
-{
-	const std::string Upload = "HTTP/1.1 201 Created\r\n"
-		"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
-	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), Upload);
-	EXPECT_NE(res_->GetResMsg().find("/upload/16"), std::string::npos);
-}
+ */

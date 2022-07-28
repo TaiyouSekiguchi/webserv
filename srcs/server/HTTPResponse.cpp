@@ -27,14 +27,20 @@ void HTTPResponse::AppendHeaders()
 	AppendHeader("Date", GetDate());
 	AppendHeader("Connection", req_.GetConnection() ? "keep-alive" : "close");
 	AppendHeader("Content-type", method_.GetContentType());
-	AppendHeader("Location", headers_.find("Location") == headers_.end() ? method_.GetLocation() : "");
-	AppendHeader("Content-Length", Utils::ToString(body_.size()));
+	AppendHeader("Location", method_.GetLocation());
+	AppendHeader("Content-Length", body_.size() != 0 ? Utils::ToString(body_.size()) : "");
 }
 
 void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
 {
+	if (headers_.find(key) != headers_.end())
+	{
+		return;
+	}
 	if (!value.empty())
+	{
 		headers_[key] = value + "\r\n";
+	}
 }
 
 std::string HTTPResponse::GetDate() const
@@ -65,23 +71,25 @@ bool HTTPResponse::IsNormalStatus() const
 
 std::string HTTPResponse::GenerateHTML()
 {
-	std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
-
-	if (ite != server_conf_->GetErrorPages().end())
+	if (server_conf_)
 	{
-		const std::string error_page_path = ite->second;
-		if (error_page_path.at(0) == '/')
+		std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
+		if (ite != server_conf_->GetErrorPages().end())
 		{
-			std::ifstream ifs("html" + error_page_path);
-			if (ifs.fail())
+			const std::string error_page_path = ite->second;
+			if (error_page_path.at(0) == '/')
 			{
-				return ("");
+				std::ifstream ifs("html" + error_page_path);
+				if (ifs.fail())
+				{
+					return ("");
+				}
+				std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+				return (str);
 			}
-			std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-			return (str);
+			status_code_ = 302;
+			AppendHeader("Location", ite->second);
 		}
-		status_code_ = 302;
-		AppendHeader("Location", ite->second);
 	}
 	std::string str = GenerateDefaultHTML();
 	return (str);
