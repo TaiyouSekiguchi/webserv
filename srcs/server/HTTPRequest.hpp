@@ -13,6 +13,7 @@
 #include "ServerSocket.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
+#include "HTTPStatus.hpp"
 #include "utils.hpp"
 
 class HTTPRequest
