@@ -9,8 +9,8 @@ class HTTPError : public std::exception
 	public:
 		explicit HTTPError(const int status_code, const char* msg) : status_code_(status_code), msg_(msg) {}
 
-		int				GetStatusCode() const { return (status_code_); }
-		void			GetMsg() const
+		int		GetStatusCode() const { return (status_code_); }
+		void	PutMsg() const
 		{
 			std::cerr << msg_ << " throw exception." << std::endl;
 		}
