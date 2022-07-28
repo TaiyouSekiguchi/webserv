@@ -72,6 +72,9 @@ class RequestTest : public ::testing::Test
 
 			ssocket_ = new ServerSocket(**target_lsocket);
 			req_ = new HTTPRequest(*ssocket_);
+			csocket.SendRequest(msg);
+			req_->ParseRequest();
+			/*
 			try
 			{
 				csocket.SendRequest(msg);
@@ -82,6 +85,7 @@ class RequestTest : public ::testing::Test
 			{
 				status_code_ = e.GetStatusCode();
 			}
+			*/
 		}
 
 		static Config						config_;
@@ -160,4 +164,13 @@ TEST_F(RequestTest, test5)
 	EXPECT_EQ(8080, req_->GetListen().second);
 	EXPECT_EQ("webserv1", req_->GetServerConf()->GetServerNames()[0]);
 	EXPECT_EQ((size_t)5, req_->GetContentLength());
+}
+
+TEST_F(RequestTest, test6)
+{
+	EXPECT_ANY_THROW(RunCommunication("GET / tHTTP/1.1\r\n", 8080));
+	EXPECT_ANY_THROW(RunCommunication("GET / Http/1.1\r\n", 8080));
+	EXPECT_ANY_THROW(RunCommunication("GET / http/1.1\r\n", 8080));
+	EXPECT_ANY_THROW(RunCommunication("GET / HTTP/1.5\r\n", 8080));
+	EXPECT_ANY_THROW(RunCommunication("GET / HTTP/abc\r\n", 8080));
 }
