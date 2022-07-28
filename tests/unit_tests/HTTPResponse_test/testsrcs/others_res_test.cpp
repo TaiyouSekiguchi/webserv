@@ -213,16 +213,6 @@ TEST_F(OthersResTest, ErrorPageRedirectTest)
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), ErrorPage);
 }
 
-
-TEST_F(OthersResTest, BadRequestTest)
-{
-	const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
-		"Connection: keep-alive\r\nContent-Length: 152\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(400);
-	RunCommunication(" GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), BadRequest);
-}
-
 TEST_F(OthersResTest, VersionNotSupportTest)
 {
 	const std::string VersionNotSupport = "HTTP/1.1 505 HTTP Version Not Supported\r\n"
@@ -233,6 +223,15 @@ TEST_F(OthersResTest, VersionNotSupportTest)
 }
 
 /* 
+TEST_F(OthersResTest, BadRequestTest)
+{
+	const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
+		"Connection: close\r\nContent-Length: 152\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(400);
+	RunCommunication(" GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), BadRequest);
+}
+
 TEST_F(OthersResTest, NotPermittedTest)
 {
 	const std::string NotPermitted = "HTTP/1.1 403 Forbidden\r\n"
