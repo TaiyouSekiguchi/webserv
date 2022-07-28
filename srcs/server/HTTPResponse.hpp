@@ -25,7 +25,9 @@ class HTTPResponse
 		std::map<std::string, std::string> headers_;
 		std::string body_;
 		int status_code_;
+		std::string connection_;
 
+		void CheckConnection();
 		void AppendHeaders();
 		void AppendHeader(const std::string &key, const std::string &value);
 		std::string GetDate() const;

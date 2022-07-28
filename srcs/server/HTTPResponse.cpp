@@ -7,6 +7,7 @@
 HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method)
 	: req_(req), method_(method), server_conf_(req.GetServerConf()), status_code_(status_code)
 {
+	CheckConnection();
 	SelectBody();
 	AppendHeaders();
 	res_msg_ = CreateResponse();
@@ -21,11 +22,21 @@ void HTTPResponse::SendResponse(const ServerSocket *ssocket)
 	ssocket->SendData(res_msg_);
 }
 
+void HTTPResponse::CheckConnection()
+{
+	if (status_code_ == HTTPError::BAD_REQUEST || status_code_ == HTTPError::HTTP_VERSION_NOT_SUPPORTED)
+	{
+		connection_ = "close";
+		return;
+	}
+	connection_ = "keep-alive";
+}
+
 void HTTPResponse::AppendHeaders()
 {
 	AppendHeader("Server", "Webserv");
 	AppendHeader("Date", GetDate());
-	AppendHeader("Connection", req_.GetConnection() ? "keep-alive" : "close");
+	AppendHeader("Connection", connection_);
 	AppendHeader("Content-type", method_.GetContentType());
 	AppendHeader("Location", method_.GetLocation());
 	AppendHeader("Content-Length", body_.size() != 0 ? Utils::ToString(body_.size()) : "");
@@ -35,6 +46,11 @@ void HTTPResponse::AppendHeader(const std::string &key, const std::string &value
 {
 	if (headers_.find(key) != headers_.end())
 	{
+		return;
+	}
+	if (key == "Content-Length" && req_.GetMethod() == "GET" && value.empty())
+	{
+		headers_[key] = "0\r\n";
 		return;
 	}
 	if (!value.empty())

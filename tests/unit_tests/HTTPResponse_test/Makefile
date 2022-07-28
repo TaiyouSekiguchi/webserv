@@ -23,10 +23,11 @@ SRCS	=	ASocket.cpp \
 			HTTPResponse.cpp
 			
 SRCS	+=	\
-			GET_res_test.cpp \
-			DELETE_res_test.cpp \
-			POST_res_test.cpp \
-			others_res_test.cpp
+			Response_test.cpp 
+			# GET_res_test.cpp \
+			# DELETE_res_test.cpp \
+			# POST_res_test.cpp \
+			# others_res_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
