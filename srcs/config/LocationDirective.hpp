@@ -5,6 +5,7 @@
 # include <vector>
 # include <utility>
 # include "Tokens.hpp"
+# include "HTTPStatusCode.hpp"
 
 class LocationDirective
 {
@@ -40,16 +41,16 @@ class LocationDirective
 		void	ParseCGIEnableExtension(Tokens::citr begin, Tokens::citr end);
 
 		// Location Path
-		std::string					path_;
+		std::string						path_;
 
 		// Directive Variable
-		std::string					root_;
-		std::vector<std::string>	index_;
-		std::pair<int, std::string>	return_;
-		int							autoindex_;
-		std::vector<std::string>	allowed_methods_;
-		std::string					upload_root_;
-		std::vector<std::string>	cgi_enable_extension_;
+		std::string						root_;
+		std::vector<std::string>		index_;
+		std::pair<int, std::string>		return_;
+		int								autoindex_;
+		std::vector<std::string>		allowed_methods_;
+		std::string						upload_root_;
+		std::vector<std::string>		cgi_enable_extension_;
 };
 
 #endif  // LOCATIONDIRECTIVE_HPP

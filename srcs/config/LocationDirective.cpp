@@ -117,7 +117,7 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 
 	bool			is_url;
 	char			*endptr;
-	long			status_code = 302;
+	long			status_code = FOUND;
 	std::string		url = "";
 
 	is_url = (*begin).find("http://") != std::string::npos;

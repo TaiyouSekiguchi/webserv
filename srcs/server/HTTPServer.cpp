@@ -101,7 +101,7 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 	catch (const HTTPError& e)
 	{
 		status_code = e.GetStatusCode();
-		e.GetMsg();
+		e.PutMsg();
 	}
 	std::cout << "status_code: " << status_code << std::endl;
 	method.MethodDisplay();

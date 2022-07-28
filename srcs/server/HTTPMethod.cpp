@@ -101,14 +101,14 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 	return (true);
 }
 
-int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
+e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
 {
 	const std::string&	access_path = st.GetPath();
 
 	if (st.IsRegularFile())
 	{
 		if (GetFile(access_path))
-			return (200);
+			return (OK);
 		throw HTTPError(FORBIDDEN, "ExecGETMethod");
 	}
 	else if (st.IsDirectory())
@@ -117,19 +117,19 @@ int		HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location
 		{
 			const std::string& host = req_->GetHost().first;
 			const std::string& ip = Utils::ToString(req_->GetListen().second);
-			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", 301));
+			return (static_cast<e_StatusCode>(Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", MOVED_PERMANENTLY)));
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
-			return (200);
+			return (OK);
 		else if (GetAutoIndexFile(access_path, location.GetAutoIndex()))
-			return (200);
+			return (OK);
 		throw HTTPError(FORBIDDEN, "ExecGETMethod");
 	}
 	else
 		throw HTTPError(FORBIDDEN, "ExecGETMethod");
 }
 
-int		HTTPMethod::ExecDELETEMethod(const Stat& st)
+e_StatusCode	HTTPMethod::ExecDELETEMethod(const Stat& st)
 {
 	if (st.IsDirectory() && *(req_->GetTarget().rbegin()) != '/')
 		throw HTTPError(CONFLICT, "ExecDELETEMethod");
@@ -141,10 +141,10 @@ int		HTTPMethod::ExecDELETEMethod(const Stat& st)
 		else
 			throw HTTPError(INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
 	}
-	return (204);
+	return (NO_CONTENT);
 }
 
-int		HTTPMethod::ExecPOSTMethod(const Stat& st)
+e_StatusCode	HTTPMethod::ExecPOSTMethod(const Stat& st)
 {
 	if (!st.IsDirectory())
 		throw HTTPError(CONFLICT, "ExecPOSTMethod");
@@ -164,7 +164,7 @@ int		HTTPMethod::ExecPOSTMethod(const Stat& st)
 		location_ = req_->GetTarget() + timestamp;
 	else
 		location_ = req_->GetTarget() + "/" + timestamp;
-	return (201);
+	return (CREATED);
 }
 
 bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
@@ -194,7 +194,7 @@ bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& locatio
 // 	return (cgi.GetStatusCode());
 // }
 
-int		HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
+e_StatusCode	HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
 {
 	const std::string&	method = req_->GetMethod();
 
@@ -216,7 +216,7 @@ int		HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
 		return (ExecPOSTMethod(st));
 }
 
-int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
+e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 {
 	req_ = &req;
 	server_conf_ = req.GetServerConf();
@@ -224,14 +224,14 @@ int		HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 
 	const std::pair<int, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != -1)
-		return (Redirect(redirect.second, redirect.first));
+		return (static_cast<e_StatusCode>(Redirect(redirect.second, redirect.first)));
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
 		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");
 
 	Stat	cgi_st(location.GetRoot() + req.GetTarget());
 	if (CheckCGIScript(cgi_st, location))
-		return (200);
+		return (OK);
 		// return (ExecCGI(cgi_st.GetPath()));
 
 	return (SwitchHTTPMethod(location));
