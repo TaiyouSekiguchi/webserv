@@ -2,6 +2,7 @@
 # define HTTPERROR_HPP
 
 # include <stdexcept>
+//# include "HTTPStatus.hpp"
 
 class HTTPError : public std::exception
 {
