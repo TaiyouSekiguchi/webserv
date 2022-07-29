@@ -2,28 +2,23 @@
 # define HTTPERROR_HPP
 
 # include <stdexcept>
+# include <iostream>
+# include "HTTPStatusCode.hpp"
 
 class HTTPError : public std::exception
 {
 	public:
-		enum	e_status
+		explicit HTTPError(const e_StatusCode status_code, const char* msg) : status_code_(status_code), msg_(msg) {}
+
+		e_StatusCode	GetStatusCode() const { return (status_code_); }
+		void			PutMsg() const
 		{
-			BAD_REQUEST = 400,
-			FORBIDDEN = 403,
-			NOT_FOUND = 404,
-			METHOD_NOT_ALLOWED = 405,
-			CONFLICT = 409,
-			PAYLOAD_TOO_LARGE = 413,
-			INTERNAL_SERVER_ERROR = 500,
-			HTTP_VERSION_NOT_SUPPORTED = 505
-		};
-
-		explicit HTTPError(const int status_code) : status_code_(status_code) {}
-
-		int	GetStatusCode() const { return (status_code_); }
+			std::cerr << msg_ << " throw exception." << std::endl;
+		}
 
 	private:
-		int		status_code_;
+		e_StatusCode	status_code_;
+		const char*		msg_;
 };
 
 #endif

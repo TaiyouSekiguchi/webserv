@@ -49,7 +49,7 @@ LocationDirective::~LocationDirective()
 const std::string&					LocationDirective::GetPath() const { return (path_); }
 const std::string&					LocationDirective::GetRoot() const { return (root_); }
 const std::vector<std::string>&		LocationDirective::GetIndex() const { return (index_); }
-const std::pair<int, std::string>&	LocationDirective::GetReturn() const { return (return_); }
+const std::pair<e_StatusCode, std::string>&	LocationDirective::GetReturn() const { return (return_); }
 const int&							LocationDirective::GetAutoIndex() const { return (autoindex_); }
 const std::vector<std::string>&		LocationDirective::GetAllowedMethods() const { return (allowed_methods_); }
 const std::string&					LocationDirective::GetUploadRoot() const { return (upload_root_); }
@@ -68,7 +68,7 @@ Tokens::citr	LocationDirective::GetDirectiveEnd
 void	LocationDirective::SetInitValue()
 {
 	root_ = "";
-	return_ = std::make_pair(-1, "");
+	return_ = std::make_pair(INVALID, "");
 	autoindex_ = -1;
 	allowed_methods_.push_back("GET");
 	upload_root_ = "";
@@ -117,7 +117,7 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 
 	bool			is_url;
 	char			*endptr;
-	long			status_code = 302;
+	long			status_code = FOUND;
 	std::string		url = "";
 
 	is_url = (*begin).find("http://") != std::string::npos;
@@ -137,8 +137,8 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 		if (Tokens::isSpecialToken(url))
 			throw std::runtime_error("conf syntax error");
 	}
-	if (return_.first == -1)
-		return_ = std::make_pair(status_code, url);
+	if (return_.first == INVALID)
+		return_ = std::make_pair(static_cast<e_StatusCode>(status_code), url);
 }
 
 void	LocationDirective::ParseAutoIndex(Tokens::citr begin, Tokens::citr end)
