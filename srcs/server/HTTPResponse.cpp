@@ -24,7 +24,7 @@ void HTTPResponse::SendResponse(const ServerSocket *ssocket)
 
 void HTTPResponse::CheckConnection()
 {
-	if (status_code_ == HTTPError::BAD_REQUEST || status_code_ == HTTPError::HTTP_VERSION_NOT_SUPPORTED)
+	if (status_code_ == BAD_REQUEST || status_code_ == HTTP_VERSION_NOT_SUPPORTED)
 	{
 		connection_ = "close";
 		return;
