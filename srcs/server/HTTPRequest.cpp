@@ -121,29 +121,20 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
 	std::string		cmp = "HTTP/1.1";
-	size_t			i;
 
-	i = 0;
-	if (version.at(i) != cmp.at(i))
-	{
-		std::cerr << "ParseVersion throw exception." << std::endl;
-		throw HTTPError(HTTPError::NOT_FOUND);
-	}
+	if (version.at(0) != cmp.at(0))
+		throw HTTPError(NOT_FOUND, "ParseVersion");
 
-	if (version.size() != cmp.size())
-	{
-		std::cerr << "ParseVersion throw exception." << std::endl;
-		throw HTTPError(HTTPError::BAD_REQUEST);
-	}
+	if (version.size() != cmp.size()
+		|| version.compare(0, 5, cmp.substr(0, 5)) != 0
+		|| !isdigit(version.at(5))
+		|| version.at(6) != '.'
+		|| !isdigit(version.at(7)))
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
-	for (i = 1; i < cmp.size(); ++i)
-	{
-		if (version.at(i) != cmp.at(i))
-		{
-			std::cerr << "ParseVersion throw exception." << std::endl;
-			throw HTTPError(HTTPError::BAD_REQUEST);
-		}
-	}
+	if (version.at(5) != cmp.at(5)
+		|| version.at(7) != cmp.at(7))
+		throw HTTPError(HTTP_VERSION_NOT_SUPPORTED, "ParseVersion");
 
 	version_ = version;
 }
@@ -258,16 +249,20 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	return;
 }
 
-HTTPRequest::e_Type	HTTPRequest::MultipleInputHeaderCheck(const std::string& field)
+bool	IsOnlyOnceHeader(const std::string& field)
 {
 	if (field == "host"
 		|| field == "content-length")
-		return (ONLY_ONCE);
-	else if (field == "accept-encoding"
+		return (true);
+	return (false);
+}
+
+bool	IsAppendHeader(const std::string& field)
+{
+	if (field == "accept-encoding"
 		|| field == "connection")
-		return (MULTIPLE);
-	else
-		return (ELSE);
+		return (true);
+	return (false);
 }
 
 void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& content)
@@ -276,20 +271,12 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 		headers_[field] = content;
 	else
 	{
-		e_Type	type = MultipleInputHeaderCheck(field);
-		switch (type)
-		{
-			case ONLY_ONCE:
-				std::cerr << "ReceiveHeaders throw exception." << std::endl;
-				throw HTTPError(HTTPError::BAD_REQUEST);
-				break;
-			case MULTIPLE:
-				headers_[field] = headers_[field] + "," + content;
-				break;
-			case ELSE:
-				headers_[field] = content;
-				break;
-		}
+		if (IsOnlyOnceHeader(field))
+			throw HTTPError(BAD_REQUEST, "ReceiveHeaders");
+		else if (IsAppendHeader(field))
+			headers_[field] = headers_[field] + "," + content;
+		else
+			headers_[field] = content;
 	}
 }
 

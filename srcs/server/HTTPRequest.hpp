@@ -42,13 +42,6 @@ class HTTPRequest
 	private:
 		typedef void (HTTPRequest::*ParseFunc)(const std::string& content);
 
-		enum e_Type
-		{
-			ONLY_ONCE,
-			MULTIPLE,
-			ELSE
-		};
-
 		// arg
 		const ServerSocket&							ssocket_;
 		const ServerDirective::Listen&				listen_;
@@ -86,7 +79,6 @@ class HTTPRequest
 		void			ParseMethod(const std::string& method);
 		void			ParseTarget(const std::string& target);
 		void			ParseVersion(const std::string& version);
-		e_Type			MultipleInputHeaderCheck(const std::string& field);
 		void			RegisterHeaders(const std::string& field, const std::string& content);
 		void			ReceiveHeaders(void);
 		void			ParseHeaders(void);
