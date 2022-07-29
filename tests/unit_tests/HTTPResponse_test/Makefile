@@ -1,52 +1,62 @@
-vpath	%.cpp	srcs: \
-				srcs/server: \
-				srcs/socket: \
-				srcs/config: \
-				srcs/utils
-SRCS	=	main.cpp \
-			HTTPServer.cpp \
+SRCSDIR	= ../../../srcs
+vpath	%.cpp	testsrcs: \
+				$(SRCSDIR)/config: \
+				$(SRCSDIR)/socket: \
+				$(SRCSDIR)/utils: \
+				$(SRCSDIR)/server
+
+SRCS	=	ASocket.cpp \
 			EventQueue.cpp \
-			ASocket.cpp \
-			ListenSocket.cpp \
+			ClientSocket.cpp \
 			ServerSocket.cpp \
+			ListenSocket.cpp \
+			Tokens.cpp \
 			Config.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp \
-			Tokens.cpp \
+			HTTPServer.cpp \
 			HTTPRequest.cpp \
 			utils.cpp \
 			HTTPMethod.cpp \
 			Stat.cpp \
 			Dir.cpp \
 			HTTPResponse.cpp
+			
+SRCS	+=	Response_test.cpp 
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I srcs/server \
-			-I srcs/utils \
-			-I srcs/socket \
-			-I srcs/exception \
-			-I srcs/config
-NAME	=	webserv
+INCLUDE =	-I $(SRCSDIR)/exception \
+			-I $(SRCSDIR)/socket \
+			-I $(SRCSDIR)/config \
+			-I $(SRCSDIR)/utils \
+			-I $(SRCSDIR)/server
+
+NAME	=	unit_test
 
 CC		=	c++
 CFLAGS	=	-Wall -Wextra -Werror
 CFLAGS	+=	-MMD -MP
-CFLAGS	+=	-std=c++98
+CFLAGS	+=	-std=c++11
+LINK	=	-lgtest -lgtest_main
 RM		=	rm -rf
 
 all			:	$(NAME)
 
 $(NAME)		:	$(OBJS)
-				$(CC) $(CFLAGS) $(INCLUDE) -o $@ $(OBJS)
+				$(CC) $(CFLAGS) $(LINK) $(INCLUDE) -I /usr/local/opt/curl/include -lcurl -o $@ $(OBJS)
 
 $(OBJSDIR)/%.o	:	%.cpp
 			@mkdir -p $(dir $@)
 			$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 -include $(DEPS)
+
+test		:	all
+				@echo
+				@./$(NAME)
 
 clean		:
 				-$(RM) $(OBJS) $(DEPS)
@@ -71,4 +81,4 @@ endif
 leak		:	CFLAGS	+=	-g -fsanitize=leak
 leak		:	re
 
-.PHONY		:	all clean fclean re debug address leak
+.PHONY		:	all clean fclean re debug address leak test

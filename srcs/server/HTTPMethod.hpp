@@ -13,7 +13,7 @@ class HTTPMethod
 		HTTPMethod();
 		~HTTPMethod();
 
-		int		ExecHTTPMethod(const HTTPRequest& req);
+		e_StatusCode		ExecHTTPMethod(const HTTPRequest& req);
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;
@@ -23,7 +23,7 @@ class HTTPMethod
 
 	private:
 		LocationDirective	SelectLocation(const std::vector<LocationDirective>& locations) const;
-		int					Redirect(const std::string& location, const int status_code);
+		int		Redirect(const std::string& location, const int status_code);
 
 		// GET
 		bool	GetFile(const std::string& access_path);
@@ -31,10 +31,10 @@ class HTTPMethod
 		bool	GetAutoIndexFile(const std::string& access_path, const bool autoindex);
 
 		// HTTPMethod
-		int		SwitchHTTPMethod(const LocationDirective& location);
-		int		ExecGETMethod(const Stat& st, const LocationDirective& location);
-		int		ExecDELETEMethod(const Stat& st);
-		int		ExecPOSTMethod(const Stat& st);
+		e_StatusCode	SwitchHTTPMethod(const LocationDirective& location);
+		e_StatusCode	ExecGETMethod(const Stat& st, const LocationDirective& location);
+		e_StatusCode	ExecDELETEMethod(const Stat& st);
+		e_StatusCode	ExecPOSTMethod(const Stat& st);
 
 		// CGI
 		bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
