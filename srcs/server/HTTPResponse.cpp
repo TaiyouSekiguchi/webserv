@@ -26,17 +26,17 @@ void HTTPResponse::CheckConnection()
 {
 	if (status_code_ == BAD_REQUEST || status_code_ == HTTP_VERSION_NOT_SUPPORTED)
 	{
-		connection_ = "close";
+		connection_ = false;
 		return;
 	}
-	connection_ = "keep-alive";
+	connection_ = req_.GetConnection();
 }
 
 void HTTPResponse::AppendHeaders()
 {
 	AppendHeader("Server", "Webserv");
 	AppendHeader("Date", GetDate());
-	AppendHeader("Connection", connection_);
+	AppendHeader("Connection", connection_ ? "keep-alive" : "close");
 	AppendHeader("Content-type", method_.GetContentType());
 	AppendHeader("Location", method_.GetLocation());
 	AppendHeader("Content-Length",
@@ -212,3 +212,4 @@ const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 
 std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[61]);
 const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
+const bool &HTTPResponse::GetConnection() const { return connection_; }

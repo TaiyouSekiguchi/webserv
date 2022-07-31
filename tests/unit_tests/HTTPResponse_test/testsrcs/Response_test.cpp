@@ -201,6 +201,7 @@ TEST_F(ResponseTest, DefaultErrorPageTest)
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DefaultErrorPage);
 }
 
+// error_page 404	../../../html/40x.html;
 TEST_F(ResponseTest, RedirectErrorPageTest)
 {
 	const std::string RedirectErrorPage = "HTTP/1.1 302 Found\r\n"
@@ -211,6 +212,7 @@ TEST_F(ResponseTest, RedirectErrorPageTest)
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), RedirectErrorPage);
 }
 
+// error_page 409	/../../../html/40x.html;
 TEST_F(ResponseTest, SlashErrorPageTest)
 {
     const std::string NotDir = "HTTP/1.1 409 Conflict\r\n"
@@ -220,6 +222,7 @@ TEST_F(ResponseTest, SlashErrorPageTest)
     EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotDir);
 }
 
+// error_page 505	/../../../html/50x.html;
 TEST_F(ResponseTest, NotMatchErrorPageTest)
 {
     const std::string VersionNotSupported = "HTTP/1.1 404 Not Found\r\n"
