@@ -72,9 +72,8 @@ class RequestTest : public ::testing::Test
 
 			ssocket_ = new ServerSocket(**target_lsocket);
 			req_ = new HTTPRequest(*ssocket_);
-			csocket.SendRequest(msg);
-			req_->ParseRequest();
-			/*
+			//csocket.SendRequest(msg);
+			//req_->ParseRequest();
 			try
 			{
 				csocket.SendRequest(msg);
@@ -85,7 +84,6 @@ class RequestTest : public ::testing::Test
 			{
 				status_code_ = e.GetStatusCode();
 			}
-			*/
 		}
 
 		static Config						config_;
@@ -168,9 +166,39 @@ TEST_F(RequestTest, test5)
 
 TEST_F(RequestTest, test6)
 {
-	EXPECT_ANY_THROW(RunCommunication("GET / tHTTP/1.1\r\n", 8080));
-	EXPECT_ANY_THROW(RunCommunication("GET / Http/1.1\r\n", 8080));
-	EXPECT_ANY_THROW(RunCommunication("GET / http/1.1\r\n", 8080));
-	EXPECT_ANY_THROW(RunCommunication("GET / HTTP/1.5\r\n", 8080));
-	EXPECT_ANY_THROW(RunCommunication("GET / HTTP/abc\r\n", 8080));
+	RunCommunication("GET / tHTTP/1.1\r\n", 8080);
+	EXPECT_EQ(NOT_FOUND, status_code_);
+
+	RunCommunication("GET / Htest/1.1\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+
+	RunCommunication("GET / HTTp/1.1\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+
+	RunCommunication("GET / HTTP/test\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+
+	RunCommunication("GET / HTTP/1a\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+
+	RunCommunication("GET / HTTP/2a\r\n", 8080);
+	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+
+	RunCommunication("GET / HTTP/11.1\r\n", 8080);
+	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+
+	RunCommunication("GET / HTTP/21.2\r\n", 8080);
+	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+
+	RunCommunication("GET / HTTP/9999999999999999999999999999999999999.1\r\n", 8080);
+	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+
+	RunCommunication("GET / HTTP/1.a\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+
+	RunCommunication("GET / HTTP/1.\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+
+	RunCommunication("GET / HTTP/1.1a\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
 }

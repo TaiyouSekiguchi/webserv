@@ -120,21 +120,33 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
-	std::string		cmp = "HTTP/1.1";
+	const char*	s;
+	long		num;
+	char*		endptr;
 
-	if (version.at(0) != cmp.at(0))
+	if (version.at(0) != 'H')
 		throw HTTPError(NOT_FOUND, "ParseVersion");
-
-	if (version.size() != cmp.size()
-		|| version.compare(0, 5, cmp.substr(0, 5)) != 0
-		|| !isdigit(version.at(5))
-		|| version.at(6) != '.'
-		|| !isdigit(version.at(7)))
+	
+	if (version.at(1) != 'T'
+		|| version.at(2) != 'T'
+		|| version.at(3) != 'P'
+		|| version.at(4) != '/')
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
-	if (version.at(5) != cmp.at(5)
-		|| version.at(7) != cmp.at(7))
+	s = version.substr(5).c_str();
+	if (!isdigit(*s))
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
+
+	num = strtol(s, &endptr, 10);
+	if (num != 1)
 		throw HTTPError(HTTP_VERSION_NOT_SUPPORTED, "ParseVersion");
+	if (*endptr != '.')
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
+
+	s = endptr + 1;
+	num = strtol(s, &endptr, 10);
+	if (num != 1 || *s == '\0' || *endptr != '\0')
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
 	version_ = version;
 }
@@ -249,7 +261,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	return;
 }
 
-bool	IsOnlyOnceHeader(const std::string& field)
+static bool	IsOnlyOnceHeader(const std::string& field)
 {
 	if (field == "host"
 		|| field == "content-length")
@@ -257,7 +269,7 @@ bool	IsOnlyOnceHeader(const std::string& field)
 	return (false);
 }
 
-bool	IsAppendHeader(const std::string& field)
+static bool	IsAppendHeader(const std::string& field)
 {
 	if (field == "accept-encoding"
 		|| field == "connection")
