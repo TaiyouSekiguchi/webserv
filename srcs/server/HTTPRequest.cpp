@@ -120,20 +120,22 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
-	const char*	s;
-	long		num;
-	char*		endptr;
+	std::string		tmp;
+	const char*		s;
+	long			num;
+	char*			endptr;
 
 	if (version.at(0) != 'H')
 		throw HTTPError(NOT_FOUND, "ParseVersion");
-	
+
 	if (version.at(1) != 'T'
 		|| version.at(2) != 'T'
 		|| version.at(3) != 'P'
 		|| version.at(4) != '/')
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
-	s = version.substr(5).c_str();
+	tmp = version.substr(5);
+	s = tmp.c_str();
 	if (!isdigit(*s))
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
@@ -145,7 +147,7 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 
 	s = endptr + 1;
 	num = strtol(s, &endptr, 10);
-	if (num != 1 || *s == '\0' || *endptr != '\0')
+	if (num != 1 || *endptr != '\0')
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
 	version_ = version;
