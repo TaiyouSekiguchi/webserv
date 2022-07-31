@@ -1,9 +1,10 @@
 #ifndef ASOCKET_HPP
 # define ASOCKET_HPP
 
+# include "AIo.hpp"
 # include "ServerDirective.hpp"
 
-class ASocket
+class ASocket : public AIo
 {
 	public:
 		ASocket(const int fd, const ServerDirective::Listen& listen, const ServerDirective& server_conf);
@@ -11,14 +12,12 @@ class ASocket
 
 		virtual ~ASocket();
 
-		int											GetFd() const;
 		const ServerDirective::Listen&				GetListen() const;
 		const std::vector<const ServerDirective*>&	GetServerConfs() const;
 
 		void	AddServerConf(const ServerDirective& server_conf);
 
 	protected:
-		int									fd_;
 		const ServerDirective::Listen&		listen_;
 		std::vector<const ServerDirective*>	server_confs_;
 };

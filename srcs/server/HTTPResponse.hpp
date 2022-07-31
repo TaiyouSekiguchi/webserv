@@ -2,7 +2,6 @@
 # define HTTPRESPONSE_HPP
 
 #include "HTTPRequest.hpp"
-#include "HTTPServer.hpp"
 #include "ServerDirective.hpp"
 #include "HTTPMethod.hpp"
 

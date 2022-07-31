@@ -2,7 +2,6 @@
 #include "HTTPServer.hpp"
 #include "HTTPRequest.hpp"
 #include "ListenSocket.hpp"
-#include "debug.hpp"
 #include "Config.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
@@ -11,93 +10,39 @@
 #include "utils.hpp"
 
 HTTPServer::HTTPServer()
+	: request_(NULL), method_(NULL), response_(NULL), connection_(true)
 {
 }
 
 HTTPServer::~HTTPServer()
 {
+	if (request_)
+		delete request_;
+	if (method_)
+		delete method_;
+	if (response_)
+		delete response_;
 }
 
-void	HTTPServer::RegisterListenSockets(const Config& config, EventQueue* equeue)
+bool			HTTPServer::GetConnection() const { return (connection_); }
+std::string		HTTPServer::GetResponseMsg() const { return (response_msg_); }
+
+AIoEvent	*HTTPServer::RunRequestStep(const ServerSocket& ssocket)
 {
-	const std::vector<ServerDirective>&				servers = config.GetServers();
-	std::vector<ServerDirective>::const_iterator	sitr = servers.begin();
-	std::vector<ServerDirective>::const_iterator	send = servers.end();
-	std::vector<ListenSocket*>::const_iterator		same_listen_lsocket;
-	ListenSocket*									new_lsocket;
-
-	while (sitr != send)
-	{
-		const std::vector<ServerDirective::Listen>&				listens = sitr->GetListen();
-		std::vector<ServerDirective::Listen>::const_iterator	litr = listens.begin();
-		std::vector<ServerDirective::Listen>::const_iterator	lend = listens.end();
-		while (litr != lend)
-		{
-			same_listen_lsocket = Utils::FindMatchMember(lsockets_, &ListenSocket::GetListen, *litr);
-			if (same_listen_lsocket == lsockets_.end())
-			{
-				new_lsocket = new ListenSocket(*litr, *sitr);
-				lsockets_.push_back(new_lsocket);
-				new_lsocket->ListenConnection();
-				equeue->RegisterEvent(new_lsocket->GetFd(), new_lsocket);
-			}
-			else
-				(*same_listen_lsocket)->AddServerConf(*sitr);
-			++litr;
-		}
-		++sitr;
-	}
-}
-
-void	HTTPServer::Start(const Config& config)
-{
-	EventQueue	equeue;
-
-	RegisterListenSockets(config, &equeue);
-	MainLoop(equeue);
-}
-
-void	HTTPServer::MainLoop(const EventQueue& equeue) const
-{
-	void			*udata;
-	ASocket			*asocket;
-	ListenSocket	*lsocket;
-	ServerSocket	*ssocket;
-	ServerSocket 	*new_ssocket;
-
-	while (1)
-	{
-		udata = equeue.WaitEvent();
-		asocket = static_cast<ASocket*>(udata);
-		lsocket = dynamic_cast<ListenSocket*>(asocket);
-		ssocket = dynamic_cast<ServerSocket*>(asocket);
-		if (lsocket)
-		{
-			std::cout << "Accept!!" << std::endl;
-			new_ssocket = new ServerSocket(*lsocket);
-			equeue.RegisterEvent(new_ssocket->GetFd(), new_ssocket);
-		}
-		else
-			Communication(ssocket);
-	}
-}
-
-void	HTTPServer::Communication(const ServerSocket *ssocket) const
-{
-	int						status_code = 0;
-	HTTPRequest				req(*ssocket);
-	HTTPMethod				method;
+	int		status_code = 0;
+	request_ = new HTTPRequest(ssocket);
+	method_ = new HTTPMethod();
 
 	try
 	{
-		req.ParseRequest();
-		req.RequestDisplay();
-		status_code = method.ExecHTTPMethod(req);
+		request_->ParseRequest();
+		request_->RequestDisplay();
+		status_code = method_->ExecHTTPMethod(*request_);
 	}
 	catch (const ClientClosed& e)
 	{
-		delete ssocket;
-		return;
+		connection_ = false;
+		return (NULL);
 	}
 	catch (const HTTPError& e)
 	{
@@ -105,7 +50,9 @@ void	HTTPServer::Communication(const ServerSocket *ssocket) const
 		e.PutMsg();
 	}
 	std::cout << "status_code: " << status_code << std::endl;
-	method.MethodDisplay();
-	HTTPResponse	res(status_code, req, method);
-	res.SendResponse(ssocket);
+	method_->MethodDisplay();
+	response_ = new HTTPResponse(status_code, *request_, *method_);
+	response_msg_ = response_->GetResMsg();
+	// connection_ = response_->GetConnection();
+	return (NULL);
 }

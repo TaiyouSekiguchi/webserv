@@ -5,6 +5,9 @@
 # include "ServerSocket.hpp"
 # include "EventQueue.hpp"
 # include "Config.hpp"
+# include "HTTPRequest.hpp"
+# include "HTTPMethod.hpp"
+# include "HTTPResponse.hpp"
 
 class HTTPServer
 {
@@ -12,14 +15,18 @@ class HTTPServer
 		HTTPServer();
 		~HTTPServer();
 
-		void	Start(const Config& config);
+		bool			GetConnection() const;
+		std::string		GetResponseMsg() const;
+
+		AIoEvent*		RunRequestStep(const ServerSocket& ssocket);
 
 	private:
-		void	RegisterListenSockets(const Config& config, EventQueue* equeue);
-		void	MainLoop(const EventQueue& equeue) const;
-		void	Communication(const ServerSocket *ssocket) const;
+		HTTPRequest*	request_;
+		HTTPMethod*		method_;
+		HTTPResponse*	response_;
 
-		std::vector<ListenSocket*>	lsockets_;
+		bool			connection_;
+		std::string		response_msg_;
 };
 
 #endif  // HTTPSERVER_HPP

@@ -7,15 +7,19 @@
 # include <sys/socket.h>
 # include <unistd.h>
 # include <iostream>
-# include "ASocket.hpp"
+# include "EventFlag.hpp"
+# include "AIoEvent.hpp"
+
+class AIoEvent;
+
 class EventQueue
 {
 	public:
 		EventQueue();
 		~EventQueue();
 
-		void	RegisterEvent(const int fd, void *udata) const;
-		void	*WaitEvent() const;
+		void		SetIoEvent(AIoEvent *io_event, const e_EventType type, const e_EventAction act) const;
+		AIoEvent*	WaitIoEvent() const;
 
 	private:
 		int		kq_;
