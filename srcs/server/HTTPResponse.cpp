@@ -79,7 +79,7 @@ void HTTPResponse::SelectBody()
 
 bool HTTPResponse::IsNormalStatus() const
 {
-	return (status_code_ < MULTIPLE_CHOICES);
+	return (status_code_ < 300);
 }
 
 std::string HTTPResponse::GenerateHTML()
