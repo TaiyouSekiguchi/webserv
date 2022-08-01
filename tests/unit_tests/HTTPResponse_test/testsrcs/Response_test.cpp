@@ -156,9 +156,9 @@ std::string GenerateDefaultHTML(e_StatusCode status_code)
 	std::stringstream ss;
 
 	ss << "<html>\r\n";
-	ss << "<head><title>" << static_cast<int>(status_code) << " " << StatusMsg_[status_code] <<"</title></head>\r\n";
+	ss << "<head><title>" << status_code << " " << StatusMsg_[status_code] <<"</title></head>\r\n";
 	ss << "<body>\r\n";
-	ss << "<center><h1>" << static_cast<int>(status_code) << " " << StatusMsg_[status_code] << "</h1></center>\r\n";
+	ss << "<center><h1>" << status_code << " " << StatusMsg_[status_code] << "</h1></center>\r\n";
 	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
 	ss << "</body>\r\n";
 	ss << "</html>\r\n";
