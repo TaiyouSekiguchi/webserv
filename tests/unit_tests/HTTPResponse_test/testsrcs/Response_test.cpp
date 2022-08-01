@@ -53,7 +53,7 @@ class ResponseTest : public ::testing::Test
 		static ServerSocket*			ssocket_;
 		static ClientSocket*			csocket_;
 
-		int						status_code_;
+		e_StatusCode			status_code_;
 		HTTPRequest*			req_;
 		HTTPMethod				method_;
 		HTTPResponse*			res_;
@@ -149,9 +149,9 @@ static std::map<int, std::string> SetStatusMsg()
     StatusMsg[511] = "Network Authentication Required";
     return StatusMsg;
 }
-static std::map<int, std::string> StatusMsg_ = SetStatusMsg();
+std::map<int, std::string> StatusMsg_ = SetStatusMsg();
 
-std::string GenerateDefaultHTML(int status_code)
+std::string GenerateDefaultHTML(e_StatusCode status_code)
 {
 	std::stringstream ss;
 
@@ -196,51 +196,65 @@ TEST_F(ResponseTest, DefaultErrorPageTest)
 {
 	const std::string DefaultErrorPage = "HTTP/1.1 405 Method Not Allowed\r\n"
 		"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(405);
+		+ GenerateDefaultHTML(METHOD_NOT_ALLOWED);
 	RunCommunication("DELETE /sub2 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DefaultErrorPage);
 }
 
+// error_page 404	../../../html/40x.html;
 TEST_F(ResponseTest, RedirectErrorPageTest)
 {
 	const std::string RedirectErrorPage = "HTTP/1.1 302 Found\r\n"
-		"Connection: keep-alive\r\nContent-Length: 140\r\nLocation: 40x.html\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(302);
+		"Connection: keep-alive\r\nContent-Length: 140\r\n"
+        "Location: ../../../html/40x.html\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(FOUND);
 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), RedirectErrorPage);
+}
+
+// error_page 409	/../../../html/40x.html;
+TEST_F(ResponseTest, SlashErrorPageTest)
+{
+    const std::string NotDir = "HTTP/1.1 409 Conflict\r\n"
+                               "Connection: keep-alive\r\nContent-Length: 14\r\nServer: Webserv\r\n\r\n"
+                               "html/40x.html\n";
+    RunCommunication("POST /upload/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+    EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotDir);
+}
+
+// error_page 505	/../../../html/50x.html;
+TEST_F(ResponseTest, NotMatchErrorPageTest)
+{
+    const std::string VersionNotSupported = "HTTP/1.1 404 Not Found\r\n"
+		"Connection: close\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(NOT_FOUND);
+	RunCommunication("GET /no HTTP/1.0\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(RemoveDate(res_->GetResMsg()), VersionNotSupported);
 }
 
 TEST_F(ResponseTest, RedirectTest)
 {
 	const std::string Redirect = "HTTP/1.1 301 Moved Permanently\r\n"
 		"Connection: keep-alive\r\nContent-Length: 164\r\n"
-		"Location: http://localhost:8080\r\nServer: Webserv\r\n\r\n" + GenerateDefaultHTML(301);
+		"Location: http://localhost:8080\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(MOVED_PERMANENTLY);
 	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Redirect);
 }
 
 TEST_F(ResponseTest, CloseTest)
 {
-	const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
+    const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
 		"Connection: close\r\nContent-Length: 152\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(400);
+		+ GenerateDefaultHTML(BAD_REQUEST);
 	RunCommunication(" GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), BadRequest);
-}
-
-TEST_F(ResponseTest, Close2Test)
-{
-	const std::string VersionNotSupport = "HTTP/1.1 505 HTTP Version Not Supported\r\n"
-		"Connection: close\r\nContent-Length: 182\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(505);
-	RunCommunication("GET /no HTTP/1.0\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(RemoveDate(res_->GetResMsg()), VersionNotSupport);
 }
 
 TEST_F(ResponseTest, EmptyTest)
 {
 	const std::string Empty = "HTTP/1.1 200 OK\r\n"
 		"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
-	RunCommunication("GET /sub2/empty.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("GET /empty.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Empty);
 }
