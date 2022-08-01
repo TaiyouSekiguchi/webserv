@@ -10,8 +10,8 @@ class RegularFile : public AIo
 		explicit RegularFile(const int fd);
 		~RegularFile();
 
-		std::string		GetFileContent() const;
-		void			WriteToFile(const std::string& str) const;
+		int		ReadFile(std::string* str) const;
+		int		WriteToFile(const std::string& str) const;
 };
 
 #endif  // REGULARFILE_HPP

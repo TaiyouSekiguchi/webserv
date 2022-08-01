@@ -10,14 +10,17 @@
 class HTTPMethod
 {
 	public:
-		HTTPMethod();
+		explicit HTTPMethod(const HTTPRequest& req);
 		~HTTPMethod();
 
-		e_StatusCode		ExecHTTPMethod(const HTTPRequest& req);
+		e_StatusCode		ExecHTTPMethod();
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;
 		const std::string&	GetBody() const;
+		const e_StatusCode&	GetStatusCode() const;
+		void				SetBody(const std::string& body);
+		void				SetStatusCode(const e_StatusCode sc);
 
 		void				MethodDisplay() const;
 
@@ -43,8 +46,9 @@ class HTTPMethod
 		std::string		content_type_;
 		std::string		location_;
 		std::string		body_;
+		e_StatusCode	status_code_;
 
-		const HTTPRequest*			req_;
+		const HTTPRequest&			req_;
 		const ServerDirective*		server_conf_;
 };
 

@@ -2,16 +2,17 @@
 # define HTTPRESPONSE_HPP
 
 #include "HTTPRequest.hpp"
+#include "HTTPServer.hpp"
 #include "ServerDirective.hpp"
 #include "HTTPMethod.hpp"
 
 class HTTPResponse
 {
 	public:
-		HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method);
+		HTTPResponse(const HTTPRequest &req, const HTTPMethod &method);
 		~HTTPResponse();
 
-		void SendResponse(const ServerSocket *ssocket);
+		void SendResponse(const ServerSocket& ssocket);
 		const std::string &GetResMsg() const;
 
 	private:

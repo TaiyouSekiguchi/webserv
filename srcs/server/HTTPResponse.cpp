@@ -4,8 +4,9 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 
-HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method)
-	: req_(req), method_(method), server_conf_(req.GetServerConf()), status_code_(status_code)
+HTTPResponse::HTTPResponse(const HTTPRequest &req, const HTTPMethod &method)
+	: req_(req), method_(method),
+	  server_conf_(req.GetServerConf()), status_code_(method.GetStatusCode())
 {
 	CheckConnection();
 	SelectBody();
@@ -17,9 +18,9 @@ HTTPResponse::~HTTPResponse()
 {
 }
 
-void HTTPResponse::SendResponse(const ServerSocket *ssocket)
+void HTTPResponse::SendResponse(const ServerSocket& ssocket)
 {
-	ssocket->SendData(res_msg_);
+	ssocket.SendData(res_msg_);
 }
 
 void HTTPResponse::CheckConnection()

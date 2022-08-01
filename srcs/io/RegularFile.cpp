@@ -11,7 +11,7 @@ RegularFile::~RegularFile()
 {
 }
 
-std::string	RegularFile::GetFileContent() const
+int		RegularFile::ReadFile(std::string* str) const
 {
 	const int			buf_size = 1024;
 	char				buf[buf_size + 1];
@@ -21,12 +21,12 @@ std::string	RegularFile::GetFileContent() const
 	while ((readsize = read(fd_, &buf, buf_size)) > 0)
 	{
 		buf[readsize] = '\0';
-		ss << buf;
+		*str += buf;
 	}
-	return (ss.str());
+	return (readsize);
 }
 
-void	RegularFile::WriteToFile(const std::string& str) const
+int		RegularFile::WriteToFile(const std::string& str) const
 {
-	write(fd_, str.c_str(), str.size());
+	return (write(fd_, str.c_str(), str.size()));
 }

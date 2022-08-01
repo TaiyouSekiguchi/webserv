@@ -8,9 +8,11 @@
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
+#include "ServerSocketEvent.hpp"
 
-HTTPServer::HTTPServer()
-	: request_(NULL), method_(NULL), response_(NULL), connection_(true)
+HTTPServer::HTTPServer(ServerSocketEvent* ssocket_event, const ServerSocket& ssocket)
+	:	ssocket_send_event_(ssocket_event), ssocket_(ssocket),
+		request_(NULL), method_(NULL), response_(NULL)
 {
 }
 
@@ -24,20 +26,23 @@ HTTPServer::~HTTPServer()
 		delete response_;
 }
 
-bool			HTTPServer::GetConnection() const { return (connection_); }
-std::string		HTTPServer::GetResponseMsg() const { return (response_msg_); }
+bool		HTTPServer::GetConnection() const { return (connection_); }
+std::string	HTTPServer::GetRequestBody() const { return (request_->GetBody()); }
+void		HTTPServer::SetStatusCode(const e_StatusCode sc) { method_->SetStatusCode(sc); }
+void		HTTPServer::SetResponseBody(const std::string& body) { method_->SetBody(body); }
 
-AIoEvent	*HTTPServer::RunRequestStep(const ServerSocket& ssocket)
+AIoEvent*	HTTPServer::Run()
 {
-	int		status_code = 0;
-	request_ = new HTTPRequest(ssocket);
-	method_ = new HTTPMethod();
+	AIoEvent*		new_io_event;
 
+	request_ = new HTTPRequest(ssocket_);
+	method_ = new HTTPMethod(*request_);
 	try
 	{
 		request_->ParseRequest();
-		request_->RequestDisplay();
-		status_code = method_->ExecHTTPMethod(*request_);
+		new_io_event = method_->ExecHTTPMethod();
+		if (new_io_event)
+			return (new_io_event);
 	}
 	catch (const ClientClosed& e)
 	{
@@ -46,13 +51,28 @@ AIoEvent	*HTTPServer::RunRequestStep(const ServerSocket& ssocket)
 	}
 	catch (const HTTPError& e)
 	{
-		status_code = e.GetStatusCode();
-		e.PutMsg();
+		new_io_event = method_->SetErrorPage(e.GetStatusCode());
+		if (new_io_event)
+			return (new_io_event);
 	}
-	std::cout << "status_code: " << status_code << std::endl;
-	method_->MethodDisplay();
-	response_ = new HTTPResponse(status_code, *request_, *method_);
-	response_msg_ = response_->GetResMsg();
-	// connection_ = response_->GetConnection();
-	return (NULL);
+	return (RunCreateResponse());
+}
+
+AIoEvent*	HTTPServer::RunCreateResponse()
+{
+	response_ = new HTTPResponse(*request_, *method_);
+	return (ssocket_send_event_);
+}
+
+void	HTTPServer::RunSendResponse()
+{
+	try
+	{
+		response_->SendResponse(ssocket_);
+		// connection_ = response_->GetConnection();
+	}
+	catch (const ClientClosed& e)
+	{
+		connection_ = false;
+	}
 }

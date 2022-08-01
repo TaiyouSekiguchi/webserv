@@ -8,25 +8,32 @@
 # include "HTTPRequest.hpp"
 # include "HTTPMethod.hpp"
 # include "HTTPResponse.hpp"
+# include "ServerSocketEvent.hpp"
 
 class HTTPServer
 {
 	public:
-		HTTPServer();
+		HTTPServer(ServerSocketEvent* ssocket_event, const ServerSocket& ssocket);
 		~HTTPServer();
 
 		bool			GetConnection() const;
-		std::string		GetResponseMsg() const;
+		std::string		GetRequestBody() const;
+		void			SetStatusCode(const e_StatusCode sc);
+		void			SetResponseBody(const std::string& body);
 
-		AIoEvent*		RunRequestStep(const ServerSocket& ssocket);
+		AIoEvent*		Run();
+		AIoEvent*		RunCreateResponse();
+		void			RunSendResponse();
 
 	private:
-		HTTPRequest*	request_;
-		HTTPMethod*		method_;
-		HTTPResponse*	response_;
+		ServerSocketEvent*	ssocket_send_event_;
+		const ServerSocket&	ssocket_;
 
-		bool			connection_;
-		std::string		response_msg_;
+		HTTPRequest*		request_;
+		HTTPMethod*			method_;
+		HTTPResponse*		response_;
+
+		bool				connection_;
 };
 
 #endif  // HTTPSERVER_HPP
