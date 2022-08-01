@@ -4,7 +4,7 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 
-HTTPResponse::HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method)
+HTTPResponse::HTTPResponse(e_StatusCode status_code, const HTTPRequest &req, const HTTPMethod &method)
 	: req_(req), method_(method), server_conf_(req.GetServerConf()), status_code_(status_code)
 {
 	CheckConnection();
@@ -79,7 +79,7 @@ void HTTPResponse::SelectBody()
 
 bool HTTPResponse::IsNormalStatus() const
 {
-	return (status_code_ < 300);
+	return (status_code_ < MULTIPLE_CHOICES);
 }
 
 std::string HTTPResponse::GenerateHTML()
@@ -95,14 +95,14 @@ std::string HTTPResponse::GenerateHTML()
 			std::ifstream ifs(error_page_path);
 			if (ifs.fail())
 			{
-				status_code_ = 404;
+				status_code_ = NOT_FOUND;
 				str = GenerateDefaultHTML();
 				return (str);
 			}
 			std::string file_str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 			return (file_str);
 		}
-		status_code_ = 302;
+		status_code_ = FOUND;
 		AppendHeader("Location", ite->second);
 	}
 	str = GenerateDefaultHTML();
@@ -114,9 +114,9 @@ std::string HTTPResponse::GenerateDefaultHTML() const
 	std::stringstream ss;
 
 	ss << "<html>\r\n";
-	ss << "<head><title>" << status_code_ << " " << kStatusMsg_[status_code_] <<"</title></head>\r\n";
+	ss << "<head><title>" << static_cast<int>(status_code_) << " " << kStatusMsg_[status_code_] <<"</title></head>\r\n";
 	ss << "<body>\r\n";
-	ss << "<center><h1>" << status_code_ << " " << kStatusMsg_[status_code_] << "</h1></center>\r\n";
+	ss << "<center><h1>" << static_cast<int>(status_code_) << " " << kStatusMsg_[status_code_] << "</h1></center>\r\n";
 	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
 	ss << "</body>\r\n";
 	ss << "</html>\r\n";
@@ -127,7 +127,7 @@ std::string HTTPResponse::CreateResponse()
 {
 	std::stringstream ss;
 
-	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_[status_code_] << "\r\n";
+	ss << "HTTP/1.1 " << static_cast<int>(status_code_) << " " << kStatusMsg_[status_code_] << "\r\n";
 	ss << HeaderFeild();
 	ss << body_;
 	return (ss.str());

@@ -53,7 +53,7 @@ class ResponseTest : public ::testing::Test
 		static ServerSocket*			ssocket_;
 		static ClientSocket*			csocket_;
 
-		int						status_code_;
+		e_StatusCode			status_code_;
 		HTTPRequest*			req_;
 		HTTPMethod				method_;
 		HTTPResponse*			res_;
@@ -151,14 +151,14 @@ static std::map<int, std::string> SetStatusMsg()
 }
 std::map<int, std::string> StatusMsg_ = SetStatusMsg();
 
-std::string GenerateDefaultHTML(int status_code)
+std::string GenerateDefaultHTML(e_StatusCode status_code)
 {
 	std::stringstream ss;
 
 	ss << "<html>\r\n";
-	ss << "<head><title>" << status_code << " " << StatusMsg_[status_code] <<"</title></head>\r\n";
+	ss << "<head><title>" << static_cast<int>(status_code) << " " << StatusMsg_[status_code] <<"</title></head>\r\n";
 	ss << "<body>\r\n";
-	ss << "<center><h1>" << status_code << " " << StatusMsg_[status_code] << "</h1></center>\r\n";
+	ss << "<center><h1>" << static_cast<int>(status_code) << " " << StatusMsg_[status_code] << "</h1></center>\r\n";
 	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
 	ss << "</body>\r\n";
 	ss << "</html>\r\n";
@@ -196,7 +196,7 @@ TEST_F(ResponseTest, DefaultErrorPageTest)
 {
 	const std::string DefaultErrorPage = "HTTP/1.1 405 Method Not Allowed\r\n"
 		"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(405);
+		+ GenerateDefaultHTML(METHOD_NOT_ALLOWED);
 	RunCommunication("DELETE /sub2 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DefaultErrorPage);
 }
@@ -207,7 +207,7 @@ TEST_F(ResponseTest, RedirectErrorPageTest)
 	const std::string RedirectErrorPage = "HTTP/1.1 302 Found\r\n"
 		"Connection: keep-alive\r\nContent-Length: 140\r\n"
         "Location: ../../../html/40x.html\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(302);
+		+ GenerateDefaultHTML(FOUND);
 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), RedirectErrorPage);
 }
@@ -227,7 +227,7 @@ TEST_F(ResponseTest, NotMatchErrorPageTest)
 {
     const std::string VersionNotSupported = "HTTP/1.1 404 Not Found\r\n"
 		"Connection: close\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(404);
+		+ GenerateDefaultHTML(NOT_FOUND);
 	RunCommunication("GET /no HTTP/1.0\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), VersionNotSupported);
 }
@@ -236,7 +236,8 @@ TEST_F(ResponseTest, RedirectTest)
 {
 	const std::string Redirect = "HTTP/1.1 301 Moved Permanently\r\n"
 		"Connection: keep-alive\r\nContent-Length: 164\r\n"
-		"Location: http://localhost:8080\r\nServer: Webserv\r\n\r\n" + GenerateDefaultHTML(301);
+		"Location: http://localhost:8080\r\nServer: Webserv\r\n\r\n"
+		+ GenerateDefaultHTML(MOVED_PERMANENTLY);
 	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), Redirect);
 }
@@ -245,7 +246,7 @@ TEST_F(ResponseTest, CloseTest)
 {
     const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
 		"Connection: close\r\nContent-Length: 152\r\nServer: Webserv\r\n\r\n"
-		+ GenerateDefaultHTML(400);
+		+ GenerateDefaultHTML(BAD_REQUEST);
 	RunCommunication(" GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), BadRequest);
 }
