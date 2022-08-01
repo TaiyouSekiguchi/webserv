@@ -197,7 +197,7 @@ TEST_F(RequestTest, test10)
 TEST_F(RequestTest, test11)
 {
 	RunCommunication("GET / HTTP/2a\r\n", 8080);
-	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test12)

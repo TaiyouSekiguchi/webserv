@@ -120,10 +120,9 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
-	std::string		tmp;
-	const char*		s;
-	long			num;
-	char*			endptr;
+	const char*	tmp;
+	size_t		size;
+	size_t		i;
 
 	if (version.at(0) != 'H')
 		throw HTTPError(NOT_FOUND, "ParseVersion");
@@ -134,21 +133,33 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 		|| version.at(4) != '/')
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
-	tmp = version.substr(5);
-	s = tmp.c_str();
-	if (!isdigit(*s))
+	tmp = version.c_str();
+	size = version.size();
+
+	i = 5;
+	while (i < size && tmp[i] != '.')
+	{
+		if (!isdigit(tmp[i]))
+			throw HTTPError(BAD_REQUEST, "ParseVersion");
+		i++;
+	}
+
+	if (tmp[i] != '.')
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
-	num = strtol(s, &endptr, 10);
-	if (num != 1)
+	i++;
+	if (tmp[i] == '\0')
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
+
+	while (i < size)
+	{
+		if (!isdigit(tmp[i]))
+			throw HTTPError(BAD_REQUEST, "ParseVersion");
+		i++;
+	}
+
+	if (version != "HTTP/1.1")
 		throw HTTPError(HTTP_VERSION_NOT_SUPPORTED, "ParseVersion");
-	if (*endptr != '.')
-		throw HTTPError(BAD_REQUEST, "ParseVersion");
-
-	s = endptr + 1;
-	num = strtol(s, &endptr, 10);
-	if (num != 1 || *endptr != '\0')
-		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
 	version_ = version;
 }
