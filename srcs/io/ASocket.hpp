@@ -2,6 +2,7 @@
 # define ASOCKET_HPP
 
 # include "AIo.hpp"
+# include <vector>
 # include "ServerDirective.hpp"
 
 class ASocket : public AIo

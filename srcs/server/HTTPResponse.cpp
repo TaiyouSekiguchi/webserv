@@ -27,20 +27,21 @@ void HTTPResponse::CheckConnection()
 {
 	if (status_code_ == BAD_REQUEST || status_code_ == HTTP_VERSION_NOT_SUPPORTED)
 	{
-		connection_ = "close";
+		connection_ = false;
 		return;
 	}
-	connection_ = "keep-alive";
+	connection_ = req_.GetConnection();
 }
 
 void HTTPResponse::AppendHeaders()
 {
 	AppendHeader("Server", "Webserv");
 	AppendHeader("Date", GetDate());
-	AppendHeader("Connection", connection_);
+	AppendHeader("Connection", connection_ ? "keep-alive" : "close");
 	AppendHeader("Content-type", method_.GetContentType());
 	AppendHeader("Location", method_.GetLocation());
-	AppendHeader("Content-Length", body_.size() != 0 ? Utils::ToString(body_.size()) : "");
+	AppendHeader("Content-Length",
+		(req_.GetMethod() == "GET" || !IsNormalStatus()) ? Utils::ToString(body_.size()) : "");
 }
 
 void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
@@ -49,15 +50,11 @@ void HTTPResponse::AppendHeader(const std::string &key, const std::string &value
 	{
 		return;
 	}
-	if (key == "Content-Length" && req_.GetMethod() == "GET" && value.empty())
+	if (value.empty())
 	{
-		headers_[key] = "0\r\n";
 		return;
 	}
-	if (!value.empty())
-	{
-		headers_[key] = value + "\r\n";
-	}
+	headers_[key] = value + "\r\n";
 }
 
 std::string HTTPResponse::GetDate() const
@@ -88,27 +85,28 @@ bool HTTPResponse::IsNormalStatus() const
 
 std::string HTTPResponse::GenerateHTML()
 {
-	if (server_conf_)
+	std::string str;
+	std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
+	if (ite != server_conf_->GetErrorPages().end())
 	{
-		std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
-		if (ite != server_conf_->GetErrorPages().end())
+		std::string error_page_path = ite->second;
+		if (error_page_path.at(0) == '/')
 		{
-			const std::string error_page_path = ite->second;
-			if (error_page_path.at(0) == '/')
+			error_page_path = error_page_path.substr(1);
+			std::ifstream ifs(error_page_path);
+			if (ifs.fail())
 			{
-				std::ifstream ifs("html" + error_page_path);
-				if (ifs.fail())
-				{
-					return ("");
-				}
-				std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+				status_code_ = NOT_FOUND;
+				str = GenerateDefaultHTML();
 				return (str);
 			}
-			status_code_ = 302;
-			AppendHeader("Location", ite->second);
+			std::string file_str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+			return (file_str);
 		}
+		status_code_ = FOUND;
+		AppendHeader("Location", ite->second);
 	}
-	std::string str = GenerateDefaultHTML();
+	str = GenerateDefaultHTML();
 	return (str);
 }
 
@@ -215,3 +213,4 @@ const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 
 std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[61]);
 const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
+const bool &HTTPResponse::GetConnection() const { return connection_; }
