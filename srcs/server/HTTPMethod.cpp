@@ -43,7 +43,7 @@ LocationDirective	HTTPMethod::SelectLocation
 	return (*longest);
 }
 
-int		HTTPMethod::Redirect(const std::string& location, const int status_code)
+e_StatusCode	HTTPMethod::Redirect(const std::string& location, const e_StatusCode status_code)
 {
 	location_ = location;
 	return (status_code);
@@ -125,7 +125,7 @@ e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& 
 		{
 			const std::string& host = req_.GetHost().first;
 			const std::string& ip = Utils::ToString(req_.GetListen().second);
-			return (static_cast<e_StatusCode>(Redirect("http://" + host + ":" + ip + req_.GetTarget() + "/", MOVED_PERMANENTLY)));
+			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", MOVED_PERMANENTLY));
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
 			return (OK);
@@ -229,9 +229,9 @@ e_StatusCode	HTTPMethod::ExecHTTPMethod()
 	server_conf_ = req_.GetServerConf();
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
-	const std::pair<int, std::string>&	redirect = location.GetReturn();
+	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != INVALID)
-		return (static_cast<e_StatusCode>(Redirect(redirect.second, redirect.first)));
+		return (Redirect(redirect.second, redirect.first));
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");

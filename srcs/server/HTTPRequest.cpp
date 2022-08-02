@@ -15,18 +15,18 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
-const ServerDirective::Listen&		HTTPRequest::GetListen(void) const { return (listen_); }
-const ServerDirective*				HTTPRequest::GetServerConf(void) const { return (server_conf_); }
-std::string							HTTPRequest::GetMethod(void) const { return (method_); }
-std::string							HTTPRequest::GetTarget(void) const { return (target_); }
-std::string							HTTPRequest::GetVersion(void) const { return (version_); }
+const ServerDirective::Listen&	HTTPRequest::GetListen(void) const { return (listen_); }
+const ServerDirective*			HTTPRequest::GetServerConf(void) const { return (server_conf_); }
+std::string						HTTPRequest::GetMethod(void) const { return (method_); }
+std::string						HTTPRequest::GetTarget(void) const { return (target_); }
+std::string						HTTPRequest::GetVersion(void) const { return (version_); }
 std::pair<std::string, std::string>	HTTPRequest::GetHost(void) const { return (host_); }
-size_t								HTTPRequest::GetContentLength(void) const { return (content_length_); }
-std::string							HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
-std::vector<std::string>			HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
-bool								HTTPRequest::GetConnection(void) const { return (connection_); }
-std::string							HTTPRequest::GetContentType(void) const { return (content_type_); };
-std::string							HTTPRequest::GetBody(void) const { return (body_); }
+size_t							HTTPRequest::GetContentLength(void) const { return (content_length_); }
+std::string						HTTPRequest::GetUserAgent(void) const { return (user_agent_); }
+std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (accept_encoding_); }
+bool							HTTPRequest::GetConnection(void) const { return (connection_); }
+std::string						HTTPRequest::GetContentType(void) const { return (content_type_); };
+std::string						HTTPRequest::GetBody(void) const { return (body_); }
 
 bool	HTTPRequest::IsToken(const std::string& str)
 {
@@ -120,10 +120,36 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
-	if (version == "HTTP/1.1")
-		version_ = version;
-	else
+	const char*	tmp;
+	size_t		size;
+	size_t		i;
+
+	if (version.at(0) != 'H')
+		throw HTTPError(NOT_FOUND, "ParseVersion");
+
+	if (version.compare(1, 4, "TTP/"))
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
+
+	tmp = version.c_str();
+	size = version.size();
+
+	i = 5;
+	while (isdigit(tmp[i]))
+		i++;
+
+	if (i == 5 || tmp[i++] != '.' || tmp[i] == '\0')
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
+
+	while (isdigit(tmp[i]))
+		i++;
+
+	if (tmp[i] != '\0')
+		throw HTTPError(BAD_REQUEST, "ParseVersion");
+
+	if (version != "HTTP/1.1")
 		throw HTTPError(HTTP_VERSION_NOT_SUPPORTED, "ParseVersion");
+
+	version_ = version;
 }
 
 void	HTTPRequest::ParseRequestLine(void)
@@ -236,9 +262,40 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 	return;
 }
 
+static bool	IsOnlyOnceHeader(const std::string& field)
+{
+	if (field == "host"
+		|| field == "content-length")
+		return (true);
+	return (false);
+}
+
+static bool	IsAppendHeader(const std::string& field)
+{
+	if (field == "accept-encoding"
+		|| field == "connection")
+		return (true);
+	return (false);
+}
+
+void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& content)
+{
+	if (headers_.count(field) == 0)
+		headers_[field] = content;
+	else
+	{
+		if (IsOnlyOnceHeader(field))
+			throw HTTPError(BAD_REQUEST, "ReceiveHeaders");
+		else if (IsAppendHeader(field))
+			headers_[field] = headers_[field] + "," + content;
+		else
+			headers_[field] = content;
+	}
+}
+
 void	HTTPRequest::ReceiveHeaders(void)
 {
-	std::string				array[6] = {
+	std::string		array[6] = {
 		"host",
 		"content-length",
 		"user-agent",
@@ -246,40 +303,23 @@ void	HTTPRequest::ReceiveHeaders(void)
 		"connection",
 		"content-type"
 	};
-	std::vector<std::string>			header_list(array, array + 6);
-	std::vector<std::string>::iterator	it;
-	std::string							line;
-	std::string							field;
-	std::string							content;
-	std::string::size_type				pos;
+	std::vector<std::string>	headers(array, array + 6);
+	std::string					line;
+	std::string					field;
+	std::string					content;
+	std::string::size_type		pos;
 
 	while ((line = GetLine()) != "")
 	{
-		pos = line.find(":");
-		if (pos == std::string::npos)
+		if ((pos = line.find(":")) == std::string::npos)
 			continue;
 
 		field = line.substr(0, pos);
-		field = Utils::StringToLower(field);
 		content = line.substr(pos + 1);
+		field = Utils::StringToLower(field);
 
-		it = std::find(header_list.begin(), header_list.end(), field);
-		if (it != header_list.end())
-		{
-			if (headers_.count(field) == 0)
-				headers_[field] = content;
-			else
-			{
-				if (field == "host"
-					|| field == "content-length")
-					throw HTTPError(BAD_REQUEST, "ReceiveHeaders");
-				else if (field == "accept-encoding"
-					|| field == "connection")
-					headers_[field] = headers_[field] + "," + content;
-				else
-					headers_[field] = content;
-			}
-		}
+		if (std::find(headers.begin(), headers.end(), field) != headers.end())
+			RegisterHeaders(field, content);
 	}
 }
 
