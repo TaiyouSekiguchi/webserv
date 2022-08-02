@@ -6,6 +6,8 @@
 # include <utility>
 # include "HTTPRequest.hpp"
 # include "Stat.hpp"
+# include "AServerIoEvent.hpp"
+# include "RegularFile.hpp"
 
 class HTTPMethod
 {
@@ -13,14 +15,17 @@ class HTTPMethod
 		explicit HTTPMethod(const HTTPRequest& req);
 		~HTTPMethod();
 
-		e_StatusCode		ExecHTTPMethod();
+		AServerIoEvent*		ValidateHTTPMethod();
+		AServerIoEvent*		ValidateErrorPage();
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;
 		const std::string&	GetBody() const;
 		const e_StatusCode&	GetStatusCode() const;
-		void				SetBody(const std::string& body);
-		void				SetStatusCode(const e_StatusCode sc);
+
+		void				ExecGETMethod(const RegularFile& rfile);
+		void				ExecPOSTMethod(const RegularFile& rfile);
+		void				ExecDELETEMethod(const RegularFile& rfile);
 
 		void				MethodDisplay() const;
 
@@ -34,10 +39,10 @@ class HTTPMethod
 		bool	GetAutoIndexFile(const std::string& access_path, const bool autoindex);
 
 		// HTTPMethod
-		e_StatusCode	SwitchHTTPMethod(const LocationDirective& location);
-		e_StatusCode	ExecGETMethod(const Stat& st, const LocationDirective& location);
-		e_StatusCode	ExecDELETEMethod(const Stat& st);
-		e_StatusCode	ExecPOSTMethod(const Stat& st);
+		AServerIoEvent*	SwitchHTTPMethod(const LocationDirective& location);
+		AServerIoEvent*	ValidateGETMethod(const Stat& st, const LocationDirective& location);
+		AServerIoEvent*	ValidateDELETEMethod(const Stat& st);
+		AServerIoEvent*	ValidatePOSTMethod(const Stat& st);
 
 		// CGI
 		bool	CheckCGIScript(const Stat& st, const LocationDirective& location);

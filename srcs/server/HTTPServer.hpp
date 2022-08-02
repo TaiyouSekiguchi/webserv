@@ -9,6 +9,8 @@
 # include "HTTPMethod.hpp"
 # include "HTTPResponse.hpp"
 # include "ServerSocketEvent.hpp"
+# include "AServerIoEvent.hpp"
+# include "RegularFile.hpp"
 
 class HTTPServer
 {
@@ -17,13 +19,14 @@ class HTTPServer
 		~HTTPServer();
 
 		bool			GetConnection() const;
-		std::string		GetRequestBody() const;
-		void			SetStatusCode(const e_StatusCode sc);
-		void			SetResponseBody(const std::string& body);
 
-		AIoEvent*		Run();
-		AIoEvent*		RunCreateResponse();
+		AServerIoEvent*	Run();
+		AServerIoEvent*	RunCreateResponse();
 		void			RunSendResponse();
+
+		void			ExecGETMethod(const RegularFile& rfile);
+		void			ExecPOSTMethod(const RegularFile& rfile);
+		void			ExecDELETEMethod(const RegularFile& rfile);
 
 	private:
 		ServerSocketEvent*	ssocket_send_event_;

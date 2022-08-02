@@ -16,11 +16,48 @@ const std::string&	HTTPMethod::GetContentType() const	{ return (content_type_); 
 const std::string&	HTTPMethod::GetLocation()	 const	{ return (location_); }
 const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
-void				HTTPMethod::SetBody(const std::string& body) { body_ = body; }
-void				HTTPMethod::SetStatusCode(const e_StatusCode sc)
+
+void	HTTPMethod::ExecGETMethod(const RegularFile& rfile)
 {
-	if (status_code_ == INVALID)
-		status_code_ = sc;
+	int			ret;
+	std::string	body;
+
+	ret = rfile.ReadFile(&body);
+	if (ret == -1)
+		status_code_ = INTERNAL_SERVER_ERROR;
+	else
+	{
+		body_ = body;
+		status_code_ = OK;
+	}
+}
+
+void	HTTPMethod::ExecPOSTMethod(const RegularFile& rfile)
+{
+	int		ret;
+
+	ret = rfile.WriteToFile(request_->GetBody());
+	if (ret == -1)
+		status_code_ = INTERNAL_SERVER_ERROR;
+	else
+	{
+		if (*(req_.GetTarget().rbegin()) == '/')
+			location_ = req_.GetTarget() + rfile.GetName();
+		else
+			location_ = req_.GetTarget() + "/" + rfile.GetName();
+		status_code_ = CREATED;
+	}
+}
+
+void	HTTPMethod::ExecDELETEMethod(const RegularFile& rfile)
+{
+	int		ret;
+
+	ret = rfile.DeleteFile();
+	if (ret == -1)
+		status_code_ = INTERNAL_SERVER_ERROR;
+	else
+		status_code_ = NO_CONTENT;
 }
 
 LocationDirective	HTTPMethod::SelectLocation
@@ -109,7 +146,7 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 	return (true);
 }
 
-e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
+AServerIoEvent*	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
 {
 	const std::string&	access_path = st.GetPath();
 
@@ -125,7 +162,8 @@ e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& 
 		{
 			const std::string& host = req_.GetHost().first;
 			const std::string& ip = Utils::ToString(req_.GetListen().second);
-			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", MOVED_PERMANENTLY));
+			const std::string  location = "http://" + host + ":" + ip + req_->GetTarget() + "/";
+			throw HTTPError(Redirect(location, MOVED_PERMANENTLY), "ExecGETMethod");
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
 			return (OK);
@@ -137,7 +175,7 @@ e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& 
 		throw HTTPError(FORBIDDEN, "ExecGETMethod");
 }
 
-e_StatusCode	HTTPMethod::ExecDELETEMethod(const Stat& st)
+AServerIoEvent*	HTTPMethod::ExecDELETEMethod(const Stat& st)
 {
 	if (st.IsDirectory() && *(req_.GetTarget().rbegin()) != '/')
 		throw HTTPError(CONFLICT, "ExecDELETEMethod");
@@ -152,7 +190,7 @@ e_StatusCode	HTTPMethod::ExecDELETEMethod(const Stat& st)
 	return (NO_CONTENT);
 }
 
-e_StatusCode	HTTPMethod::ExecPOSTMethod(const Stat& st)
+AServerIoEvent*	HTTPMethod::ExecPOSTMethod(const Stat& st)
 {
 	if (!st.IsDirectory())
 		throw HTTPError(CONFLICT, "ExecPOSTMethod");
@@ -202,7 +240,7 @@ bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& locatio
 // 	return (cgi.GetStatusCode());
 // }
 
-e_StatusCode	HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
+AServerIoEvent*	HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
 {
 	const std::string&	method = req_.GetMethod();
 
@@ -224,14 +262,14 @@ e_StatusCode	HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
 		return (ExecPOSTMethod(st));
 }
 
-e_StatusCode	HTTPMethod::ExecHTTPMethod()
+AServerIoEvent*	HTTPMethod::ValidateHTTPMethod()
 {
 	server_conf_ = req_.GetServerConf();
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != INVALID)
-		return (Redirect(redirect.second, redirect.first));
+		throw HTTPError(Redirect(redirect.second, redirect.first), "ExecHTTPMethod");
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");

@@ -9,6 +9,7 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 #include "ServerSocketEvent.hpp"
+#include "RegularFile.hpp"
 
 HTTPServer::HTTPServer(ServerSocketEvent* ssocket_event, const ServerSocket& ssocket)
 	:	ssocket_send_event_(ssocket_event), ssocket_(ssocket),
@@ -27,22 +28,17 @@ HTTPServer::~HTTPServer()
 }
 
 bool		HTTPServer::GetConnection() const { return (connection_); }
-std::string	HTTPServer::GetRequestBody() const { return (request_->GetBody()); }
-void		HTTPServer::SetStatusCode(const e_StatusCode sc) { method_->SetStatusCode(sc); }
-void		HTTPServer::SetResponseBody(const std::string& body) { method_->SetBody(body); }
 
-AIoEvent*	HTTPServer::Run()
+AServerIoEvent*	HTTPServer::Run()
 {
-	AIoEvent*		new_io_event;
+	AServerIoEvent*	new_server_event;
 
 	request_ = new HTTPRequest(ssocket_);
 	method_ = new HTTPMethod(*request_);
 	try
 	{
 		request_->ParseRequest();
-		new_io_event = method_->ExecHTTPMethod();
-		if (new_io_event)
-			return (new_io_event);
+		new_server_event = method_->ValidateHTTPMethod();
 	}
 	catch (const ClientClosed& e)
 	{
@@ -51,14 +47,15 @@ AIoEvent*	HTTPServer::Run()
 	}
 	catch (const HTTPError& e)
 	{
-		new_io_event = method_->SetErrorPage(e.GetStatusCode());
-		if (new_io_event)
-			return (new_io_event);
+		new_server_event = method_->ValidateErrorPage(e.GetStatusCode());
 	}
+
+	if (new_server_event)
+		return (new_server_event);
 	return (RunCreateResponse());
 }
 
-AIoEvent*	HTTPServer::RunCreateResponse()
+AServerIoEvent*	HTTPServer::RunCreateResponse()
 {
 	response_ = new HTTPResponse(*request_, *method_);
 	return (ssocket_send_event_);
@@ -69,10 +66,25 @@ void	HTTPServer::RunSendResponse()
 	try
 	{
 		response_->SendResponse(ssocket_);
-		// connection_ = response_->GetConnection();
+		connection_ = response_->GetConnection();
 	}
 	catch (const ClientClosed& e)
 	{
 		connection_ = false;
 	}
+}
+
+void	HTTPServer::ExecGETMethod(const RegularFile& rfile)
+{
+	return (method_->ExecGETMethod(rfile));
+}
+
+void	HTTPServer::ExecPOSTMethod(const RegularFile& rfile)
+{
+	return (method_->ExecPOSTMethod(rfile));
+}
+
+void	HTTPServer::ExecDELETEMethod(const RegularFile& rfile)
+{
+	return (method_->ExecDELETEMethod(rfile));
 }

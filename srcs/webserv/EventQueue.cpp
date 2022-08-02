@@ -11,11 +11,13 @@ EventQueue::~EventQueue()
 {
 }
 
-void	EventQueue::SetIoEvent(AIoEvent *io_event, const e_EventType type, const e_EventAction act) const
+void	EventQueue::SetIoEvent(AIoEvent *io_event, e_EventType type, const e_EventAction act) const
 {
 	struct kevent	kev;
 	int				ret;
 
+	if (type == ET_DELETE)
+		type = ET_WRITE;
 	EV_SET(&kev, io_event->GetFd(), type, act, 0, 0, io_event);
 	ret = kevent(kq_, &kev, 1, NULL, 0, NULL);
 	if (ret == -1)

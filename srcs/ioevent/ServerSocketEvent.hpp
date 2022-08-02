@@ -3,9 +3,10 @@
 
 # include "ServerSocket.hpp"
 # include "AIoEvent.hpp"
+# include "AServerIoEvent.hpp"
 # include "HTTPServer.hpp"
 
-class ServerSocketEvent : public AIoEvent
+class ServerSocketEvent : public AServerIoEvent
 {
 	public:
 		explicit ServerSocketEvent(const ServerSocket* ssocket);
@@ -19,7 +20,6 @@ class ServerSocketEvent : public AIoEvent
 		e_EventStatus	RunWriteEvent(EventQueue* equeue);
 
 		const ServerSocket*	ssocket_;
-		HTTPServer*			hserver_;
 };
 
 #endif

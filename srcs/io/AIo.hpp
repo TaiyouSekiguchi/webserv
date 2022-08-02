@@ -10,7 +10,7 @@ class AIo
 		int			GetFd() const;
 
 	protected:
-		const int	fd_;
+		int			fd_;
 };
 
 #endif

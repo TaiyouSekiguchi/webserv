@@ -7,6 +7,7 @@ enum	e_EventType
 {
 	ET_READ = EVFILT_READ,
 	ET_WRITE = EVFILT_WRITE,
+	ET_DELETE = -16
 };
 
 enum	e_EventAction

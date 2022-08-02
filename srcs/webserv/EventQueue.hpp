@@ -18,7 +18,7 @@ class EventQueue
 		EventQueue();
 		~EventQueue();
 
-		void		SetIoEvent(AIoEvent *io_event, const e_EventType type, const e_EventAction act) const;
+		void		SetIoEvent(AIoEvent *io_event, e_EventType type, const e_EventAction act) const;
 		AIoEvent*	WaitIoEvent() const;
 
 	private:

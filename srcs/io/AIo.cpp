@@ -8,7 +8,8 @@ AIo::AIo(const int fd)
 
 AIo::~AIo()
 {
-	close(fd_);
+	if (fd_ != -1)
+		close(fd_);
 }
 
 int		AIo::GetFd() const { return (fd_); }

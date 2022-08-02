@@ -4,7 +4,7 @@
 #include "HTTPServer.hpp"
 
 ServerSocketEvent::ServerSocketEvent(const ServerSocket* ssocket)
-	: AIoEvent(ET_READ), ssocket_(ssocket), hserver_(NULL)
+	: AServerIoEvent(ET_READ), ssocket_(ssocket)
 {
 }
 
@@ -27,15 +27,15 @@ e_EventStatus	ServerSocketEvent::RunEvent(EventQueue* equeue)
 
 e_EventStatus	ServerSocketEvent::RunReadEvent(EventQueue* equeue)
 {
-	AIoEvent*	new_io_event;
+	AServerIoEvent*	new_server_event;
 
 	equeue->SetIoEvent(this, ET_READ, EA_DISABLE);
 	event_type_ = ET_WRITE;
 	hserver_ = new HTTPServer(this, *ssocket_);
-	new_io_event = hserver_->Run();
+	new_server_event = hserver_->Run();
 	if (hserver_->GetConnection() == false)
 		return (ES_END);
-	equeue->SetIoEvent(new_io_event, new_io_event->GetEventType(), EA_ADD);
+	RegisterServerEvent(equeue, new_server_event);
 	return (ES_CONTINUE);
 }
 
