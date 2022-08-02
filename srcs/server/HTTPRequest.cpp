@@ -137,10 +137,7 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	while (isdigit(tmp[i]))
 		i++;
 
-	if (tmp[i++] != '.')
-		throw HTTPError(BAD_REQUEST, "ParseVersion");
-
-	if (tmp[i] == '\0')
+	if (i == 5 || tmp[i++] != '.' || tmp[i] == '\0')
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
 	while (isdigit(tmp[i]))

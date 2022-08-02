@@ -235,3 +235,9 @@ TEST_F(RequestTest, test17)
 	RunCommunication("GET / HTTP/1.1a\r\n", 8080);
 	EXPECT_EQ(BAD_REQUEST, status_code_);
 }
+
+TEST_F(RequestTest, test18)
+{
+	RunCommunication("GET / HTTP/.1\r\n", 8080);
+	EXPECT_EQ(BAD_REQUEST, status_code_);
+}
