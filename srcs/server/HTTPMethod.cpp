@@ -229,6 +229,8 @@ e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
 		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");
 
+
+
 	std::string				path;
 	std::string				query;
 	std::string::size_type	pos;

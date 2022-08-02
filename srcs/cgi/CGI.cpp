@@ -1,7 +1,9 @@
 #include "CGI.hpp"
 
-CGI::CGI(const std::string& file_path, const HTTPRequest& req)
-	: file_path_(file_path)
+CGI::CGI(const std::string& root, const std::string& path, const std::string& query, const HTTPRequest& req)
+	: root_(root)
+	, file_path_(path)
+	, query_(query)
 	, req_(req)
 	, server_conf_(req.GetServerConf())
 {
