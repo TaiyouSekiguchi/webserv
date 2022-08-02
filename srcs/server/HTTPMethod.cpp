@@ -229,10 +229,27 @@ e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
 		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");
 
-	Stat	cgi_st(location.GetRoot() + req.GetTarget());
+	std::string				path;
+	std::string				query;
+	std::string::size_type	pos;
+
+	pos = req.GetTarget().find("?");
+	if (pos == std::string::npos)
+		path = req.GetTarget();
+	else
+	{
+		path = req.GetTarget().substr(0, pos);
+		query = req.GetTarget().substr(pos + 1);
+	}
+
+	Stat	cgi_st(location.GetRoot() + path);
 	if (CheckCGIScript(cgi_st, location))
+	{
+		Cgi		cgi();
+
 		return (OK);
 		// return (ExecCGI(cgi_st.GetPath()));
+	}
 
 	return (SwitchHTTPMethod(location));
 }
