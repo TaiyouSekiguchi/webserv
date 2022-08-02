@@ -23,7 +23,7 @@ class HTTPMethod
 
 	private:
 		LocationDirective	SelectLocation(const std::vector<LocationDirective>& locations) const;
-		int		Redirect(const std::string& location, const int status_code);
+		e_StatusCode		Redirect(const std::string& location, const e_StatusCode status_code);
 
 		// GET
 		bool	GetFile(const std::string& access_path);

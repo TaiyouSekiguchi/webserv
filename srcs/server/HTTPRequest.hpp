@@ -79,6 +79,7 @@ class HTTPRequest
 		void			ParseMethod(const std::string& method);
 		void			ParseTarget(const std::string& target);
 		void			ParseVersion(const std::string& version);
+		void			RegisterHeaders(const std::string& field, const std::string& content);
 		void			ReceiveHeaders(void);
 		void			ParseHeaders(void);
 		void			CheckHeaders(void);
