@@ -1,6 +1,9 @@
 #ifndef HTTPRESPONSE_HPP
 # define HTTPRESPONSE_HPP
 
+#include <utility>
+#include <map>
+#include <string>
 #include "HTTPRequest.hpp"
 #include "HTTPServer.hpp"
 #include "ServerDirective.hpp"
@@ -9,11 +12,12 @@
 class HTTPResponse
 {
 	public:
-		HTTPResponse(int status_code, const HTTPRequest &req, const HTTPMethod &method);
+		HTTPResponse(e_StatusCode status_code, const HTTPRequest &req, const HTTPMethod &method);
 		~HTTPResponse();
 
 		void SendResponse(const ServerSocket *ssocket);
 		const std::string &GetResMsg() const;
+		const bool &GetConnection() const;
 
 	private:
 		static const std::pair<int, std::string> kPairs_[];
@@ -24,8 +28,8 @@ class HTTPResponse
 		std::string res_msg_;
 		std::map<std::string, std::string> headers_;
 		std::string body_;
-		int status_code_;
-		std::string connection_;
+		e_StatusCode status_code_;
+		bool connection_;
 
 		void CheckConnection();
 		void AppendHeaders();

@@ -1,6 +1,7 @@
 #ifndef ASOCKET_HPP
 # define ASOCKET_HPP
 
+# include <vector>
 # include "ServerDirective.hpp"
 
 class ASocket
