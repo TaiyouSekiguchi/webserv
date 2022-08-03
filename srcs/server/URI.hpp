@@ -1,6 +1,8 @@
 #ifndef URI_HPP
 # define URI_HPP
 
+# include <string>
+
 class URI
 {
 	public:
