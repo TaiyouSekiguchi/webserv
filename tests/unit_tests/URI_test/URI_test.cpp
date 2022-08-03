@@ -9,8 +9,8 @@ TEST(URI_TEST, ExpectEquql1)
 
 	URI				uri(root, target);
 
-	EXPECT_EQ("/www/var/html/index.html", uri.GetFullPath());
-	EXPECT_EQ("/index.html", uri.GetPath());
+	EXPECT_EQ("/www/var/html/index.html", uri.GetAccessPath());
+	EXPECT_EQ("/index.html", uri.GetTargetPath());
 	EXPECT_EQ("", uri.GetQuery());
 }
 
@@ -21,8 +21,8 @@ TEST(URI_TEST, ExpectEquql2)
 
 	URI				uri(root, target);
 
-	EXPECT_EQ("/www/var/html/index.html", uri.GetFullPath());
-	EXPECT_EQ("/index.html", uri.GetPath());
+	EXPECT_EQ("/www/var/html/index.html", uri.GetAccessPath());
+	EXPECT_EQ("/index.html", uri.GetTargetPath());
 	EXPECT_EQ("aaa+bbb", uri.GetQuery());
 }
 
@@ -33,7 +33,7 @@ TEST(URI_TEST, ExpectEquql3)
 
 	URI				uri(root, target);
 
-	EXPECT_EQ("/www/var/html/index.html", uri.GetFullPath());
-	EXPECT_EQ("/index.html", uri.GetPath());
+	EXPECT_EQ("/www/var/html/index.html", uri.GetAccessPath());
+	EXPECT_EQ("/index.html", uri.GetTargetPath());
 	EXPECT_EQ("first=aaa&second=bbb", uri.GetQuery());
 }
