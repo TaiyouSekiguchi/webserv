@@ -86,7 +86,7 @@ bool HTTPResponse::IsNormalStatus() const
 std::string HTTPResponse::GenerateHTML()
 {
 	std::string str;
-	std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
+	std::map<e_StatusCode, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
 	if (ite != server_conf_->GetErrorPages().end())
 	{
 		std::string error_page_path = ite->second;

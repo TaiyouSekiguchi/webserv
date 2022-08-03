@@ -20,7 +20,7 @@ class HTTPServer
 		void	DeleteMethodTargetFile();
 
 		e_HTTPServerEventType	Run();
-		e_HTTPServerEventType	RunHTTPMethod(const e_HTTPServerEventType event_type);
+		e_HTTPServerEventType	RunExecHTTPMethod(const e_HTTPServerEventType event_type);
 		e_HTTPServerEventType	RunCreateResponse();
 		e_HTTPServerEventType	RunSendResponse();
 

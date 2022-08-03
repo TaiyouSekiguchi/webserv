@@ -38,6 +38,8 @@ e_HTTPServerEventType	HTTPServer::Run()
 	{
 		request_->ParseRequest();
 		new_event = method_->ValidateHTTPMethod();
+		if (new_event != SEVENT_NO)
+			return (new_event);
 	}
 	catch (const ClientClosed& e)
 	{
@@ -46,13 +48,13 @@ e_HTTPServerEventType	HTTPServer::Run()
 	catch (const HTTPError& e)
 	{
 		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
 	}
-	if (new_event != SEVENT_NO)
-		return (new_event);
 	return (RunCreateResponse());
 }
 
-e_HTTPServerEventType	HTTPServer::RunHTTPMethod(const e_HTTPServerEventType event_type)
+e_HTTPServerEventType	HTTPServer::RunExecHTTPMethod(const e_HTTPServerEventType event_type)
 {
 	if (event_type == SEVENT_FILE_READ)
 		method_->ExecGETMethod();

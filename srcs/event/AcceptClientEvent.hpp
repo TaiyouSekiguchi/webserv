@@ -11,7 +11,7 @@ class AcceptClientEvent : public AEvent
 		explicit AcceptClientEvent(const ListenSocket* lsocket);
 		~AcceptClientEvent();
 
-		void	RunEvent(EventQueue* equeue);
+		void	RegisterHTTPServerEvent(EventQueue* equeue);
 
 	private:
 		const ListenSocket*	lsocket_;

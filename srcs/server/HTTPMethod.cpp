@@ -150,6 +150,7 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 
 	body_stream << "</pre><hr></body>\r\n" << "</html>\r\n";
 	body_ = body_stream.str();
+	status_code_ = OK;
 }
 
 e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const LocationDirective& location)

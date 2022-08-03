@@ -78,7 +78,7 @@ void	WebServ::EventLoop(EventQueue* equeue) const
 	{
 		event = equeue->WaitIoEvent();
 		if ((ac_event = dynamic_cast<AcceptClientEvent*>(event)))
-			ac_event->RunEvent(equeue);
+			ac_event->RegisterHTTPServerEvent(equeue);
 		else if ((server_event = dynamic_cast<HTTPServerEvent*>(event)))
 		{
 			server_event->RunAnyEvent(equeue);

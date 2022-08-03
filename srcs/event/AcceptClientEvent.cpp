@@ -11,7 +11,7 @@ AcceptClientEvent::~AcceptClientEvent()
 	delete lsocket_;
 }
 
-void	AcceptClientEvent::RunEvent(EventQueue* equeue)
+void	AcceptClientEvent::RegisterHTTPServerEvent(EventQueue* equeue)
 {
 	ServerSocket*		new_ssocket = new ServerSocket(*lsocket_);
 	HTTPServerEvent*	new_event = new HTTPServerEvent(new_ssocket);

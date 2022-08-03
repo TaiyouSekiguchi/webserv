@@ -30,7 +30,7 @@ void	HTTPServerEvent::RunAnyEvent(EventQueue* equeue)
 		case SEVENT_FILE_READ:
 		case SEVENT_FILE_WRITE:
 		case SEVENT_FILE_DELETE:
-			next_type = hserver_->RunHTTPMethod(type_);
+			next_type = hserver_->RunExecHTTPMethod(type_);
 			break;
 		case SEVENT_SOCKET_SEND:
 			next_type = hserver_->RunSendResponse();
