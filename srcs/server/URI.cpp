@@ -8,12 +8,14 @@ URI::URI(const std::string& root, const std::string& target)
 
 	pos = target_.find("?");
 	if (pos == std::string::npos)
-		path = target_;
+		path_ = target_;
 	else
 	{
-		path = target_.substr(0, pos);
-		query = target_.substr(pos + 1);
+		path_ = target_.substr(0, pos);
+		query_ = target_.substr(pos + 1);
 	}
+
+	full_path_ = root_ + path_;
 }
 
 URI::~URI()
