@@ -11,20 +11,19 @@ EventQueue::~EventQueue()
 {
 }
 
-void	EventQueue::SetIoEvent(AIoEvent *io_event, e_EventType type, const e_EventAction act) const
+void	EventQueue::SetIoEvent
+	(const int fd, const e_EventType type, const e_EventAction act, AEvent *event)
 {
 	struct kevent	kev;
 	int				ret;
 
-	if (type == ET_DELETE)
-		type = ET_WRITE;
-	EV_SET(&kev, io_event->GetFd(), type, act, 0, 0, io_event);
+	EV_SET(&kev, fd, type, act, 0, 0, event);
 	ret = kevent(kq_, &kev, 1, NULL, 0, NULL);
 	if (ret == -1)
 		throw std::runtime_error("kevent error");
 }
 
-AIoEvent*		EventQueue::WaitIoEvent() const
+AEvent*		EventQueue::WaitIoEvent() const
 {
 	struct kevent		kev;
 	struct timespec		waitspec = { 2, 500000 };
@@ -38,5 +37,5 @@ AIoEvent*		EventQueue::WaitIoEvent() const
 		else if (n != 0)
 			break;
 	}
-	return (static_cast<AIoEvent*>(kev.udata));
+	return (static_cast<AEvent*>(kev.udata));
 }

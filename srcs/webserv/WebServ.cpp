@@ -1,7 +1,8 @@
 #include <string>
 #include "WebServ.hpp"
-#include "ListenSocketEvent.hpp"
 #include "utils.hpp"
+#include "AcceptClientEvent.hpp"
+#include "HTTPServerEvent.hpp"
 
 WebServ::WebServ()
 {
@@ -44,7 +45,8 @@ void	WebServ::RegisterAcceptClientEvent(EventQueue* equeue) const
 	while (lsocket_itr != end)
 	{
 		(*lsocket_itr)->ListenConnection();
-		equeue->SetIoEvent(new ListenSocketEvent(*lsocket_itr), ET_READ, EA_ADD);
+		AcceptClientEvent*	new_event = new AcceptClientEvent(*lsocket_itr);
+		equeue->SetIoEvent((*lsocket_itr)->GetFd(), ET_READ, EA_ADD, new_event);
 		++lsocket_itr;
 	}
 }
@@ -68,16 +70,20 @@ void	WebServ::Start(const std::string& conf_path)
 
 void	WebServ::EventLoop(EventQueue* equeue) const
 {
-	AIoEvent			*io_event;
-	e_EventStatus	event_status;
+	AEvent			*event;
+	AcceptClientEvent*	ac_event;
+	HTTPServerEvent*	server_event;
 
 	while (1)
 	{
-		io_event = equeue->WaitIoEvent();
-		event_status = io_event->RunEvent(equeue);
-		if (event_status == ES_CONTINUE)
-			continue;
-		else if (event_status == ES_END)
-			delete io_event;
+		event = equeue->WaitIoEvent();
+		if (ac_event = dynamic_cast<AcceptClientEvent*>(event))
+			ac_event->RunEvent(equeue);
+		else if (server_event = dynamic_cast<HTTPServerEvent*>(event))
+		{
+			server_event->RunAnyEvent(equeue);
+			if (server_event->IsEnd())
+				delete server_event;
+		}
 	}
 }

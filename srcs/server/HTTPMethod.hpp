@@ -6,8 +6,8 @@
 # include <utility>
 # include "HTTPRequest.hpp"
 # include "Stat.hpp"
-# include "AServerIoEvent.hpp"
 # include "RegularFile.hpp"
+# include "HTTPServerEvent.hpp"
 
 class HTTPMethod
 {
@@ -15,17 +15,20 @@ class HTTPMethod
 		explicit HTTPMethod(const HTTPRequest& req);
 		~HTTPMethod();
 
-		AServerIoEvent*		ValidateHTTPMethod();
-		AServerIoEvent*		ValidateErrorPage();
+		HTTPServerEvent::e_Type	ValidateHTTPMethod();
+		HTTPServerEvent::e_Type	ValidateErrorPage(const e_StatusCode status_code);
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;
 		const std::string&	GetBody() const;
 		const e_StatusCode&	GetStatusCode() const;
 
-		void				ExecGETMethod(const RegularFile& rfile);
-		void				ExecPOSTMethod(const RegularFile& rfile);
-		void				ExecDELETEMethod(const RegularFile& rfile);
+		const int			GetTargetFileFd() const;
+		void				DeleteTargetFile();
+
+		void				ExecGETMethod();
+		void				ExecPOSTMethod();
+		void				ExecDELETEMethod();
 
 		void				MethodDisplay() const;
 
@@ -39,22 +42,23 @@ class HTTPMethod
 		bool	GetAutoIndexFile(const std::string& access_path, const bool autoindex);
 
 		// HTTPMethod
-		AServerIoEvent*	SwitchHTTPMethod(const LocationDirective& location);
-		AServerIoEvent*	ValidateGETMethod(const Stat& st, const LocationDirective& location);
-		AServerIoEvent*	ValidateDELETEMethod(const Stat& st);
-		AServerIoEvent*	ValidatePOSTMethod(const Stat& st);
+		HTTPServerEvent::e_Type	ValidateAnyMethod(const LocationDirective& location);
+		HTTPServerEvent::e_Type	ValidateGETMethod(const Stat& st, const LocationDirective& location);
+		HTTPServerEvent::e_Type	ValidateDELETEMethod(const Stat& st);
+		HTTPServerEvent::e_Type	ValidatePOSTMethod(const Stat& st);
 
 		// CGI
 		bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
 		int		ExecCGI();
 
+		const HTTPRequest&			req_;
+		const ServerDirective*		server_conf_;
+
 		std::string		content_type_;
 		std::string		location_;
 		std::string		body_;
 		e_StatusCode	status_code_;
-
-		const HTTPRequest&			req_;
-		const ServerDirective*		server_conf_;
+		RegularFile*	target_rfile_;
 };
 
 #endif

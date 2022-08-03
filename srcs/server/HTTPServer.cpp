@@ -8,12 +8,10 @@
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
-#include "ServerSocketEvent.hpp"
 #include "RegularFile.hpp"
 
-HTTPServer::HTTPServer(ServerSocketEvent* ssocket_event, const ServerSocket& ssocket)
-	:	ssocket_send_event_(ssocket_event), ssocket_(ssocket),
-		request_(NULL), method_(NULL), response_(NULL)
+HTTPServer::HTTPServer(const ServerSocket& ssocket)
+	:	ssocket_(ssocket), request_(NULL), method_(NULL), response_(NULL)
 {
 }
 
@@ -27,64 +25,61 @@ HTTPServer::~HTTPServer()
 		delete response_;
 }
 
-bool		HTTPServer::GetConnection() const { return (connection_); }
+const int	HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
+void		HTTPServer::DeleteMethodTargetFile() 	  { return (method_->DeleteTargetFile()); }
 
-AServerIoEvent*	HTTPServer::Run()
+HTTPServerEvent::e_Type	HTTPServer::Run()
 {
-	AServerIoEvent*	new_server_event;
+	HTTPServerEvent::e_Type	new_event;
 
 	request_ = new HTTPRequest(ssocket_);
 	method_ = new HTTPMethod(*request_);
 	try
 	{
 		request_->ParseRequest();
-		new_server_event = method_->ValidateHTTPMethod();
+		new_event = method_->ValidateHTTPMethod();
 	}
 	catch (const ClientClosed& e)
 	{
-		connection_ = false;
-		return (NULL);
+		return (HTTPServerEvent::END);
 	}
 	catch (const HTTPError& e)
 	{
-		new_server_event = method_->ValidateErrorPage(e.GetStatusCode());
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
 	}
-
-	if (new_server_event)
-		return (new_server_event);
+	if (new_event != HTTPServerEvent::NOEVENT)
+		return (new_event);
 	return (RunCreateResponse());
 }
 
-AServerIoEvent*	HTTPServer::RunCreateResponse()
+HTTPServerEvent::e_Type	HTTPServer::RunHTTPMethod(const HTTPServerEvent::e_Type event_type)
 {
-	response_ = new HTTPResponse(*request_, *method_);
-	return (ssocket_send_event_);
+	if (event_type == HTTPServerEvent::FILE_READ)
+		method_->ExecGETMethod();
+	else if (event_type == HTTPServerEvent::FILE_WRITE)
+		method_->ExecPOSTMethod();
+	else if (event_type == HTTPServerEvent::FILE_DELETE)
+		method_->ExecDELETEMethod();
+	return (RunCreateResponse());
 }
 
-void	HTTPServer::RunSendResponse()
+HTTPServerEvent::e_Type	HTTPServer::RunCreateResponse()
+{
+	response_ = new HTTPResponse(*request_, *method_);
+	return (HTTPServerEvent::SOCKET_SEND);
+}
+
+HTTPServerEvent::e_Type	HTTPServer::RunSendResponse()
 {
 	try
 	{
 		response_->SendResponse(ssocket_);
-		connection_ = response_->GetConnection();
+		if (response_->GetConnection() == false)
+			return (HTTPServerEvent::END);
 	}
 	catch (const ClientClosed& e)
 	{
-		connection_ = false;
+		return (HTTPServerEvent::END);
 	}
-}
-
-void	HTTPServer::ExecGETMethod(const RegularFile& rfile)
-{
-	return (method_->ExecGETMethod(rfile));
-}
-
-void	HTTPServer::ExecPOSTMethod(const RegularFile& rfile)
-{
-	return (method_->ExecPOSTMethod(rfile));
-}
-
-void	HTTPServer::ExecDELETEMethod(const RegularFile& rfile)
-{
-	return (method_->ExecDELETEMethod(rfile));
+	return (HTTPServerEvent::SOCKET_RECV);
 }

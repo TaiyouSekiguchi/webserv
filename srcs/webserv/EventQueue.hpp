@@ -8,9 +8,7 @@
 # include <unistd.h>
 # include <iostream>
 # include "EventFlag.hpp"
-# include "AIoEvent.hpp"
-
-class AIoEvent;
+# include "AEvent.hpp"
 
 class EventQueue
 {
@@ -18,8 +16,8 @@ class EventQueue
 		EventQueue();
 		~EventQueue();
 
-		void		SetIoEvent(AIoEvent *io_event, e_EventType type, const e_EventAction act) const;
-		AIoEvent*	WaitIoEvent() const;
+		void	SetIoEvent(const int fd, const e_EventType type, const e_EventAction act, AEvent *event);
+		AEvent*	WaitIoEvent() const;
 
 	private:
 		int		kq_;
