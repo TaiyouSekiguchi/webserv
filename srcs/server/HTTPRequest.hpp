@@ -67,9 +67,12 @@ class HTTPRequest
 		std::vector<std::string>					accept_encoding_;
 		bool										connection_;
 		std::string									content_type_;
+		std::string									transfer_encoding_;
 
 		// body
 		std::string									body_;
+
+
 
 		// func
 		bool			IsToken(const std::string& str);
@@ -90,8 +93,11 @@ class HTTPRequest
 		void			ParseAcceptEncoding(const std::string& content);
 		void			ParseConnection(const std::string& content);
 		void			ParseContentType(const std::string& content);
+		void			ParseTransferEncoding(const std::string& content);
 		void			ParseBody(void);
 		void			FindServerConf(void);
+		bool			ParseChunkSize(void);
+		bool			ParseChunkBody(void);
 };
 
 #endif

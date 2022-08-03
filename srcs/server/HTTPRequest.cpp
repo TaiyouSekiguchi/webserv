@@ -121,7 +121,7 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
 	const char*	tmp;
-	size_t		size;
+	// size_t		size;
 	size_t		i;
 
 	if (version.at(0) != 'H')
@@ -131,7 +131,7 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
 	tmp = version.c_str();
-	size = version.size();
+	// size = version.size();
 
 	i = 5;
 	while (isdigit(tmp[i]))
@@ -242,6 +242,11 @@ void HTTPRequest::ParseContentType(const std::string& content)
 	content_type_ = Utils::MyTrim(content, " ");
 }
 
+void HTTPRequest::ParseTransferEncoding(const std::string& content)
+{
+	transfer_encoding_ = Utils::MyTrim(content, " ");
+}
+
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
@@ -250,15 +255,15 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("user-agent", &HTTPRequest::ParseUserAgent),
 		std::make_pair("accept-encoding", &HTTPRequest::ParseAcceptEncoding),
 		std::make_pair("connection", &HTTPRequest::ParseConnection),
-		std::make_pair("content-type", &HTTPRequest::ParseContentType)
+		std::make_pair("content-type", &HTTPRequest::ParseContentType),
+		std::make_pair("transfer-encoding", &HTTPRequest::ParseTransferEncoding)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[6]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[7]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
 	if (found != parse_funcs.end())
 		(this->*(found->second))(content);
-
 	return;
 }
 
@@ -295,15 +300,16 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 
 void	HTTPRequest::ReceiveHeaders(void)
 {
-	std::string		array[6] = {
+	std::string		array[7] = {
 		"host",
 		"content-length",
 		"user-agent",
 		"accept-encoding",
 		"connection",
-		"content-type"
+		"content-type",
+		"transfer-encoding"
 	};
-	std::vector<std::string>	headers(array, array + 6);
+	std::vector<std::string>	headers(array, array + 7);
 	std::string					line;
 	std::string					field;
 	std::string					content;
@@ -339,9 +345,16 @@ void	HTTPRequest::CheckHeaders(void)
 	if (host_.first == "")
 		throw HTTPError(BAD_REQUEST, "CheckHeaders");
 
+	// if (headers_.count("content-length") && headers_.count("transfer-encoding"))
+		// throw HTTPError(BAD_REQUEST, "CheckHeaders");
+
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
 		throw HTTPError(PAYLOAD_TOO_LARGE, "CheckHeaders");
+}
+
+bool	HTTPRequest::ParseChunkSize(void)
+{
 }
 
 void	HTTPRequest::ParseBody(void)
@@ -352,26 +365,42 @@ void	HTTPRequest::ParseBody(void)
 	size_t			default_recv_byte = 1024;
 	size_t			recv_byte;
 
-	remaining_byte = content_length_;
 
-	if (save_.length() != 0)
+	if (headers_.count("transfer-encoding"))
 	{
-		tmp = save_;
-		remaining_byte -= save_.length();
-	}
+		bool fin = false;
+		bool state_size = true;
 
-	while (remaining_byte != 0)
+		while (!fin)
+		{
+			if (state_size)
+				state_size = ParseChunkSize();
+			else
+				state_size = ParseChunkBody();
+		}
+	}
+	else
 	{
-		if (default_recv_byte < remaining_byte)
-			recv_byte = default_recv_byte;
-		else
-			recv_byte = remaining_byte;
+		remaining_byte = content_length_;
 
-		data = ssocket_.RecvData(recv_byte);
-		remaining_byte -= data.length();
-		tmp += data;
+		if (save_.length() != 0)
+		{
+			tmp = save_;
+			remaining_byte -= save_.length();
+		}
+
+		while (remaining_byte != 0)
+		{
+			if (default_recv_byte < remaining_byte)
+				recv_byte = default_recv_byte;
+			else
+				recv_byte = remaining_byte;
+
+			data = ssocket_.RecvData(recv_byte);
+			remaining_byte -= data.length();
+			tmp += data;
+		}
 	}
-
 	if (method_ == "POST")
 		body_ = tmp;
 }
@@ -409,7 +438,9 @@ void	HTTPRequest::ParseRequest(void)
 	ReceiveHeaders();
 	ParseHeaders();
 	CheckHeaders();
+	RequestDisplay();
 	ParseBody();
+	std::cout << "now3" << std::endl;
 
 	return;
 }
@@ -422,6 +453,7 @@ void	HTTPRequest::RequestDisplay(void) const
 	std::cout << "host.first        : " << host_.first << std::endl;
 	std::cout << "host.second       : " << host_.second << std::endl;
 	std::cout << "content_length    : " << content_length_ << std::endl;
+	std::cout << "transfer-encoding : " << transfer_encoding_ << std::endl;
 	std::cout << "[ BODY ]" << std::endl;
 	std::cout << body_ << std::endl;
 
