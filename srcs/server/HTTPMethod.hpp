@@ -7,7 +7,7 @@
 # include "HTTPRequest.hpp"
 # include "Stat.hpp"
 # include "RegularFile.hpp"
-# include "HTTPServerEvent.hpp"
+# include "HTTPServerEventType.hpp"
 
 class HTTPMethod
 {
@@ -15,15 +15,15 @@ class HTTPMethod
 		explicit HTTPMethod(const HTTPRequest& req);
 		~HTTPMethod();
 
-		HTTPServerEvent::e_Type	ValidateHTTPMethod();
-		HTTPServerEvent::e_Type	ValidateErrorPage(const e_StatusCode status_code);
+		e_HTTPServerEventType	ValidateHTTPMethod();
+		e_HTTPServerEventType	ValidateErrorPage(const e_StatusCode status_code);
 
 		const std::string&	GetContentType() const;
 		const std::string&	GetLocation() const;
 		const std::string&	GetBody() const;
 		const e_StatusCode&	GetStatusCode() const;
 
-		const int			GetTargetFileFd() const;
+		int					GetTargetFileFd() const;
 		void				DeleteTargetFile();
 
 		void				ExecGETMethod();
@@ -37,22 +37,22 @@ class HTTPMethod
 		e_StatusCode		Redirect(const std::string& location, const e_StatusCode status_code);
 
 		// GET
-		bool	GetFile(const std::string& access_path);
-		bool	GetFileWithIndex(const std::string& access_path, const std::vector<std::string>& indexes);
-		bool	GetAutoIndexFile(const std::string& access_path, const bool autoindex);
+		bool	IsReadableFile(const std::string& access_path);
+		bool	IsReadableFileWithIndex(const std::string& access_path, const std::vector<std::string>& indexes);
+		void	SetAutoIndexContent(const std::string& access_path);
 
 		// HTTPMethod
-		HTTPServerEvent::e_Type	ValidateAnyMethod(const LocationDirective& location);
-		HTTPServerEvent::e_Type	ValidateGETMethod(const Stat& st, const LocationDirective& location);
-		HTTPServerEvent::e_Type	ValidateDELETEMethod(const Stat& st);
-		HTTPServerEvent::e_Type	ValidatePOSTMethod(const Stat& st);
+		e_HTTPServerEventType	ValidateAnyMethod(const LocationDirective& location);
+		e_HTTPServerEventType	ValidateGETMethod(const Stat& st, const LocationDirective& location);
+		e_HTTPServerEventType	ValidateDELETEMethod(const Stat& st);
+		e_HTTPServerEventType	ValidatePOSTMethod(const Stat& st);
 
 		// CGI
-		bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
-		int		ExecCGI();
+		// bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
+		// int		ExecCGI();
 
-		const HTTPRequest&			req_;
-		const ServerDirective*		server_conf_;
+		const HTTPRequest&		req_;
+		const ServerDirective*	server_conf_;
 
 		std::string		content_type_;
 		std::string		location_;

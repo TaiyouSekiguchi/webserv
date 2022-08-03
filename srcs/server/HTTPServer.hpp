@@ -7,7 +7,7 @@
 # include "HTTPRequest.hpp"
 # include "HTTPMethod.hpp"
 # include "HTTPResponse.hpp"
-# include "HTTPServerEvent.hpp"
+# include "HTTPServerEventType.hpp"
 # include "RegularFile.hpp"
 
 class HTTPServer
@@ -16,13 +16,13 @@ class HTTPServer
 		explicit HTTPServer(const ServerSocket& ssocket);
 		~HTTPServer();
 
-		const int		GetMethodTargetFileFd() const;
-		void			DeleteMethodTargetFile();
+		int		GetMethodTargetFileFd() const;
+		void	DeleteMethodTargetFile();
 
-		HTTPServerEvent::e_Type	Run();
-		HTTPServerEvent::e_Type	RunHTTPMethod(const HTTPServerEvent::e_Type event_type);
-		HTTPServerEvent::e_Type	RunCreateResponse();
-		HTTPServerEvent::e_Type	RunSendResponse();
+		e_HTTPServerEventType	Run();
+		e_HTTPServerEventType	RunHTTPMethod(const e_HTTPServerEventType event_type);
+		e_HTTPServerEventType	RunCreateResponse();
+		e_HTTPServerEventType	RunSendResponse();
 
 	private:
 		const ServerSocket&	ssocket_;

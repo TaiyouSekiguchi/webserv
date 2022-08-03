@@ -3,6 +3,7 @@
 
 # include "ListenSocket.hpp"
 # include "AEvent.hpp"
+# include "EventQueue.hpp"
 
 class AcceptClientEvent : public AEvent
 {

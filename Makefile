@@ -4,7 +4,7 @@ vpath	%.cpp	srcs: \
 				srcs/config: \
 				srcs/utils: \
 				srcs/webserv: \
-				srcs/ioevent
+				srcs/event
 SRCS	=	main.cpp \
 			WebServ.cpp \
 			EventQueue.cpp \
@@ -21,10 +21,9 @@ SRCS	=	main.cpp \
 			HTTPRequest.cpp \
 			HTTPMethod.cpp \
 			HTTPResponse.cpp \
-			AIoEvent.cpp \
-			ListenSocketEvent.cpp \
-			ServerSocketEvent.cpp \
-			RegularFileEvent.cpp \
+			AEvent.cpp \
+			AcceptClientEvent.cpp \
+			HTTPServerEvent.cpp \
 			utils.cpp \
 			Stat.cpp \
 			Dir.cpp
@@ -39,7 +38,7 @@ INCLUDE =	-I srcs/server \
 			-I srcs/exception \
 			-I srcs/config \
 			-I srcs/webserv \
-			-I srcs/ioevent
+			-I srcs/event
 NAME	=	webserv
 
 CC		=	c++

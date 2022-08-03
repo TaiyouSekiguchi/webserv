@@ -25,12 +25,12 @@ HTTPServer::~HTTPServer()
 		delete response_;
 }
 
-const int	HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
-void		HTTPServer::DeleteMethodTargetFile() 	  { return (method_->DeleteTargetFile()); }
+int		HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
+void	HTTPServer::DeleteMethodTargetFile() 	  { return (method_->DeleteTargetFile()); }
 
-HTTPServerEvent::e_Type	HTTPServer::Run()
+e_HTTPServerEventType	HTTPServer::Run()
 {
-	HTTPServerEvent::e_Type	new_event;
+	e_HTTPServerEventType	new_event;
 
 	request_ = new HTTPRequest(ssocket_);
 	method_ = new HTTPMethod(*request_);
@@ -41,45 +41,45 @@ HTTPServerEvent::e_Type	HTTPServer::Run()
 	}
 	catch (const ClientClosed& e)
 	{
-		return (HTTPServerEvent::END);
+		return (SEVENT_END);
 	}
 	catch (const HTTPError& e)
 	{
 		new_event = method_->ValidateErrorPage(e.GetStatusCode());
 	}
-	if (new_event != HTTPServerEvent::NOEVENT)
+	if (new_event != SEVENT_NO)
 		return (new_event);
 	return (RunCreateResponse());
 }
 
-HTTPServerEvent::e_Type	HTTPServer::RunHTTPMethod(const HTTPServerEvent::e_Type event_type)
+e_HTTPServerEventType	HTTPServer::RunHTTPMethod(const e_HTTPServerEventType event_type)
 {
-	if (event_type == HTTPServerEvent::FILE_READ)
+	if (event_type == SEVENT_FILE_READ)
 		method_->ExecGETMethod();
-	else if (event_type == HTTPServerEvent::FILE_WRITE)
+	else if (event_type == SEVENT_FILE_WRITE)
 		method_->ExecPOSTMethod();
-	else if (event_type == HTTPServerEvent::FILE_DELETE)
+	else if (event_type == SEVENT_FILE_DELETE)
 		method_->ExecDELETEMethod();
 	return (RunCreateResponse());
 }
 
-HTTPServerEvent::e_Type	HTTPServer::RunCreateResponse()
+e_HTTPServerEventType	HTTPServer::RunCreateResponse()
 {
 	response_ = new HTTPResponse(*request_, *method_);
-	return (HTTPServerEvent::SOCKET_SEND);
+	return (SEVENT_SOCKET_SEND);
 }
 
-HTTPServerEvent::e_Type	HTTPServer::RunSendResponse()
+e_HTTPServerEventType	HTTPServer::RunSendResponse()
 {
 	try
 	{
 		response_->SendResponse(ssocket_);
 		if (response_->GetConnection() == false)
-			return (HTTPServerEvent::END);
+			return (SEVENT_END);
 	}
 	catch (const ClientClosed& e)
 	{
-		return (HTTPServerEvent::END);
+		return (SEVENT_END);
 	}
-	return (HTTPServerEvent::SOCKET_RECV);
+	return (SEVENT_SOCKET_RECV);
 }

@@ -1,5 +1,5 @@
 #include "AcceptClientEvent.hpp"
-#include "EventQueue.hpp"
+#include "HTTPServerEvent.hpp"
 
 AcceptClientEvent::AcceptClientEvent(const ListenSocket* lsocket)
 	: AEvent(), lsocket_(lsocket)

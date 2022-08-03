@@ -4,7 +4,7 @@
 class AEvent
 {
 	public:
-		AEvent() {};
+		AEvent();
 		virtual ~AEvent() = 0;
 };
 

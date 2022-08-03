@@ -70,16 +70,16 @@ void	WebServ::Start(const std::string& conf_path)
 
 void	WebServ::EventLoop(EventQueue* equeue) const
 {
-	AEvent			*event;
+	AEvent				*event;
 	AcceptClientEvent*	ac_event;
 	HTTPServerEvent*	server_event;
 
 	while (1)
 	{
 		event = equeue->WaitIoEvent();
-		if (ac_event = dynamic_cast<AcceptClientEvent*>(event))
+		if ((ac_event = dynamic_cast<AcceptClientEvent*>(event)))
 			ac_event->RunEvent(equeue);
-		else if (server_event = dynamic_cast<HTTPServerEvent*>(event))
+		else if ((server_event = dynamic_cast<HTTPServerEvent*>(event)))
 		{
 			server_event->RunAnyEvent(equeue);
 			if (server_event->IsEnd())
