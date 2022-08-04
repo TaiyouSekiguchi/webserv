@@ -335,7 +335,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 		std::string		error_page_path = found->second;
 		if (error_page_path.at(0) == '/')
 		{
-			if (target_file_)
+			if (target_rfile_)
 				delete target_rfile_;
 			target_rfile_ = new RegularFile("." + error_page_path, O_RDONLY);
 			if (target_rfile_->Fail())
