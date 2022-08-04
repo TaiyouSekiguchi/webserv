@@ -32,6 +32,9 @@ void	HTTPServerEvent::RunAnyEvent(EventQueue* equeue)
 		case SEVENT_FILE_DELETE:
 			next_type = hserver_->RunExecHTTPMethod(type_);
 			break;
+		case SEVENT_ERRORPAGE_READ:
+			next_type = hserver_->RunReadErrorPage();
+			break;
 		case SEVENT_SOCKET_SEND:
 			next_type = hserver_->RunSendResponse();
 			delete hserver_;
@@ -58,6 +61,7 @@ void	HTTPServerEvent::DeleteEvent(EventQueue* equeue)
 		case SEVENT_FILE_READ:
 		case SEVENT_FILE_WRITE:
 		case SEVENT_FILE_DELETE:
+		case SEVENT_ERRORPAGE_READ:
 			hserver_->DeleteMethodTargetFile();
 			break;
 		default: {}
@@ -75,6 +79,7 @@ void	HTTPServerEvent::RegisterEvent(EventQueue* equeue)
 			equeue->SetIoEvent(ssocket_->GetFd(), ET_WRITE, EA_ADD, this);
 			break;
 		case SEVENT_FILE_READ:
+		case SEVENT_ERRORPAGE_READ:
 			equeue->SetIoEvent(hserver_->GetMethodTargetFileFd(), ET_READ, EA_ADD, this);
 			break;
 		case SEVENT_FILE_WRITE:

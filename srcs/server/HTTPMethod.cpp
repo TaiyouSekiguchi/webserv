@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include "HTTPMethod.hpp"
+#include "HTTPResponse.hpp"
 #include "Dir.hpp"
 
 HTTPMethod::HTTPMethod(const HTTPRequest& req)
@@ -19,8 +20,8 @@ const std::string&	HTTPMethod::GetLocation()	 const	{ return (location_); }
 const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
-int					HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
-void				HTTPMethod::DeleteTargetFile()
+int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
+void	HTTPMethod::DeleteTargetFile()
 {
 	delete target_rfile_;
 	target_rfile_ = NULL;
@@ -33,12 +34,10 @@ void	HTTPMethod::ExecGETMethod()
 
 	ret = target_rfile_->ReadFile(&body);
 	if (ret == -1)
-		status_code_ = INTERNAL_SERVER_ERROR;
-	else
-	{
-		body_ = body;
-		status_code_ = OK;
-	}
+		throw HTTPError(INTERNAL_SERVER_ERROR, "ExecGETMethod");
+
+	body_ = body;
+	status_code_ = OK;
 }
 
 void	HTTPMethod::ExecPOSTMethod()
@@ -47,15 +46,13 @@ void	HTTPMethod::ExecPOSTMethod()
 
 	ret = target_rfile_->WriteToFile(req_.GetBody());
 	if (ret == -1)
-		status_code_ = INTERNAL_SERVER_ERROR;
+		throw HTTPError(INTERNAL_SERVER_ERROR, "ExecPOSTMethod");
+
+	if (*(req_.GetTarget().rbegin()) == '/')
+		location_ = req_.GetTarget() + target_rfile_->GetName();
 	else
-	{
-		if (*(req_.GetTarget().rbegin()) == '/')
-			location_ = req_.GetTarget() + target_rfile_->GetName();
-		else
-			location_ = req_.GetTarget() + "/" + target_rfile_->GetName();
-		status_code_ = CREATED;
-	}
+		location_ = req_.GetTarget() + "/" + target_rfile_->GetName();
+	status_code_ = CREATED;
 }
 
 void	HTTPMethod::ExecDELETEMethod()
@@ -64,9 +61,9 @@ void	HTTPMethod::ExecDELETEMethod()
 
 	ret = target_rfile_->DeleteFile();
 	if (ret == -1)
-		status_code_ = INTERNAL_SERVER_ERROR;
-	else
-		status_code_ = NO_CONTENT;
+		throw HTTPError(INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
+
+	status_code_ = NO_CONTENT;
 }
 
 LocationDirective	HTTPMethod::SelectLocation
@@ -295,9 +292,65 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	return (ValidateAnyMethod(location));
 }
 
+void	HTTPMethod::ReadErrorPage()
+{
+	int			ret;
+	std::string	body;
+
+	ret = target_rfile_->ReadFile(&body);
+	if (ret == -1)
+	{
+		body_ = "";
+		return;
+	}
+	body_ = body;
+}
+
+std::string HTTPMethod::GenerateDefaultHTML() const
+{
+	std::stringstream ss;
+
+	ss << "<html>\r\n";
+	ss << "<head><title>" << status_code_ << " " << HTTPResponse::kStatusMsg_[status_code_] <<"</title></head>\r\n";
+	ss << "<body>\r\n";
+	ss << "<center><h1>" << status_code_ << " " << HTTPResponse::kStatusMsg_[status_code_] << "</h1></center>\r\n";
+	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
+	ss << "</body>\r\n";
+	ss << "</html>\r\n";
+
+	return (ss.str());
+}
+
 e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_code)
 {
+	server_conf_ = req_.GetServerConf();
 	status_code_ = status_code;
+
+	const std::map<e_StatusCode, std::string>& 			error_pages = server_conf_->GetErrorPages();
+	std::map<e_StatusCode, std::string>::const_iterator	found = error_pages.find(status_code_);
+	if (found != error_pages.end())
+	{
+		std::string		error_page_path = found->second;
+		if (error_page_path.at(0) == '/')
+		{
+			std::cout << error_page_path << std::endl;
+			target_rfile_ = new RegularFile("." + error_page_path, O_RDONLY);
+			if (target_rfile_->Fail())
+			{
+				delete target_rfile_;
+				target_rfile_ = NULL;
+				status_code_ = NOT_FOUND;
+			}
+			else
+				return (SEVENT_ERRORPAGE_READ);
+		}
+		else
+		{
+			location_ = error_page_path;
+			status_code_ = FOUND;
+		}
+	}
+	body_ = GenerateDefaultHTML();
 	return (SEVENT_NO);
 }
 

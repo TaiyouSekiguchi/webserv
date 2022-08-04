@@ -29,6 +29,7 @@ class HTTPMethod
 		void				ExecGETMethod();
 		void				ExecPOSTMethod();
 		void				ExecDELETEMethod();
+		void				ReadErrorPage();
 
 		void				MethodDisplay() const;
 
@@ -46,6 +47,8 @@ class HTTPMethod
 		e_HTTPServerEventType	ValidateGETMethod(const Stat& st, const LocationDirective& location);
 		e_HTTPServerEventType	ValidateDELETEMethod(const Stat& st);
 		e_HTTPServerEventType	ValidatePOSTMethod(const Stat& st);
+
+		std::string 			GenerateDefaultHTML() const;
 
 		// CGI
 		// bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
