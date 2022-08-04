@@ -23,6 +23,8 @@ const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
 void	HTTPMethod::DeleteTargetFile()
 {
+	if (target_rfile_ == NULL)
+		return;
 	delete target_rfile_;
 	target_rfile_ = NULL;
 }
@@ -333,7 +335,8 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 		std::string		error_page_path = found->second;
 		if (error_page_path.at(0) == '/')
 		{
-			std::cout << error_page_path << std::endl;
+			if (target_file_)
+				delete target_rfile_;
 			target_rfile_ = new RegularFile("." + error_page_path, O_RDONLY);
 			if (target_rfile_->Fail())
 			{
