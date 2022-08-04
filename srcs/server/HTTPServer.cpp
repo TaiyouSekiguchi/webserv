@@ -2,110 +2,86 @@
 #include "HTTPServer.hpp"
 #include "HTTPRequest.hpp"
 #include "ListenSocket.hpp"
-#include "debug.hpp"
 #include "Config.hpp"
 #include "ClientClosed.hpp"
 #include "HTTPError.hpp"
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
+#include "RegularFile.hpp"
 
-HTTPServer::HTTPServer()
+HTTPServer::HTTPServer(const ServerSocket& ssocket)
+	:	ssocket_(ssocket), request_(NULL), method_(NULL), response_(NULL)
 {
 }
 
 HTTPServer::~HTTPServer()
 {
+	if (request_)
+		delete request_;
+	if (method_)
+		delete method_;
+	if (response_)
+		delete response_;
 }
 
-void	HTTPServer::RegisterListenSockets(const Config& config, EventQueue* equeue)
+int		HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
+void	HTTPServer::DeleteMethodTargetFile() 	  { return (method_->DeleteTargetFile()); }
+
+e_HTTPServerEventType	HTTPServer::Run()
 {
-	const std::vector<ServerDirective>&				servers = config.GetServers();
-	std::vector<ServerDirective>::const_iterator	sitr = servers.begin();
-	std::vector<ServerDirective>::const_iterator	send = servers.end();
-	std::vector<ListenSocket*>::const_iterator		same_listen_lsocket;
-	ListenSocket*									new_lsocket;
+	e_HTTPServerEventType	new_event;
 
-	while (sitr != send)
-	{
-		const std::vector<ServerDirective::Listen>&				listens = sitr->GetListen();
-		std::vector<ServerDirective::Listen>::const_iterator	litr = listens.begin();
-		std::vector<ServerDirective::Listen>::const_iterator	lend = listens.end();
-		while (litr != lend)
-		{
-			same_listen_lsocket = Utils::FindMatchMember(lsockets_, &ListenSocket::GetListen, *litr);
-			if (same_listen_lsocket == lsockets_.end())
-			{
-				new_lsocket = new ListenSocket(*litr, *sitr);
-				lsockets_.push_back(new_lsocket);
-				new_lsocket->ListenConnection();
-				equeue->RegisterEvent(new_lsocket->GetFd(), new_lsocket);
-			}
-			else
-				(*same_listen_lsocket)->AddServerConf(*sitr);
-			++litr;
-		}
-		++sitr;
-	}
-}
-
-void	HTTPServer::Start(const Config& config)
-{
-	EventQueue	equeue;
-
-	RegisterListenSockets(config, &equeue);
-	MainLoop(equeue);
-}
-
-void	HTTPServer::MainLoop(const EventQueue& equeue) const
-{
-	void			*udata;
-	ASocket			*asocket;
-	ListenSocket	*lsocket;
-	ServerSocket	*ssocket;
-	ServerSocket 	*new_ssocket;
-
-	while (1)
-	{
-		udata = equeue.WaitEvent();
-		asocket = static_cast<ASocket*>(udata);
-		lsocket = dynamic_cast<ListenSocket*>(asocket);
-		ssocket = dynamic_cast<ServerSocket*>(asocket);
-		if (lsocket)
-		{
-			std::cout << "Accept!!" << std::endl;
-			new_ssocket = new ServerSocket(*lsocket);
-			equeue.RegisterEvent(new_ssocket->GetFd(), new_ssocket);
-		}
-		else
-			Communication(ssocket);
-	}
-}
-
-void	HTTPServer::Communication(const ServerSocket *ssocket) const
-{
-	e_StatusCode			status_code = OK;
-	HTTPRequest				req(*ssocket);
-	HTTPMethod				method;
-
+	request_ = new HTTPRequest(ssocket_);
+	method_ = new HTTPMethod(*request_);
 	try
 	{
-		req.ParseRequest();
-		req.RequestDisplay();
-		status_code = method.ExecHTTPMethod(req);
+		request_->ParseRequest();
+		new_event = method_->ValidateHTTPMethod();
+		if (new_event != SEVENT_NO)
+			return (new_event);
 	}
 	catch (const ClientClosed& e)
 	{
-		delete ssocket;
-		return;
+		return (SEVENT_END);
 	}
 	catch (const HTTPError& e)
 	{
-		status_code = e.GetStatusCode();
-		e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
 	}
-	std::cout << "status_code: " << status_code << std::endl;
-	method.MethodDisplay();
-	HTTPResponse	res(status_code, req, method);
-	res.SendResponse(ssocket);
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunExecHTTPMethod(const e_HTTPServerEventType event_type)
+{
+	if (event_type == SEVENT_FILE_READ)
+		method_->ExecGETMethod();
+	else if (event_type == SEVENT_FILE_WRITE)
+		method_->ExecPOSTMethod();
+	else if (event_type == SEVENT_FILE_DELETE)
+		method_->ExecDELETEMethod();
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunCreateResponse()
+{
+	response_ = new HTTPResponse(*request_, *method_);
+	return (SEVENT_SOCKET_SEND);
+}
+
+e_HTTPServerEventType	HTTPServer::RunSendResponse()
+{
+	try
+	{
+		response_->SendResponse(ssocket_);
+		if (response_->GetConnection() == false)
+			return (SEVENT_END);
+	}
+	catch (const ClientClosed& e)
+	{
+		return (SEVENT_END);
+	}
+	return (SEVENT_SOCKET_RECV);
 }

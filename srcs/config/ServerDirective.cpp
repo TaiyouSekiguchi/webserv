@@ -38,7 +38,7 @@ ServerDirective::~ServerDirective()
 
 const std::vector<std::pair<unsigned int, int> >&	ServerDirective::GetListen() const { return (listen_); }
 const std::vector<std::string>&						ServerDirective::GetServerNames() const { return(server_names_); }
-const std::map<int, std::string>&					ServerDirective::GetErrorPages() const { return (error_pages_); }
+const std::map<e_StatusCode, std::string>&			ServerDirective::GetErrorPages() const { return (error_pages_); }
 const long&											ServerDirective::GetClientMaxBodySize() const { return (client_max_body_size_); }
 const std::vector<LocationDirective>&				ServerDirective::GetLocations() const { return (locations_); }
 
@@ -129,15 +129,17 @@ void	ServerDirective::ParseErrorPages(Tokens::citr begin, Tokens::citr end)
 		throw std::runtime_error("conf syntax error");
 
 	const std::string		error_file = *(end - 1);
-	long					status_code;
+	long					l;
+	e_StatusCode			status_code;
 	char					*endptr;
 	Tokens::citr			itr = begin;
 
 	while (itr != end - 1)
 	{
-		status_code = std::strtol((*itr).c_str(), &endptr, 10);
-		if (*endptr != '\0' || errno == ERANGE || status_code < 300 || 599 < status_code)
+		l = std::strtol((*itr).c_str(), &endptr, 10);
+		if (*endptr != '\0' || errno == ERANGE || l < 300 || 599 < l)
 			throw std::runtime_error("conf syntax error");
+		status_code = static_cast<e_StatusCode>(l);
 		if (error_pages_.find(status_code) == error_pages_.end())
 			error_pages_[status_code] = error_file;
 		++itr;

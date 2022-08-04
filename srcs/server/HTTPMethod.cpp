@@ -3,17 +3,71 @@
 #include "HTTPMethod.hpp"
 #include "Dir.hpp"
 
-HTTPMethod::HTTPMethod()
+HTTPMethod::HTTPMethod(const HTTPRequest& req)
+	: req_(req), target_rfile_(NULL)
 {
 }
 
 HTTPMethod::~HTTPMethod()
 {
+	if (target_rfile_)
+		delete target_rfile_;
 }
 
 const std::string&	HTTPMethod::GetContentType() const	{ return (content_type_); }
 const std::string&	HTTPMethod::GetLocation()	 const	{ return (location_); }
 const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
+const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
+
+int					HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
+void				HTTPMethod::DeleteTargetFile()
+{
+	delete target_rfile_;
+	target_rfile_ = NULL;
+}
+
+void	HTTPMethod::ExecGETMethod()
+{
+	int			ret;
+	std::string	body;
+
+	ret = target_rfile_->ReadFile(&body);
+	if (ret == -1)
+		status_code_ = INTERNAL_SERVER_ERROR;
+	else
+	{
+		body_ = body;
+		status_code_ = OK;
+	}
+}
+
+void	HTTPMethod::ExecPOSTMethod()
+{
+	int		ret;
+
+	ret = target_rfile_->WriteToFile(req_.GetBody());
+	if (ret == -1)
+		status_code_ = INTERNAL_SERVER_ERROR;
+	else
+	{
+		if (*(req_.GetTarget().rbegin()) == '/')
+			location_ = req_.GetTarget() + target_rfile_->GetName();
+		else
+			location_ = req_.GetTarget() + "/" + target_rfile_->GetName();
+		status_code_ = CREATED;
+	}
+}
+
+void	HTTPMethod::ExecDELETEMethod()
+{
+	int		ret;
+
+	ret = target_rfile_->DeleteFile();
+	if (ret == -1)
+		status_code_ = INTERNAL_SERVER_ERROR;
+	else
+		status_code_ = NO_CONTENT;
+}
 
 LocationDirective	HTTPMethod::SelectLocation
 	(const std::vector<LocationDirective>& locations) const
@@ -21,7 +75,7 @@ LocationDirective	HTTPMethod::SelectLocation
 	std::vector<LocationDirective>::const_iterator	itr = locations.begin();
 	std::vector<LocationDirective>::const_iterator	end = locations.end();
 	std::vector<LocationDirective>::const_iterator 	longest = itr++;
-	const std::string& 								target = req_->GetTarget();
+	const std::string& 								target = req_.GetTarget();
 
 	while (itr != end)
 	{
@@ -41,18 +95,19 @@ e_StatusCode	HTTPMethod::Redirect(const std::string& location, const e_StatusCod
 	return (status_code);
 }
 
-bool	HTTPMethod::GetFile(const std::string& access_path)
+bool	HTTPMethod::IsReadableFile(const std::string& access_path)
 {
-	std::ifstream ifs(access_path);
-	if (ifs.fail())
+	target_rfile_ = new RegularFile(access_path, O_RDONLY);
+	if (target_rfile_->Fail())
+	{
+		delete target_rfile_;
+		target_rfile_ = NULL;
 		return (false);
-	std::istreambuf_iterator<char> itr(ifs);
-	std::istreambuf_iterator<char> last;
-	body_.assign(itr, last);
+	}
 	return (true);
 }
 
-bool	HTTPMethod::GetFileWithIndex
+bool	HTTPMethod::IsReadableFileWithIndex
 	(const std::string& access_path, const std::vector<std::string>& indexes)
 {
 	std::vector<std::string>::const_iterator	itr = indexes.begin();
@@ -60,22 +115,19 @@ bool	HTTPMethod::GetFileWithIndex
 
 	while (itr != end)
 	{
-		if (GetFile(access_path + *itr))
+		if (IsReadableFile(access_path + *itr))
 			return (true);
 		++itr;
 	}
 	return (false);
 }
 
-bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool autoindex)
+void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 {
-	if (autoindex == false)
-		return (false);
-
 	std::stringstream	body_stream;
 	body_stream
 		<< "<html>\r\n"
-		<< "<head><title>Index of " << req_->GetTarget() << "</title></head>\r\n"
+		<< "<head><title>Index of " << req_.GetTarget() << "</title></head>\r\n"
 		<< "<body>\r\n" << "<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\r\n";
 
 	Dir		dir(access_path);
@@ -98,92 +150,99 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 
 	body_stream << "</pre><hr></body>\r\n" << "</html>\r\n";
 	body_ = body_stream.str();
-	return (true);
+	status_code_ = OK;
 }
 
-e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& location)
+e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const LocationDirective& location)
 {
 	const std::string&	access_path = st.GetPath();
 
 	if (st.IsRegularFile())
 	{
-		if (GetFile(access_path))
-			return (OK);
-		throw HTTPError(FORBIDDEN, "ExecGETMethod");
+		if (IsReadableFile(access_path))
+			return (SEVENT_FILE_READ);
+		throw HTTPError(FORBIDDEN, "ValidateGETMethod");
 	}
 	else if (st.IsDirectory())
 	{
-		if (*(req_->GetTarget().rbegin()) != '/')
+		if (*(req_.GetTarget().rbegin()) != '/')
 		{
-			const std::string& host = req_->GetHost().first;
-			const std::string& ip = Utils::ToString(req_->GetListen().second);
-			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", MOVED_PERMANENTLY));
+			const std::string& host = req_.GetHost().first;
+			const std::string& ip = Utils::ToString(req_.GetListen().second);
+			const std::string  location = "http://" + host + ":" + ip + req_.GetTarget() + "/";
+			throw HTTPError(Redirect(location, MOVED_PERMANENTLY), "ValidateGETMethod");
 		}
-		else if (GetFileWithIndex(access_path, location.GetIndex()))
-			return (OK);
-		else if (GetAutoIndexFile(access_path, location.GetAutoIndex()))
-			return (OK);
-		throw HTTPError(FORBIDDEN, "ExecGETMethod");
+		else if (IsReadableFileWithIndex(access_path, location.GetIndex()))
+			return (SEVENT_FILE_READ);
+		else if (location.GetAutoIndex())
+		{
+			SetAutoIndexContent(access_path);
+			return (SEVENT_NO);
+		}
+		throw HTTPError(FORBIDDEN, "ValidateGETMethod");
 	}
 	else
-		throw HTTPError(FORBIDDEN, "ExecGETMethod");
+		throw HTTPError(FORBIDDEN, "ValidateGETMethod");
 }
 
-e_StatusCode	HTTPMethod::ExecDELETEMethod(const Stat& st)
+e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 {
-	if (st.IsDirectory() && *(req_->GetTarget().rbegin()) != '/')
-		throw HTTPError(CONFLICT, "ExecDELETEMethod");
+	if (st.IsDirectory() && *(req_.GetTarget().rbegin()) != '/')
+		throw HTTPError(CONFLICT, "ValidateDELETEMethod");
 
-	if (std::remove(st.GetPath().c_str()) == -1)
+	target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
+	if (target_rfile_->Fail())
 	{
+		delete target_rfile_;
+		target_rfile_ = NULL;
 		if (errno == EACCES || errno == ENOTEMPTY)
-			throw HTTPError(FORBIDDEN, "ExecDELETEMethod");
+			throw HTTPError(FORBIDDEN, "ValidateDELETEMethod");
 		else
-			throw HTTPError(INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
+			throw HTTPError(INTERNAL_SERVER_ERROR, "ValidateDELETEMethod");
 	}
-	return (NO_CONTENT);
+	return (SEVENT_FILE_DELETE);
 }
 
-e_StatusCode	HTTPMethod::ExecPOSTMethod(const Stat& st)
+e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 {
 	if (!st.IsDirectory())
-		throw HTTPError(CONFLICT, "ExecPOSTMethod");
+		throw HTTPError(CONFLICT, "ValidatePOSTMethod");
 
 	std::fstream		output_fstream;
 	const std::string&	timestamp = Utils::GetMicroSecondTime();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
-	Stat	check_st(file_path);
-	if (!check_st.Fail())
-		throw HTTPError(CONFLICT, "ExecPOSTMethod");
-    output_fstream.open(file_path, std::ios_base::out);
-    if (!output_fstream.is_open())
-		throw HTTPError(INTERNAL_SERVER_ERROR, "ExecPOSTMethod");
-	output_fstream << req_->GetBody();
-	if (*(req_->GetTarget().rbegin()) == '/')
-		location_ = req_->GetTarget() + timestamp;
-	else
-		location_ = req_->GetTarget() + "/" + timestamp;
-	return (CREATED);
+	Stat	check_exist_st(file_path);
+	if (!check_exist_st.Fail())
+		throw HTTPError(CONFLICT, "ValidatePOSTMethod");
+
+	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT);
+	if (target_rfile_->Fail())
+	{
+		delete target_rfile_;
+		target_rfile_ = NULL;
+		throw HTTPError(INTERNAL_SERVER_ERROR, "ValidatePOSTMethod");
+	}
+	return (SEVENT_FILE_WRITE);
 }
 
-bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
-{
-	if (st.Fail() || !st.IsRegularFile())
-		return (false);
+// bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
+// {
+// 	if (st.Fail() || !st.IsRegularFile())
+// 		return (false);
 
-	std::string::size_type	dot_pos;
-	std::string				extension;
-	const std::string&		access_path = st.GetPath();
+// 	std::string::size_type	dot_pos;
+// 	std::string				extension;
+// 	const std::string&		access_path = st.GetPath();
 
-	dot_pos = access_path.find_last_of('.');
-	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
-		return (false);
-	extension = access_path.substr(dot_pos + 1);
-	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
-		return (false);
-	return (true);
-}
+// 	dot_pos = access_path.find_last_of('.');
+// 	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
+// 		return (false);
+// 	extension = access_path.substr(dot_pos + 1);
+// 	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
+// 		return (false);
+// 	return (true);
+// }
 
 // int		HTTPMethod::ExecCGI(const std::string& access_path)
 // {
@@ -194,51 +253,57 @@ bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& locatio
 // 	return (cgi.GetStatusCode());
 // }
 
-e_StatusCode	HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
+e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(const LocationDirective& location)
 {
-	const std::string&	method = req_->GetMethod();
+	const std::string&	method = req_.GetMethod();
 
 	std::string			access_path;
 	if (method == "POST")
-		access_path = location.GetUploadRoot() + req_->GetTarget();
+		access_path = location.GetUploadRoot() + req_.GetTarget();
 	else
-		access_path = location.GetRoot() + req_->GetTarget();
+		access_path = location.GetRoot() + req_.GetTarget();
 
 	Stat	st(access_path);
 	if (st.Fail())
-		throw HTTPError(NOT_FOUND, "SwitchHTTPMethod");
+		throw HTTPError(NOT_FOUND, "ValidateAnyMethod");
 
 	if (method == "GET")
-		return (ExecGETMethod(st, location));
+		return (ValidateGETMethod(st, location));
 	else if (method == "DELETE")
-		return (ExecDELETEMethod(st));
+		return (ValidateDELETEMethod(st));
 	else
-		return (ExecPOSTMethod(st));
+		return (ValidatePOSTMethod(st));
 }
 
-e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
+e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 {
-	req_ = &req;
-	server_conf_ = req.GetServerConf();
+	server_conf_ = req_.GetServerConf();
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != INVALID)
-		return (Redirect(redirect.second, redirect.first));
+		throw HTTPError(Redirect(redirect.second, redirect.first), "ValidateHTTPMethod");
 
-	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
-		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");
+	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
+		throw HTTPError(METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
 
-	Stat	cgi_st(location.GetRoot() + req.GetTarget());
-	if (CheckCGIScript(cgi_st, location))
-		return (OK);
+	// Stat	cgi_st(location.GetRoot() + req_.GetTarget());
+	// if (CheckCGIScript(cgi_st, location))
+	// 	return (OK);
 		// return (ExecCGI(cgi_st.GetPath()));
 
-	return (SwitchHTTPMethod(location));
+	return (ValidateAnyMethod(location));
+}
+
+e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_code)
+{
+	status_code_ = status_code;
+	return (SEVENT_NO);
 }
 
 void	HTTPMethod::MethodDisplay() const
 {
+	std::cout << "status_code: " << status_code_ << std::endl;
 	std::cout << "content_type: " << content_type_ << std::endl;
 	std::cout << "location: " << location_ << std::endl;
 	std::cout << "[body]\n" << body_ << std::endl;

@@ -4,8 +4,9 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 
-HTTPResponse::HTTPResponse(e_StatusCode status_code, const HTTPRequest &req, const HTTPMethod &method)
-	: req_(req), method_(method), server_conf_(req.GetServerConf()), status_code_(status_code)
+HTTPResponse::HTTPResponse(const HTTPRequest &req, const HTTPMethod &method)
+	: req_(req), method_(method),
+	  server_conf_(req.GetServerConf()), status_code_(method.GetStatusCode())
 {
 	CheckConnection();
 	SelectBody();
@@ -17,9 +18,9 @@ HTTPResponse::~HTTPResponse()
 {
 }
 
-void HTTPResponse::SendResponse(const ServerSocket *ssocket)
+void HTTPResponse::SendResponse(const ServerSocket& ssocket)
 {
-	ssocket->SendData(res_msg_);
+	ssocket.SendData(res_msg_);
 }
 
 void HTTPResponse::CheckConnection()
@@ -85,7 +86,7 @@ bool HTTPResponse::IsNormalStatus() const
 std::string HTTPResponse::GenerateHTML()
 {
 	std::string str;
-	std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
+	std::map<e_StatusCode, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
 	if (ite != server_conf_->GetErrorPages().end())
 	{
 		std::string error_page_path = ite->second;
