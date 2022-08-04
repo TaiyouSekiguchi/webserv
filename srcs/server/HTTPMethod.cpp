@@ -229,7 +229,7 @@ e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
 		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");
 
-	Stat	cgi_st(location.GetRoot() + path);
+	Stat	cgi_st(location.GetRoot() + req.GetTarget());
 	if (CheckCGIScript(cgi_st, location))
 		return (OK);
 		// return (ExecCGI(cgi_st.GetPath()));
