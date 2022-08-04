@@ -8,7 +8,7 @@
 class CGIEnv
 {
 	public:
-		CGIEnv(const HTTPRequest& req, const ServerDirective& server_conf);
+		CGIEnv(const URI& uri, const HTTPRequest& req);
 		~CGIEnv(void);
 
 		char**	GetEnv(void) const;

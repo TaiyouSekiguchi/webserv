@@ -1,9 +1,7 @@
 #include "CGI.hpp"
 
-CGI::CGI(const std::string& root, const std::string& path, const std::string& query, const HTTPRequest& req)
-	: root_(root)
-	, file_path_(path)
-	, query_(query)
+CGI::CGI(const URI& uri, const HTTPRequest& req)
+	: uri_(uri)
 	, req_(req)
 	, server_conf_(req.GetServerConf())
 {
@@ -28,7 +26,7 @@ static int	pipe_set(int src, int dst)
 
 void	CGI::SendData(const int pipe_fd[2])
 {
-	CGIEnv	env(req_, server_conf_);
+	CGIEnv	env(uri_, req_);
 	char*	argv[2];
 
 	if (close(pipe_fd[0]) < 0 || !pipe_set(pipe_fd[1], STDOUT_FILENO))
