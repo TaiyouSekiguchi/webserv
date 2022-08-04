@@ -1,32 +1,18 @@
 SRCSDIR	= ../../../srcs
-vpath	%.hpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config
-vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config
+vpath	%.cpp testsrcs:$(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils
 
-SRCS	=	HTTPRequest.cpp \
-			ASocket.cpp \
-			ListenSocket.cpp \
-			ServerSocket.cpp \
-			utils.cpp \
-			HTTPRequest_test.cpp \
-			ClientSocket.cpp \
-			Config.cpp \
-			LocationDirective.cpp \
-			ServerDirective.cpp  \
-			Tokens.cpp \
-			EventQueue.cpp
+SRCS	=	URI.cpp \
+			URI_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRCSDIR)/exception -I $(SRCSDIR)/config
-
+INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils
 NAME	=	unit_test
 
-#CC		=	c++
-CC		=	clang++
+CC		=	c++
 CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main
