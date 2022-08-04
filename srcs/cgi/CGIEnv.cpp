@@ -1,8 +1,9 @@
 #include "CGIEnv.hpp"
 
-CGIEnv::CGIEnv(const HTTPRequest& req)
-	: req_(req)
-	: server_conf_(req.GetServerConf())
+CGIEnv::CGIEnv(const URI& uri, const HTTPRequest& req)
+	: uri_(uri)
+	, req_(req)
+	, server_conf_(req.GetServerConf())
 {
 	SetEnv();
 }
