@@ -71,13 +71,16 @@ TEST(ErrorPageTest, Valid)
 	const std::vector<ServerDirective>&				servers = config.GetServers();
 	std::vector<ServerDirective>::const_iterator	sitr = servers.begin();
 
-	const std::pair<int, std::string>	p[] = {
-		std::make_pair(404, "/404.html"),
-		std::make_pair(500, "/50x.html"), std::make_pair(502, "/50x.html"),
-		std::make_pair(503, "/50x.html"), std::make_pair(504, "/50x.html"),
-		std::make_pair(300, "a"), std::make_pair(599, "b")
+	const std::pair<e_StatusCode, std::string>	p[] = {
+		std::make_pair(static_cast<e_StatusCode>(404), "/404.html"),
+		std::make_pair(static_cast<e_StatusCode>(500), "/50x.html"),
+		std::make_pair(static_cast<e_StatusCode>(502), "/50x.html"),
+		std::make_pair(static_cast<e_StatusCode>(503), "/50x.html"),
+		std::make_pair(static_cast<e_StatusCode>(504), "/50x.html"),
+		std::make_pair(static_cast<e_StatusCode>(300), "a"),
+		std::make_pair(static_cast<e_StatusCode>(599), "b")
 	};
-	const std::map<int, std::string>	expected(p, p + 7);
+	const std::map<e_StatusCode, std::string>	expected(p, p + 7);
 	EXPECT_EQ(sitr->GetErrorPages(), expected);
 }
 TEST(ErrorPageTest, Error)
