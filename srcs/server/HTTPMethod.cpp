@@ -80,7 +80,7 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 
 	Dir		dir(access_path);
 	if (dir.Fail())
-		throw HTTPError(INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
 
 	const std::vector<std::string>&				names = dir.GetFileNameList();
 	std::vector<std::string>::const_iterator	itr = names.begin();
@@ -89,7 +89,7 @@ bool	HTTPMethod::GetAutoIndexFile(const std::string& access_path, const bool aut
 	{
 		Stat st(access_path + *itr);
 		if (st.Fail())
-			throw HTTPError(INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
 		body_stream
 			<< "<a href=\"" << *itr << "\">" << *itr << "</a>\t\t"
 			<< st.GetModifyTime() << "\t" << st.GetSize() << "\r\n";
@@ -108,8 +108,8 @@ e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& 
 	if (st.IsRegularFile())
 	{
 		if (GetFile(access_path))
-			return (OK);
-		throw HTTPError(FORBIDDEN, "ExecGETMethod");
+			return (SC_OK);
+		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 	}
 	else if (st.IsDirectory())
 	{
@@ -117,37 +117,37 @@ e_StatusCode	HTTPMethod::ExecGETMethod(const Stat& st, const LocationDirective& 
 		{
 			const std::string& host = req_->GetHost().first;
 			const std::string& ip = Utils::ToString(req_->GetListen().second);
-			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", MOVED_PERMANENTLY));
+			return (Redirect("http://" + host + ":" + ip + req_->GetTarget() + "/", SC_MOVED_PERMANENTLY));
 		}
 		else if (GetFileWithIndex(access_path, location.GetIndex()))
-			return (OK);
+			return (SC_OK);
 		else if (GetAutoIndexFile(access_path, location.GetAutoIndex()))
-			return (OK);
-		throw HTTPError(FORBIDDEN, "ExecGETMethod");
+			return (SC_OK);
+		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 	}
 	else
-		throw HTTPError(FORBIDDEN, "ExecGETMethod");
+		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 }
 
 e_StatusCode	HTTPMethod::ExecDELETEMethod(const Stat& st)
 {
 	if (st.IsDirectory() && *(req_->GetTarget().rbegin()) != '/')
-		throw HTTPError(CONFLICT, "ExecDELETEMethod");
+		throw HTTPError(SC_CONFLICT, "ExecDELETEMethod");
 
 	if (std::remove(st.GetPath().c_str()) == -1)
 	{
 		if (errno == EACCES || errno == ENOTEMPTY)
-			throw HTTPError(FORBIDDEN, "ExecDELETEMethod");
+			throw HTTPError(SC_FORBIDDEN, "ExecDELETEMethod");
 		else
-			throw HTTPError(INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
 	}
-	return (NO_CONTENT);
+	return (SC_NO_CONTENT);
 }
 
 e_StatusCode	HTTPMethod::ExecPOSTMethod(const Stat& st)
 {
 	if (!st.IsDirectory())
-		throw HTTPError(CONFLICT, "ExecPOSTMethod");
+		throw HTTPError(SC_CONFLICT, "ExecPOSTMethod");
 
 	std::fstream		output_fstream;
 	const std::string&	timestamp = Utils::GetMicroSecondTime();
@@ -155,16 +155,16 @@ e_StatusCode	HTTPMethod::ExecPOSTMethod(const Stat& st)
 
 	Stat	check_st(file_path);
 	if (!check_st.Fail())
-		throw HTTPError(CONFLICT, "ExecPOSTMethod");
+		throw HTTPError(SC_CONFLICT, "ExecPOSTMethod");
     output_fstream.open(file_path, std::ios_base::out);
     if (!output_fstream.is_open())
-		throw HTTPError(INTERNAL_SERVER_ERROR, "ExecPOSTMethod");
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecPOSTMethod");
 	output_fstream << req_->GetBody();
 	if (*(req_->GetTarget().rbegin()) == '/')
 		location_ = req_->GetTarget() + timestamp;
 	else
 		location_ = req_->GetTarget() + "/" + timestamp;
-	return (CREATED);
+	return (SC_CREATED);
 }
 
 bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
@@ -206,7 +206,7 @@ e_StatusCode	HTTPMethod::SwitchHTTPMethod(const LocationDirective& location)
 
 	Stat	st(access_path);
 	if (st.Fail())
-		throw HTTPError(NOT_FOUND, "SwitchHTTPMethod");
+		throw HTTPError(SC_NOT_FOUND, "SwitchHTTPMethod");
 
 	if (method == "GET")
 		return (ExecGETMethod(st, location));
@@ -223,15 +223,15 @@ e_StatusCode	HTTPMethod::ExecHTTPMethod(const HTTPRequest& req)
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
-	if (redirect.first != INVALID)
+	if (redirect.first != SC_INVALID)
 		return (Redirect(redirect.second, redirect.first));
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req.GetMethod()))
-		throw HTTPError(METHOD_NOT_ALLOWED, "ExecHTTPMethod");
+		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ExecHTTPMethod");
 
 	Stat	cgi_st(location.GetRoot() + req.GetTarget());
 	if (CheckCGIScript(cgi_st, location))
-		return (OK);
+		return (SC_OK);
 		// return (ExecCGI(cgi_st.GetPath()));
 
 	return (SwitchHTTPMethod(location));
