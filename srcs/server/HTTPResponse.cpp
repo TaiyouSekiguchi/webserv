@@ -24,7 +24,7 @@ void HTTPResponse::SendResponse(const ServerSocket *ssocket)
 
 void HTTPResponse::CheckConnection()
 {
-	if (status_code_ == BAD_REQUEST || status_code_ == HTTP_VERSION_NOT_SUPPORTED)
+	if (status_code_ == SC_BAD_REQUEST || status_code_ == SC_HTTP_VERSION_NOT_SUPPORTED)
 	{
 		connection_ = false;
 		return;
@@ -95,14 +95,14 @@ std::string HTTPResponse::GenerateHTML()
 			std::ifstream ifs(error_page_path);
 			if (ifs.fail())
 			{
-				status_code_ = NOT_FOUND;
+				status_code_ = SC_NOT_FOUND;
 				str = GenerateDefaultHTML();
 				return (str);
 			}
 			std::string file_str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 			return (file_str);
 		}
-		status_code_ = FOUND;
+		status_code_ = SC_FOUND;
 		AppendHeader("Location", ite->second);
 	}
 	str = GenerateDefaultHTML();
@@ -147,41 +147,41 @@ std::string HTTPResponse::HeaderFeild() const
 }
 
 const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
-	std::make_pair(CONTINUE, "Continue"),
-	std::make_pair(SWITCHING_PROTOCOLS, "Switching Protocols"),
-	std::make_pair(OK, "OK"),
-	std::make_pair(CREATED, "Created"),
-	std::make_pair(ACCEPTED, "Accepted"),
-	std::make_pair(NON_AUTHORITATIVE_INFORMATION, "Non-Authoritative Information"),
-	std::make_pair(NO_CONTENT, "No Content"),
-	std::make_pair(RESET_CONTENT, "Reset Content"),
-	std::make_pair(MULTIPLE_CHOICES, "Multiple Choice"),
-	std::make_pair(MOVED_PERMANENTLY, "Moved Permanently"),
-	std::make_pair(FOUND, "Found"),
-	std::make_pair(SEE_OTHER, "See Other"),
-	std::make_pair(USE_PROXY, "Use Proxy"),
-	std::make_pair(TEMPORARY_REDIRECT, "Temporary Redirect"),
-	std::make_pair(BAD_REQUEST, "Bad Request"),
-	std::make_pair(PAYMENT_REQUIRED, "Payment Required"),
-	std::make_pair(FORBIDDEN, "Forbidden"),
-	std::make_pair(NOT_FOUND, "Not Found"),
-	std::make_pair(METHOD_NOT_ALLOWED, "Method Not Allowed"),
-	std::make_pair(NOT_ACCEPTABLE, "Not Acceptable"),
-	std::make_pair(REQUEST_TIMEOUT, "Request Timeout"),
-	std::make_pair(CONFLICT, "Conflict"),
-	std::make_pair(GONE, "Gone"),
-	std::make_pair(LENGTH_REQUIRED, "Length Required"),
-	std::make_pair(PAYLOAD_TOO_LARGE, "Payload Too Large"),
-	std::make_pair(URI_TOO_LONG, "URI Too Long"),
-	std::make_pair(UNSUPPORTED_MEDIA_TYPE, "Unsupported Media Type"),
-	std::make_pair(EXPECTATION_FAILED, "Expectation Failed"),
-	std::make_pair(UPGRADE_REQUIRED, "Upgrade Required"),
-	std::make_pair(INTERNAL_SERVER_ERROR, "Internal Server Error"),
-	std::make_pair(NOT_IMPLEMENTED, "Not Implemented"),
-	std::make_pair(BAD_GATEWAY, "Bad Gateway"),
-	std::make_pair(SERVISE_UNAVAILABLE, "Service Unavailable"),
-	std::make_pair(GATEWAY_TIMEOUT, "Gateway Timeout"),
-	std::make_pair(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported"),
+	std::make_pair(SC_CONTINUE, "Continue"),
+	std::make_pair(SC_SWITCHING_PROTOCOLS, "Switching Protocols"),
+	std::make_pair(SC_OK, "OK"),
+	std::make_pair(SC_CREATED, "Created"),
+	std::make_pair(SC_ACCEPTED, "Accepted"),
+	std::make_pair(SC_NON_AUTHORITATIVE_INFORMATION, "Non-Authoritative Information"),
+	std::make_pair(SC_NO_CONTENT, "No Content"),
+	std::make_pair(SC_RESET_CONTENT, "Reset Content"),
+	std::make_pair(SC_MULTIPLE_CHOICES, "Multiple Choice"),
+	std::make_pair(SC_MOVED_PERMANENTLY, "Moved Permanently"),
+	std::make_pair(SC_FOUND, "Found"),
+	std::make_pair(SC_SEE_OTHER, "See Other"),
+	std::make_pair(SC_USE_PROXY, "Use Proxy"),
+	std::make_pair(SC_TEMPORARY_REDIRECT, "Temporary Redirect"),
+	std::make_pair(SC_BAD_REQUEST, "Bad Request"),
+	std::make_pair(SC_PAYMENT_REQUIRED, "Payment Required"),
+	std::make_pair(SC_FORBIDDEN, "Forbidden"),
+	std::make_pair(SC_NOT_FOUND, "Not Found"),
+	std::make_pair(SC_METHOD_NOT_ALLOWED, "Method Not Allowed"),
+	std::make_pair(SC_NOT_ACCEPTABLE, "Not Acceptable"),
+	std::make_pair(SC_REQUEST_TIMEOUT, "Request Timeout"),
+	std::make_pair(SC_CONFLICT, "Conflict"),
+	std::make_pair(SC_GONE, "Gone"),
+	std::make_pair(SC_LENGTH_REQUIRED, "Length Required"),
+	std::make_pair(SC_PAYLOAD_TOO_LARGE, "Payload Too Large"),
+	std::make_pair(SC_URI_TOO_LONG, "URI Too Long"),
+	std::make_pair(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported Media Type"),
+	std::make_pair(SC_EXPECTATION_FAILED, "Expectation Failed"),
+	std::make_pair(SC_UPGRADE_REQUIRED, "Upgrade Required"),
+	std::make_pair(SC_INTERNAL_SERVER_ERROR, "Internal Server Error"),
+	std::make_pair(SC_NOT_IMPLEMENTED, "Not Implemented"),
+	std::make_pair(SC_BAD_GATEWAY, "Bad Gateway"),
+	std::make_pair(SC_SERVISE_UNAVAILABLE, "Service Unavailable"),
+	std::make_pair(SC_GATEWAY_TIMEOUT, "Gateway Timeout"),
+	std::make_pair(SC_HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported"),
 };
 
 std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[35]);

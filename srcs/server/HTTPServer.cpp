@@ -84,7 +84,7 @@ void	HTTPServer::MainLoop(const EventQueue& equeue) const
 
 void	HTTPServer::Communication(const ServerSocket *ssocket) const
 {
-	e_StatusCode			status_code = OK;
+	e_StatusCode			status_code = SC_OK;
 	HTTPRequest				req(*ssocket);
 	HTTPMethod				method;
 
