@@ -345,7 +345,7 @@ void	HTTPRequest::CheckHeaders(void)
 		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
 
 	if (headers_.count("content-length") && headers_.count("transfer-encoding"))
-		throw HTTPError(BAD_REQUEST, "CheckHeaders");
+		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
 
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
@@ -364,11 +364,11 @@ void	HTTPRequest::ReceiveChunk(void)
 		{
 			raw_body_ += buf;
 			if (raw_body_.size() > client_max_body_size_)
-				throw HTTPError(PAYLOAD_TOO_LARGE, "ParseChunk");
+				throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ParseChunk");
 		}
 
 		if (!raw_body_.empty() && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
-			throw HTTPError(BAD_REQUEST, "ParseChunk");
+			throw HTTPError(SC_BAD_REQUEST, "ParseChunk");
 	}
 }
 
@@ -381,7 +381,7 @@ void	HTTPRequest::ParseChunkSize(void)
 
 	line_end_pos = raw_body_.find(LINE_END, parse_pos_);
 	if (line_end_pos == std::string::npos)
-		throw HTTPError(BAD_REQUEST, "ParseChunkSize");
+		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
 	line = raw_body_.substr(parse_pos_, line_end_pos);
 
 	size_t c_pos = line.find(";");
@@ -391,7 +391,7 @@ void	HTTPRequest::ParseChunkSize(void)
 	char *endptr;
 	chunk_size_ = strtol(line.c_str(), &endptr, 16);
 	if (errno == ERANGE || *endptr != '\0')
-		throw HTTPError(BAD_REQUEST, "ParseChunkSize");
+		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
 
 	parse_pos_ += line_end_pos + LINE_END.size();
 }
@@ -402,7 +402,7 @@ void	HTTPRequest::ParseChunkData(void)
 	std::string	line;
 
 	if (raw_body_.size() - parse_pos_ < chunk_size_ + LINE_END.size())
-		throw HTTPError(BAD_REQUEST, "ParseChunkData");
+		throw HTTPError(SC_BAD_REQUEST, "ParseChunkData");
 	line = raw_body_.substr(parse_pos_, chunk_size_);
 	body_ += line;
 	parse_pos_ += chunk_size_ + LINE_END.size();
@@ -421,7 +421,7 @@ void	HTTPRequest::ParseChunk(void)
 			if (remaining_byte == 5)
 				break;
 			else
-				throw HTTPError(BAD_REQUEST, "ParseChunk");
+				throw HTTPError(SC_BAD_REQUEST, "ParseChunk");
 		}
 
 		if (state_size)
