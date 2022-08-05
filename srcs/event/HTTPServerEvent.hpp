@@ -20,7 +20,7 @@ class HTTPServerEvent : public AEvent
 		void	DeleteEvent(EventQueue* equeue);
 		void	RegisterEvent(EventQueue* equeue);
 
-		e_HTTPServerEventType	type_;
+		e_HTTPServerEventType	event_type_;
 		const ServerSocket*		ssocket_;
 		HTTPServer*				hserver_;
 };
