@@ -1,8 +1,8 @@
 SRCSDIR	= ../../../srcs
-vpath	%.hpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config
-vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config
+vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/io:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config
 
 SRCS	=	HTTPRequest.cpp \
+			AIo.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
@@ -12,14 +12,13 @@ SRCS	=	HTTPRequest.cpp \
 			Config.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp  \
-			Tokens.cpp \
-			EventQueue.cpp
+			Tokens.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRCSDIR)/exception -I $(SRCSDIR)/config
+INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/io -I $(SRCSDIR)/utils -I $(SRCSDIR)/exception -I $(SRCSDIR)/config
 
 NAME	=	unit_test
 

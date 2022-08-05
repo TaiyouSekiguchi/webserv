@@ -5,8 +5,7 @@
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"
-#include "EventQueue.hpp"
-#include "HTTPServer.hpp"
+#include "HTTPRequest.hpp"
 
 class RequestTest : public ::testing::Test
 {
@@ -72,8 +71,6 @@ class RequestTest : public ::testing::Test
 
 			ssocket_ = new ServerSocket(**target_lsocket);
 			req_ = new HTTPRequest(*ssocket_);
-			//csocket.SendRequest(msg);
-			//req_->ParseRequest();
 			try
 			{
 				csocket.SendRequest(msg);
@@ -167,77 +164,77 @@ TEST_F(RequestTest, test5)
 TEST_F(RequestTest, test6)
 {
 	RunCommunication("GET / tHTTP/1.1\r\n", 8080);
-	EXPECT_EQ(NOT_FOUND, status_code_);
+	EXPECT_EQ(SC_NOT_FOUND, status_code_);
 }
 
 TEST_F(RequestTest, test7)
 {
 	RunCommunication("GET / Htest/1.1\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test8)
 {
 	RunCommunication("GET / HTTp/1.1\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test9)
 {
 	RunCommunication("GET / HTTP/test\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test10)
 {
 	RunCommunication("GET / HTTP/1a\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test11)
 {
 	RunCommunication("GET / HTTP/2a\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test12)
 {
 	RunCommunication("GET / HTTP/11.1\r\n", 8080);
-	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+	EXPECT_EQ(SC_HTTP_VERSION_NOT_SUPPORTED, status_code_);
 }
 
 TEST_F(RequestTest, test13)
 {
 	RunCommunication("GET / HTTP/21.2\r\n", 8080);
-	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+	EXPECT_EQ(SC_HTTP_VERSION_NOT_SUPPORTED, status_code_);
 }
 
 TEST_F(RequestTest, test14)
 {
 	RunCommunication("GET / HTTP/9999999999999999999999999999999999999.1\r\n", 8080);
-	EXPECT_EQ(HTTP_VERSION_NOT_SUPPORTED, status_code_);
+	EXPECT_EQ(SC_HTTP_VERSION_NOT_SUPPORTED, status_code_);
 }
 
 TEST_F(RequestTest, test15)
 {
 	RunCommunication("GET / HTTP/1.a\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test16)
 {
 	RunCommunication("GET / HTTP/1.\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test17)
 {
 	RunCommunication("GET / HTTP/1.1a\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test18)
 {
 	RunCommunication("GET / HTTP/.1\r\n", 8080);
-	EXPECT_EQ(BAD_REQUEST, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }

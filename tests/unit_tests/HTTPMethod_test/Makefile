@@ -2,19 +2,14 @@ SRCSDIR	= ../../../srcs
 vpath	%.cpp	srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
-				$(SRCSDIR)/event \
 				$(SRCSDIR)/exception \
 				$(SRCSDIR)/io:\
 				$(SRCSDIR)/server \
-				$(SRCSDIR)/webserv:\
 				$(SRCSDIR)/utils
 SRCS	=	Config.cpp \
 			Tokens.cpp \
 			ServerDirective.cpp \
 			LocationDirective.cpp \
-			AcceptClientEvent.cpp \
-			AEvent.cpp \
-			HTTPServerEvent.cpp \
 			AIo.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
@@ -27,9 +22,7 @@ SRCS	=	Config.cpp \
 			URI.cpp \
 			Dir.cpp \
 			Stat.cpp \
-			utils.cpp \
-			EventQueue.cpp \
-			WebServ.cpp
+			utils.cpp
 
 SRCS	+=	ClientSocket.cpp
 SRCS	+=	GET_test.cpp \
@@ -48,8 +41,7 @@ INCLUDE =	-I./srcs \
 			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
-			-I$(SRCSDIR)/utils \
-			-I$(SRCSDIR)/webserv
+			-I$(SRCSDIR)/utils
 NAME	=	unit_test
 
 CC		=	c++
