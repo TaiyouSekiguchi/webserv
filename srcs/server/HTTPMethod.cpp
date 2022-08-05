@@ -31,12 +31,12 @@ void	HTTPMethod::DeleteTargetFile()
 
 void	HTTPMethod::ExecGETMethod()
 {
-	int			ret;
+	ssize_t		ret;
 	std::string	body;
 
 	ret = target_rfile_->ReadFile(&body);
 	if (ret == -1)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecGETMethod");
+		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 
 	body_ = body;
 	status_code_ = SC_OK;
@@ -44,11 +44,11 @@ void	HTTPMethod::ExecGETMethod()
 
 void	HTTPMethod::ExecPOSTMethod()
 {
-	int		ret;
+	ssize_t		ret;
 
 	ret = target_rfile_->WriteToFile(req_.GetBody());
 	if (ret == -1)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecPOSTMethod");
+		throw HTTPError(SC_FORBIDDEN, "ExecPOSTMethod");
 
 	if (*(req_.GetTarget().rbegin()) == '/')
 		location_ = req_.GetTarget() + target_rfile_->GetName();
@@ -63,7 +63,7 @@ void	HTTPMethod::ExecDELETEMethod()
 
 	ret = target_rfile_->DeleteFile();
 	if (ret == -1)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
+		throw HTTPError(SC_FORBIDDEN, "ExecDELETEMethod");
 
 	status_code_ = SC_NO_CONTENT;
 }
@@ -189,15 +189,15 @@ e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 	if (st.IsDirectory() && *(req_.GetTarget().rbegin()) != '/')
 		throw HTTPError(SC_CONFLICT, "ValidateDELETEMethod");
 
-	target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
+	if (st.IsDirectory())
+		target_rfile_ = new RegularFile(st.GetPath(), O_DIRECTORY);
+	else
+		target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
 		target_rfile_ = NULL;
-		if (errno == EACCES || errno == ENOTEMPTY)
-			throw HTTPError(SC_FORBIDDEN, "ValidateDELETEMethod");
-		else
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ValidateDELETEMethod");
+		throw HTTPError(SC_FORBIDDEN, "ValidateDELETEMethod");
 	}
 	return (SEVENT_FILE_DELETE);
 }
@@ -211,16 +211,15 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	const std::string&	timestamp = Utils::GetMicroSecondTime();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
-	Stat	check_exist_st(file_path);
-	if (!check_exist_st.Fail())
-		throw HTTPError(SC_CONFLICT, "ValidatePOSTMethod");
-
-	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT);
+	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
 		target_rfile_ = NULL;
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ValidatePOSTMethod");
+		if (errno == EEXIST)
+			throw HTTPError(SC_CONFLICT, "ValidatePOSTMethod");
+		else
+			throw HTTPError(SC_FORBIDDEN, "ValidatePOSTMethod");
 	}
 	return (SEVENT_FILE_WRITE);
 }
