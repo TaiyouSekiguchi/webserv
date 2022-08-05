@@ -105,7 +105,7 @@ void	HTTPRequest::ParseMethod(const std::string& method)
 	for ( ; it != it_end; ++it)
 	{
 		if (!std::isupper(*it))
-			throw HTTPError(BAD_REQUEST, "ParseMethod");
+			throw HTTPError(SC_BAD_REQUEST, "ParseMethod");
 	}
 
 	method_ = method;
@@ -114,7 +114,7 @@ void	HTTPRequest::ParseMethod(const std::string& method)
 void	HTTPRequest::ParseTarget(const std::string& target)
 {
 	if (target[0] != '/')
-		throw HTTPError(BAD_REQUEST, "ParseTarget");
+		throw HTTPError(SC_BAD_REQUEST, "ParseTarget");
 
 	target_ = target;
 }
@@ -125,10 +125,10 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	size_t		i;
 
 	if (version.at(0) != 'H')
-		throw HTTPError(NOT_FOUND, "ParseVersion");
+		throw HTTPError(SC_NOT_FOUND, "ParseVersion");
 
 	if (version.compare(1, 4, "TTP/"))
-		throw HTTPError(BAD_REQUEST, "ParseVersion");
+		throw HTTPError(SC_BAD_REQUEST, "ParseVersion");
 
 	tmp = version.c_str();
 
@@ -137,16 +137,16 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 		i++;
 
 	if (i == 5 || tmp[i++] != '.' || tmp[i] == '\0')
-		throw HTTPError(BAD_REQUEST, "ParseVersion");
+		throw HTTPError(SC_BAD_REQUEST, "ParseVersion");
 
 	while (isdigit(tmp[i]))
 		i++;
 
 	if (tmp[i] != '\0')
-		throw HTTPError(BAD_REQUEST, "ParseVersion");
+		throw HTTPError(SC_BAD_REQUEST, "ParseVersion");
 
 	if (version != "HTTP/1.1")
-		throw HTTPError(HTTP_VERSION_NOT_SUPPORTED, "ParseVersion");
+		throw HTTPError(SC_HTTP_VERSION_NOT_SUPPORTED, "ParseVersion");
 
 	version_ = version;
 }
@@ -159,11 +159,11 @@ void	HTTPRequest::ParseRequestLine(void)
 	while ((line = GetLine()) == "") { }
 
 	if (Utils::IsBlank(line.at(0)))
-		throw HTTPError(BAD_REQUEST, "ParseRequestLine");
+		throw HTTPError(SC_BAD_REQUEST, "ParseRequestLine");
 
 	list = Utils::MySplit(line, " ");
 	if (list.size() != 3)
-		throw HTTPError(BAD_REQUEST, "ParseRequestLine");
+		throw HTTPError(SC_BAD_REQUEST, "ParseRequestLine");
 
 	ParseMethod(list.at(0));
 	ParseTarget(list.at(1));
@@ -193,7 +193,7 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 	tmp = Utils::MyTrim(content, " ");
 	content_length_ = std::strtoul(tmp.c_str(), &endptr, 10);
 	if (errno == ERANGE || *endptr != '\0')
-		throw HTTPError(BAD_REQUEST, "ParseContentLength");
+		throw HTTPError(SC_BAD_REQUEST, "ParseContentLength");
 }
 
 void HTTPRequest::ParseUserAgent(const std::string& content)
@@ -289,7 +289,7 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 	else
 	{
 		if (IsOnlyOnceHeader(field))
-			throw HTTPError(BAD_REQUEST, "ReceiveHeaders");
+			throw HTTPError(SC_BAD_REQUEST, "ReceiveHeaders");
 		else if (IsAppendHeader(field))
 			headers_[field] = headers_[field] + "," + content;
 		else
@@ -342,14 +342,14 @@ void	HTTPRequest::ParseHeaders(void)
 void	HTTPRequest::CheckHeaders(void)
 {
 	if (host_.first == "")
-		throw HTTPError(BAD_REQUEST, "CheckHeaders");
+		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
 
 	if (headers_.count("content-length") && headers_.count("transfer-encoding"))
 		throw HTTPError(BAD_REQUEST, "CheckHeaders");
 
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
-		throw HTTPError(PAYLOAD_TOO_LARGE, "CheckHeaders");
+		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "CheckHeaders");
 }
 
 void	HTTPRequest::ReceiveChunk(void)
