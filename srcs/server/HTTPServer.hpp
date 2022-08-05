@@ -21,6 +21,7 @@ class HTTPServer
 
 		e_HTTPServerEventType	Run();
 		e_HTTPServerEventType	RunExecHTTPMethod(const e_HTTPServerEventType event_type);
+		e_HTTPServerEventType	RunReadErrorPage();
 		e_HTTPServerEventType	RunCreateResponse();
 		e_HTTPServerEventType	RunSendResponse();
 

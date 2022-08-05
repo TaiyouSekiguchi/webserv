@@ -56,12 +56,29 @@ e_HTTPServerEventType	HTTPServer::Run()
 
 e_HTTPServerEventType	HTTPServer::RunExecHTTPMethod(const e_HTTPServerEventType event_type)
 {
-	if (event_type == SEVENT_FILE_READ)
-		method_->ExecGETMethod();
-	else if (event_type == SEVENT_FILE_WRITE)
-		method_->ExecPOSTMethod();
-	else if (event_type == SEVENT_FILE_DELETE)
-		method_->ExecDELETEMethod();
+	e_HTTPServerEventType	new_event;
+
+	try
+	{
+		if (event_type == SEVENT_FILE_READ)
+			method_->ExecGETMethod();
+		else if (event_type == SEVENT_FILE_WRITE)
+			method_->ExecPOSTMethod();
+		else if (event_type == SEVENT_FILE_DELETE)
+			method_->ExecDELETEMethod();
+	}
+	catch (const HTTPError& e)
+	{
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunReadErrorPage()
+{
+	method_->ReadErrorPage();
 	return (RunCreateResponse());
 }
 

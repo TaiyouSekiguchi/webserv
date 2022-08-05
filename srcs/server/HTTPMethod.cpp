@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include "HTTPMethod.hpp"
+#include "HTTPResponse.hpp"
 #include "Dir.hpp"
 
 HTTPMethod::HTTPMethod(const HTTPRequest& req)
@@ -19,9 +20,11 @@ const std::string&	HTTPMethod::GetLocation()	 const	{ return (location_); }
 const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
-int					HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
-void				HTTPMethod::DeleteTargetFile()
+int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
+void	HTTPMethod::DeleteTargetFile()
 {
+	if (target_rfile_ == NULL)
+		return;
 	delete target_rfile_;
 	target_rfile_ = NULL;
 }
@@ -33,12 +36,10 @@ void	HTTPMethod::ExecGETMethod()
 
 	ret = target_rfile_->ReadFile(&body);
 	if (ret == -1)
-		status_code_ = INTERNAL_SERVER_ERROR;
-	else
-	{
-		body_ = body;
-		status_code_ = OK;
-	}
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecGETMethod");
+
+	body_ = body;
+	status_code_ = SC_OK;
 }
 
 void	HTTPMethod::ExecPOSTMethod()
@@ -47,15 +48,13 @@ void	HTTPMethod::ExecPOSTMethod()
 
 	ret = target_rfile_->WriteToFile(req_.GetBody());
 	if (ret == -1)
-		status_code_ = INTERNAL_SERVER_ERROR;
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecPOSTMethod");
+
+	if (*(req_.GetTarget().rbegin()) == '/')
+		location_ = req_.GetTarget() + target_rfile_->GetName();
 	else
-	{
-		if (*(req_.GetTarget().rbegin()) == '/')
-			location_ = req_.GetTarget() + target_rfile_->GetName();
-		else
-			location_ = req_.GetTarget() + "/" + target_rfile_->GetName();
-		status_code_ = CREATED;
-	}
+		location_ = req_.GetTarget() + "/" + target_rfile_->GetName();
+	status_code_ = SC_CREATED;
 }
 
 void	HTTPMethod::ExecDELETEMethod()
@@ -64,9 +63,9 @@ void	HTTPMethod::ExecDELETEMethod()
 
 	ret = target_rfile_->DeleteFile();
 	if (ret == -1)
-		status_code_ = INTERNAL_SERVER_ERROR;
-	else
-		status_code_ = NO_CONTENT;
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecDELETEMethod");
+
+	status_code_ = SC_NO_CONTENT;
 }
 
 LocationDirective	HTTPMethod::SelectLocation
@@ -132,7 +131,7 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 
 	Dir		dir(access_path);
 	if (dir.Fail())
-		throw HTTPError(INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
 
 	const std::vector<std::string>&				names = dir.GetFileNameList();
 	std::vector<std::string>::const_iterator	itr = names.begin();
@@ -141,7 +140,7 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 	{
 		Stat st(access_path + *itr);
 		if (st.Fail())
-			throw HTTPError(INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
 		body_stream
 			<< "<a href=\"" << *itr << "\">" << *itr << "</a>\t\t"
 			<< st.GetModifyTime() << "\t" << st.GetSize() << "\r\n";
@@ -150,7 +149,7 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 
 	body_stream << "</pre><hr></body>\r\n" << "</html>\r\n";
 	body_ = body_stream.str();
-	status_code_ = OK;
+	status_code_ = SC_OK;
 }
 
 e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const LocationDirective& location)
@@ -161,7 +160,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 	{
 		if (IsReadableFile(access_path))
 			return (SEVENT_FILE_READ);
-		throw HTTPError(FORBIDDEN, "ValidateGETMethod");
+		throw HTTPError(SC_FORBIDDEN, "ValidateGETMethod");
 	}
 	else if (st.IsDirectory())
 	{
@@ -170,7 +169,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 			const std::string& host = req_.GetHost().first;
 			const std::string& ip = Utils::ToString(req_.GetListen().second);
 			const std::string  location = "http://" + host + ":" + ip + req_.GetTarget() + "/";
-			throw HTTPError(Redirect(location, MOVED_PERMANENTLY), "ValidateGETMethod");
+			throw HTTPError(Redirect(location, SC_MOVED_PERMANENTLY), "ValidateGETMethod");
 		}
 		else if (IsReadableFileWithIndex(access_path, location.GetIndex()))
 			return (SEVENT_FILE_READ);
@@ -179,16 +178,16 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 			SetAutoIndexContent(access_path);
 			return (SEVENT_NO);
 		}
-		throw HTTPError(FORBIDDEN, "ValidateGETMethod");
+		throw HTTPError(SC_FORBIDDEN, "ValidateGETMethod");
 	}
 	else
-		throw HTTPError(FORBIDDEN, "ValidateGETMethod");
+		throw HTTPError(SC_FORBIDDEN, "ValidateGETMethod");
 }
 
 e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 {
 	if (st.IsDirectory() && *(req_.GetTarget().rbegin()) != '/')
-		throw HTTPError(CONFLICT, "ValidateDELETEMethod");
+		throw HTTPError(SC_CONFLICT, "ValidateDELETEMethod");
 
 	target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
 	if (target_rfile_->Fail())
@@ -196,9 +195,9 @@ e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 		delete target_rfile_;
 		target_rfile_ = NULL;
 		if (errno == EACCES || errno == ENOTEMPTY)
-			throw HTTPError(FORBIDDEN, "ValidateDELETEMethod");
+			throw HTTPError(SC_FORBIDDEN, "ValidateDELETEMethod");
 		else
-			throw HTTPError(INTERNAL_SERVER_ERROR, "ValidateDELETEMethod");
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ValidateDELETEMethod");
 	}
 	return (SEVENT_FILE_DELETE);
 }
@@ -206,7 +205,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 {
 	if (!st.IsDirectory())
-		throw HTTPError(CONFLICT, "ValidatePOSTMethod");
+		throw HTTPError(SC_CONFLICT, "ValidatePOSTMethod");
 
 	std::fstream		output_fstream;
 	const std::string&	timestamp = Utils::GetMicroSecondTime();
@@ -214,14 +213,14 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 
 	Stat	check_exist_st(file_path);
 	if (!check_exist_st.Fail())
-		throw HTTPError(CONFLICT, "ValidatePOSTMethod");
+		throw HTTPError(SC_CONFLICT, "ValidatePOSTMethod");
 
 	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
 		target_rfile_ = NULL;
-		throw HTTPError(INTERNAL_SERVER_ERROR, "ValidatePOSTMethod");
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ValidatePOSTMethod");
 	}
 	return (SEVENT_FILE_WRITE);
 }
@@ -265,7 +264,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(const LocationDirective& loc
 
 	Stat	st(access_path);
 	if (st.Fail())
-		throw HTTPError(NOT_FOUND, "ValidateAnyMethod");
+		throw HTTPError(SC_NOT_FOUND, "ValidateAnyMethod");
 
 	if (method == "GET")
 		return (ValidateGETMethod(st, location));
@@ -281,11 +280,11 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
-	if (redirect.first != INVALID)
+	if (redirect.first != SC_INVALID)
 		throw HTTPError(Redirect(redirect.second, redirect.first), "ValidateHTTPMethod");
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
-		throw HTTPError(METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
+		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
 
 	// Stat	cgi_st(location.GetRoot() + req_.GetTarget());
 	// if (CheckCGIScript(cgi_st, location))
@@ -295,9 +294,66 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	return (ValidateAnyMethod(location));
 }
 
+void	HTTPMethod::ReadErrorPage()
+{
+	int			ret;
+	std::string	body;
+
+	ret = target_rfile_->ReadFile(&body);
+	if (ret == -1)
+	{
+		body_ = "";
+		return;
+	}
+	body_ = body;
+}
+
+std::string HTTPMethod::GenerateDefaultHTML() const
+{
+	std::stringstream ss;
+
+	ss << "<html>\r\n";
+	ss << "<head><title>" << status_code_ << " " << HTTPResponse::kStatusMsg_[status_code_] <<"</title></head>\r\n";
+	ss << "<body>\r\n";
+	ss << "<center><h1>" << status_code_ << " " << HTTPResponse::kStatusMsg_[status_code_] << "</h1></center>\r\n";
+	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
+	ss << "</body>\r\n";
+	ss << "</html>\r\n";
+
+	return (ss.str());
+}
+
 e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_code)
 {
+	server_conf_ = req_.GetServerConf();
 	status_code_ = status_code;
+
+	const std::map<e_StatusCode, std::string>& 			error_pages = server_conf_->GetErrorPages();
+	std::map<e_StatusCode, std::string>::const_iterator	found = error_pages.find(status_code_);
+	if (found != error_pages.end())
+	{
+		std::string		error_page_path = found->second;
+		if (error_page_path.at(0) == '/')
+		{
+			if (target_rfile_)
+				delete target_rfile_;
+			target_rfile_ = new RegularFile("." + error_page_path, O_RDONLY);
+			if (target_rfile_->Fail())
+			{
+				delete target_rfile_;
+				target_rfile_ = NULL;
+				status_code_ = SC_NOT_FOUND;
+			}
+			else
+				return (SEVENT_ERRORPAGE_READ);
+		}
+		else
+		{
+			location_ = error_page_path;
+			status_code_ = SC_FOUND;
+		}
+	}
+	body_ = GenerateDefaultHTML();
 	return (SEVENT_NO);
 }
 
