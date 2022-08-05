@@ -189,46 +189,6 @@ TEST_F(ResponseTest, POSTSuccessTest)
 	EXPECT_NE(res_->GetResMsg().find("/upload/16"), std::string::npos);
 }
 
-// TEST_F(ResponseTest, DefaultErrorPageTest)
-// {
-// 	const std::string DefaultErrorPage = "HTTP/1.1 405 Method Not Allowed\r\n"
-// 		"Connection: keep-alive\r\nContent-Length: 166\r\nServer: Webserv\r\n\r\n"
-// 		+ GenerateDefaultHTML(METHOD_NOT_ALLOWED);
-// 	RunCommunication("DELETE /sub2 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
-// 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), DefaultErrorPage);
-// }
-
-// // error_page 404	../../../html/40x.html;
-// TEST_F(ResponseTest, RedirectErrorPageTest)
-// {
-// 	const std::string RedirectErrorPage = "HTTP/1.1 302 Found\r\n"
-// 		"Connection: keep-alive\r\nContent-Length: 140\r\n"
-//         "Location: ../../../html/40x.html\r\nServer: Webserv\r\n\r\n"
-// 		+ GenerateDefaultHTML(FOUND);
-// 	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-// 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), RedirectErrorPage);
-// }
-
-// // error_page 409	/../../../html/40x.html;
-// TEST_F(ResponseTest, SlashErrorPageTest)
-// {
-//     const std::string NotDir = "HTTP/1.1 409 Conflict\r\n"
-//                                "Connection: keep-alive\r\nContent-Length: 14\r\nServer: Webserv\r\n\r\n"
-//                                "html/40x.html\n";
-//     RunCommunication("POST /upload/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-//     EXPECT_EQ(RemoveDate(res_->GetResMsg()), NotDir);
-// }
-
-// // error_page 505	/../../../html/50x.html;
-// TEST_F(ResponseTest, NotMatchErrorPageTest)
-// {
-//     const std::string VersionNotSupported = "HTTP/1.1 404 Not Found\r\n"
-// 		"Connection: close\r\nContent-Length: 148\r\nServer: Webserv\r\n\r\n"
-// 		+ GenerateDefaultHTML(NOT_FOUND);
-// 	RunCommunication("GET /no HTTP/1.0\r\nHost: localhost:8080\r\n\r\n");
-// 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), VersionNotSupported);
-// }
-
 TEST_F(ResponseTest, RedirectTest)
 {
 	const std::string Redirect = "HTTP/1.1 301 Moved Permanently\r\n"

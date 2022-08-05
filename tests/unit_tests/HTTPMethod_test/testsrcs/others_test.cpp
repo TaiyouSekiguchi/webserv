@@ -153,3 +153,36 @@ TEST_F(OthersTest, AutoIndexTest)
 	EXPECT_NE(body.find("<a href=\"noindex/\">noindex/</a>\t\t"), std::string::npos);
 	EXPECT_NE(body.find("<a href=\"sub1.html\">sub1.html</a>\t\t"), std::string::npos);
 }
+
+// 405 Method Not Allowed
+TEST_F(OthersTest, DefaultErrorPageTest)
+{
+	RunCommunication("DELETE /sub2 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_METHOD_NOT_ALLOWED);
+	EXPECT_NE(method_->GetBody().find("405 Method Not Allowed"), std::string::npos);
+}
+
+// error_page 404	../../../html/40x.html;  (404 Not Found)
+TEST_F(OthersTest, RedirectErrorPageTest)
+{
+	RunCommunication("GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_FOUND);
+	EXPECT_EQ(method_->GetLocation(), "../../../html/40x.html");
+	EXPECT_NE(method_->GetBody().find("302 Found"), std::string::npos);
+}
+
+// error_page 400	/../../../html/40x.html;  (400 Bad Request)
+TEST_F(OthersTest, HitErrorPageTest)
+{
+    RunCommunication("   GET / HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_BAD_REQUEST);
+	EXPECT_EQ(method_->GetBody(), "html/40x.html\n");
+}
+
+// error_page 505	/../../../html/50x.html;  (505 HTTP Version Not Supported)
+TEST_F(OthersTest, NotFoundErrorPageTest)
+{
+	RunCommunication("GET /no HTTP/1.0\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_NOT_FOUND);
+	EXPECT_NE(method_->GetBody().find("404 Not Found"), std::string::npos);
+}
