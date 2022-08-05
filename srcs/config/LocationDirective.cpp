@@ -68,7 +68,7 @@ Tokens::citr	LocationDirective::GetDirectiveEnd
 void	LocationDirective::SetInitValue()
 {
 	root_ = "";
-	return_ = std::make_pair(INVALID, "");
+	return_ = std::make_pair(SC_INVALID, "");
 	autoindex_ = -1;
 	allowed_methods_.push_back("GET");
 	upload_root_ = "";
@@ -117,7 +117,7 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 
 	bool			is_url;
 	char			*endptr;
-	long			status_code = FOUND;
+	long			status_code = SC_FOUND;
 	std::string		url = "";
 
 	is_url = (*begin).find("http://") != std::string::npos;
@@ -137,7 +137,7 @@ void	LocationDirective::ParseReturn(Tokens::citr begin, Tokens::citr end)
 		if (Tokens::isSpecialToken(url))
 			throw std::runtime_error("conf syntax error");
 	}
-	if (return_.first == INVALID)
+	if (return_.first == SC_INVALID)
 		return_ = std::make_pair(static_cast<e_StatusCode>(status_code), url);
 }
 
