@@ -24,12 +24,15 @@ static int	pipe_set(int src, int dst)
 	return (1);
 }
 
-void	CGI::SendData(const int pipe_fd[2])
+void	CGI::SendData(const int write_pipe_fd[2], const int read_pipe_fd[2])
 {
 	CGIEnv	env(uri_, req_);
 	char*	argv[2];
 
-	if (close(pipe_fd[0]) < 0 || !pipe_set(pipe_fd[1], STDOUT_FILENO))
+	if (close(write_pipe_fd[1]) < 0 || !pipe_set(write_pipe_fd[0], STDIN_FILENO))
+		std::exit(EXIT_FAILURE);
+
+	if (close(read_pipe_fd[0]) < 0 || !pipe_set(read_pipe_fd[1], STDOUT_FILENO))
 		std::exit(EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(file_path_.c_str());
@@ -39,7 +42,7 @@ void	CGI::SendData(const int pipe_fd[2])
 		std::exit(EXIT_FAILURE);
 }
 
-void	CGI::ReceiveData(const int pipe_fd[2], const pid_t pid)
+void	CGI::ReceiveData(const int write_pipe_fd[2], const int read_pipe_fd[2], const pid_t pid)
 {
 	const size_t	buf_size = 4;
 	char			buf[buf_size + 1];
@@ -47,8 +50,13 @@ void	CGI::ReceiveData(const int pipe_fd[2], const pid_t pid)
 	pid_t			ret_pid;
 	int				status;
 
-	if (close(pipe_fd[1]) < 0 || !pipe_set(pipe_fd[0], STDIN_FILENO))
+	if (close(write_pipe_fd[0]) < 0 || !pipe_set(write_pipe_fd[1], STDOUT_FILENO))
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+
+	if (close(read_pipe_fd[1]) < 0 || !pipe_set(read_pipe_fd[0], STDIN_FILENO))
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+
+	write(STDOUT_FILENO, req_.GetBody().c_str(), req_.GetBody().size());
 
 	while (1)
 	{
@@ -70,7 +78,8 @@ void	CGI::ReceiveData(const int pipe_fd[2], const pid_t pid)
 
 void	CGI::ExecuteCGI(void)
 {
-	int		pipe_fd[2];
+	int		write_pipe_fd[2];
+	int		read_pipe_fd[2];
 	pid_t	pid;
 	int		stdin_save;
 	int		stdout_save;
@@ -78,13 +87,15 @@ void	CGI::ExecuteCGI(void)
 	stdin_save = dup(STDIN_FILENO);
 	stdout_save = dup(STDOUT_FILENO);
 
-	if (pipe(pipe_fd) < 0 || (pid = fork()) < 0)
+	if (pipe(write_pipe_fd) < 0
+		|| pipe(read_pipe_fd) < 0
+		|| (pid = fork()) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	if (pid == 0)
-		SendData(pipe_fd);
+		SendData(write_pipe_fd, read_pipe_fd);
 	else
-		ReceiveData(pipe_fd, pid);
+		ReceiveData(write_pipe_fd, read_pipe_fd, pid);
 
 	dup2(stdin_save, STDIN_FILENO);
 	dup2(stdout_save, STDOUT_FILENO);
