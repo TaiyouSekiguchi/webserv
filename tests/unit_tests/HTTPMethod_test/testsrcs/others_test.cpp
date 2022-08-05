@@ -25,70 +25,85 @@ class OthersTest : public ::testing::Test
 			delete ssocket_;
 			delete csocket_;
 		}
-		virtual void SetUp()
-		{
-			req_ = new HTTPRequest(*ssocket_);
-			method_ = new HTTPMethod(*req_);
-		}
 		virtual void TearDown()
 		{
 			delete req_;
 			delete method_;
 		}
 
-		void	RunMethodEvent()
+		void	RunCommunication(const std::string& msg)
 		{
-			switch (event_type_)
+			e_HTTPServerEventType	event_type = SEVENT_SOCKET_RECV;
+			csocket_->SendRequest(msg);
+
+			while (event_type != SEVENT_NO)
 			{
-				case SEVENT_FILE_READ:
-				case SEVENT_FILE_WRITE:
-				case SEVENT_FILE_DELETE:
-					RunExecHTTPMethod();
-					break;
-				case SEVENT_ERRORPAGE_READ:
-					RunReadErrorPage();
-					break;
-				default: {}
+				switch (event_type)
+				{
+					case SEVENT_SOCKET_RECV:
+						event_type = Run();
+						break;
+					case SEVENT_FILE_READ:
+					case SEVENT_FILE_WRITE:
+					case SEVENT_FILE_DELETE:
+						event_type = RunExecHTTPMethod(event_type);
+						break;
+					case SEVENT_ERRORPAGE_READ:
+						event_type = RunReadErrorPage();
+						break;
+					default: {}
+				}
 			}
 		}
 
-		void	RunCommunication(const std::string& msg)
+		e_HTTPServerEventType	Run()
 		{
+			e_HTTPServerEventType	new_event;
+
+			req_ = new HTTPRequest(*ssocket_);
+			method_ = new HTTPMethod(*req_);
 			try
 			{
-				csocket_->SendRequest(msg);
 				req_->ParseRequest();
-				event_type_ = method_->ValidateHTTPMethod();
-				RunMethodEvent();
+				new_event = method_->ValidateHTTPMethod();
+				if (new_event != SEVENT_NO)
+					return (new_event);
 			}
 			catch (const HTTPError& e)
 			{
-				event_type_ = method_->ValidateErrorPage(e.GetStatusCode());
-				RunMethodEvent();
+				new_event = method_->ValidateErrorPage(e.GetStatusCode());
+				if (new_event != SEVENT_NO)
+					return (new_event);
 			}
+			return (SEVENT_NO);
 		}
 
-		void	RunExecHTTPMethod()
+		e_HTTPServerEventType	RunExecHTTPMethod(e_HTTPServerEventType event_type)
 		{
+			e_HTTPServerEventType	new_event;
+
 			try
 			{
-				if (event_type_ == SEVENT_FILE_READ)
+				if (event_type == SEVENT_FILE_READ)
 					method_->ExecGETMethod();
-				else if (event_type_ == SEVENT_FILE_WRITE)
+				else if (event_type == SEVENT_FILE_WRITE)
 					method_->ExecPOSTMethod();
-				else if (event_type_ == SEVENT_FILE_DELETE)
+				else if (event_type == SEVENT_FILE_DELETE)
 					method_->ExecDELETEMethod();
 			}
 			catch (const HTTPError& e)
 			{
-				event_type_ = method_->ValidateErrorPage(e.GetStatusCode());
-				RunMethodEvent();
+				new_event = method_->ValidateErrorPage(e.GetStatusCode());
+				if (new_event != SEVENT_NO)
+					return (new_event);
 			}
+			return (SEVENT_NO);
 		}
 
-		void	RunReadErrorPage()
+		e_HTTPServerEventType	RunReadErrorPage()
 		{
 			method_->ReadErrorPage();
+			return (SEVENT_NO);
 		}
 
 		static Config					config_;
@@ -97,7 +112,6 @@ class OthersTest : public ::testing::Test
 		static ServerSocket*			ssocket_;
 		static ClientSocket*			csocket_;
 
-		e_HTTPServerEventType	event_type_;
 		HTTPRequest*			req_;
 		HTTPMethod*				method_;
 };
