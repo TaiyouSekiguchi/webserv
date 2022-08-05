@@ -8,6 +8,7 @@ HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
 	, client_max_body_size_(0)
 	, content_length_(0)
 	, connection_(true)
+	, parse_pos_(0)
 {
 }
 
@@ -121,7 +122,6 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
 	const char*	tmp;
-	// size_t		size;
 	size_t		i;
 
 	if (version.at(0) != 'H')
@@ -131,7 +131,6 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 		throw HTTPError(BAD_REQUEST, "ParseVersion");
 
 	tmp = version.c_str();
-	// size = version.size();
 
 	i = 5;
 	while (isdigit(tmp[i]))
@@ -345,16 +344,97 @@ void	HTTPRequest::CheckHeaders(void)
 	if (host_.first == "")
 		throw HTTPError(BAD_REQUEST, "CheckHeaders");
 
-	// if (headers_.count("content-length") && headers_.count("transfer-encoding"))
-		// throw HTTPError(BAD_REQUEST, "CheckHeaders");
+	if (headers_.count("content-length") && headers_.count("transfer-encoding"))
+		throw HTTPError(BAD_REQUEST, "CheckHeaders");
 
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
 		throw HTTPError(PAYLOAD_TOO_LARGE, "CheckHeaders");
 }
 
-bool	HTTPRequest::ParseChunkSize(void)
+void	HTTPRequest::ReceiveChunk(void)
 {
+	const std::string	FOOTER = "0\r\n\r\n";
+	std::string			buf;
+
+	raw_body_ = save_;
+	if (!raw_body_.empty() && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
+	{
+		while ((buf = GetLine()) != "")
+		{
+			raw_body_ += buf;
+			if (raw_body_.size() > client_max_body_size_)
+				throw HTTPError(PAYLOAD_TOO_LARGE, "ParseChunk");
+		}
+
+		if (!raw_body_.empty() && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
+			throw HTTPError(BAD_REQUEST, "ParseChunk");
+	}
+}
+
+void	HTTPRequest::ParseChunkSize(void)
+{
+	const std::string	LINE_END = "\r\n";
+	size_t		line_end_pos;
+	std::string	line;
+
+
+	line_end_pos = raw_body_.find(LINE_END, parse_pos_);
+	if (line_end_pos == std::string::npos)
+		throw HTTPError(BAD_REQUEST, "ParseChunkSize");
+	line = raw_body_.substr(parse_pos_, line_end_pos);
+
+	size_t c_pos = line.find(";");
+	if (c_pos != std::string::npos)
+		line = line.substr(0, c_pos);
+
+	char *endptr;
+	chunk_size_ = strtol(line.c_str(), &endptr, 16);
+	if (errno == ERANGE || *endptr != '\0')
+		throw HTTPError(BAD_REQUEST, "ParseChunkSize");
+
+	parse_pos_ += line_end_pos + LINE_END.size();
+}
+
+void	HTTPRequest::ParseChunkData(void)
+{
+	const std::string	LINE_END = "\r\n";
+	std::string	line;
+
+	if (raw_body_.size() - parse_pos_ < chunk_size_ + LINE_END.size())
+		throw HTTPError(BAD_REQUEST, "ParseChunkData");
+	line = raw_body_.substr(parse_pos_, chunk_size_);
+	body_ += line;
+	parse_pos_ += chunk_size_ + LINE_END.size();
+}
+
+void	HTTPRequest::ParseChunk(void)
+{
+	bool	state_size = true;
+	size_t	remaining_byte;
+
+	while (1)
+	{
+		remaining_byte = raw_body_.size() - parse_pos_;
+		if (remaining_byte <= 5)
+		{
+			if (remaining_byte == 5)
+				break;
+			else
+				throw HTTPError(BAD_REQUEST, "ParseChunk");
+		}
+
+		if (state_size)
+		{
+			ParseChunkSize();
+			state_size = false;
+		}
+		else
+		{
+			ParseChunkData();
+			state_size = true;
+		}
+	}
 }
 
 void	HTTPRequest::ParseBody(void)
@@ -368,16 +448,8 @@ void	HTTPRequest::ParseBody(void)
 
 	if (headers_.count("transfer-encoding"))
 	{
-		bool fin = false;
-		bool state_size = true;
-
-		while (!fin)
-		{
-			if (state_size)
-				state_size = ParseChunkSize();
-			else
-				state_size = ParseChunkBody();
-		}
+		ReceiveChunk();
+		ParseChunk();
 	}
 	else
 	{
@@ -400,9 +472,9 @@ void	HTTPRequest::ParseBody(void)
 			remaining_byte -= data.length();
 			tmp += data;
 		}
+		if (method_ == "POST")
+			body_ = tmp;
 	}
-	if (method_ == "POST")
-		body_ = tmp;
 }
 
 void	HTTPRequest::FindServerConf(void)
@@ -438,9 +510,7 @@ void	HTTPRequest::ParseRequest(void)
 	ReceiveHeaders();
 	ParseHeaders();
 	CheckHeaders();
-	RequestDisplay();
 	ParseBody();
-	std::cout << "now3" << std::endl;
 
 	return;
 }
@@ -458,4 +528,15 @@ void	HTTPRequest::RequestDisplay(void) const
 	std::cout << body_ << std::endl;
 
 	return;
+}
+
+void	HTTPRequest::HeadersDisplay(void)
+{
+	std::map<std::string, std::string>::const_iterator	it;
+	std::map<std::string, std::string>::const_iterator	it_end;
+
+	it = headers_.begin();
+	it_end = headers_.end();
+	for (; it != it_end; ++it)
+		std::cout << it->first << ": " << it->second << std::endl;
 }

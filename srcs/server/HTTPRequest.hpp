@@ -24,6 +24,7 @@ class HTTPRequest
 
 		void	ParseRequest(void);
 		void	RequestDisplay(void) const;
+		void	HeadersDisplay(void);
 
 		// Getter
 		const ServerDirective::Listen&			GetListen(void) const;
@@ -72,7 +73,10 @@ class HTTPRequest
 		// body
 		std::string									body_;
 
-
+		// chunk
+		std::string									raw_body_;
+		size_t										parse_pos_;
+		long										chunk_size_;
 
 		// func
 		bool			IsToken(const std::string& str);
@@ -96,8 +100,10 @@ class HTTPRequest
 		void			ParseTransferEncoding(const std::string& content);
 		void			ParseBody(void);
 		void			FindServerConf(void);
-		bool			ParseChunkSize(void);
-		bool			ParseChunkBody(void);
+		void			ReceiveChunk(void);
+		void			ParseChunk(void);
+		void			ParseChunkSize(void);
+		void			ParseChunkData(void);
 };
 
 #endif
