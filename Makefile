@@ -2,6 +2,7 @@ vpath	%.cpp	srcs: \
 				srcs/server: \
 				srcs/socket: \
 				srcs/config: \
+				srcs/cgi: \
 				srcs/utils
 SRCS	=	main.cpp \
 			HTTPServer.cpp \
@@ -18,7 +19,10 @@ SRCS	=	main.cpp \
 			HTTPMethod.cpp \
 			Stat.cpp \
 			Dir.cpp \
-			HTTPResponse.cpp
+			HTTPResponse.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
+			URI.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
@@ -28,11 +32,14 @@ INCLUDE =	-I srcs/server \
 			-I srcs/utils \
 			-I srcs/socket \
 			-I srcs/exception \
+			-I srcs/cgi \
 			-I srcs/config
 NAME	=	webserv
 
-CC		=	c++
+#CC		=	c++
+CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++98
 RM		=	rm -rf

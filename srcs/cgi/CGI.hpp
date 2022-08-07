@@ -33,8 +33,8 @@ class CGI
 
 		void	ExecuteCGI(void);
 		void	ParseCGI(void);
-		void	SendData(const int write_pipe_fd[2], const int read_pipe_fd[2]);
-		void	ReceiveData(const int write_pipe_fd[2], const int read_pipe_fd[2], const pid_t pid);
+		void	SendData(int write_pipe_fd[2], int read_pipe_fd[2]);
+		void	ReceiveData(int write_pipe_fd[2], int read_pipe_fd[2], const pid_t pid);
 		void	ParseHeader(const std::string& line);
 		void	ParseContentType(const std::string& content);
 

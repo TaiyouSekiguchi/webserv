@@ -5,6 +5,8 @@
 # include <vector>
 # include <utility>
 # include "HTTPRequest.hpp"
+# include "URI.hpp"
+# include "CGI.hpp"
 # include "Stat.hpp"
 
 class HTTPMethod
