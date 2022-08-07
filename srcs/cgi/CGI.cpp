@@ -29,8 +29,11 @@ void	CGI::SendData(const int write_pipe_fd[2], const int read_pipe_fd[2])
 	CGIEnv	env(uri_, req_);
 	char*	argv[2];
 
-	if (close(write_pipe_fd[1]) < 0 || !pipe_set(write_pipe_fd[0], STDIN_FILENO))
-		std::exit(EXIT_FAILURE);
+	if (req_.GetMethod() == "POST")
+	{
+		if (close(write_pipe_fd[1]) < 0 || !pipe_set(write_pipe_fd[0], STDIN_FILENO))
+			std::exit(EXIT_FAILURE);
+	}
 
 	if (close(read_pipe_fd[0]) < 0 || !pipe_set(read_pipe_fd[1], STDOUT_FILENO))
 		std::exit(EXIT_FAILURE);
@@ -50,17 +53,19 @@ void	CGI::ReceiveData(const int write_pipe_fd[2], const int read_pipe_fd[2], con
 	pid_t			ret_pid;
 	int				status;
 
-	if (close(write_pipe_fd[0]) < 0 || !pipe_set(write_pipe_fd[1], STDOUT_FILENO))
+	if (req_.GetMethod() == "POST")
+	{
+		if (close(write_pipe_fd[0]) < 0
+			|| write(write_pipe_fd[1], req_.GetBody().c_str(), req_.GetBody().size()) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	}
 
-	if (close(read_pipe_fd[1]) < 0 || !pipe_set(read_pipe_fd[0], STDIN_FILENO))
+	if (close(read_pipe_fd[1]) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
-
-	write(STDOUT_FILENO, req_.GetBody().c_str(), req_.GetBody().size());
 
 	while (1)
 	{
-		read_byte = read(0, buf, buf_size);
+		read_byte = read(read_pipe_fd[0], buf, buf_size);
 		if (read_byte < 0)
 			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 		if (read_byte == 0)
@@ -81,15 +86,14 @@ void	CGI::ExecuteCGI(void)
 	int		write_pipe_fd[2];
 	int		read_pipe_fd[2];
 	pid_t	pid;
-	int		stdin_save;
-	int		stdout_save;
 
-	if ((stdin_save = dup(STDIN_FILENO)) < 0
-		|| (stdout_save = dup(STDOUT_FILENO)) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	if (req_.GetMethod() == "POST")
+	{
+		if (pipe(write_pipe_fd) < 0)
+			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	}
 
-	if (pipe(write_pipe_fd) < 0
-		|| pipe(read_pipe_fd) < 0
+	if (pipe(read_pipe_fd) < 0
 		|| (pid = fork()) < 0)
 		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
@@ -98,12 +102,14 @@ void	CGI::ExecuteCGI(void)
 	else
 		ReceiveData(write_pipe_fd, read_pipe_fd, pid);
 
-	if (dup2(stdin_save, STDIN_FILENO) < 0
-		|| dup2(stdout_save, STDOUT_FILENO) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	if (req_.GetMethod() == "POST")
+	{
+		if (close(write_pipe_fd[1]) < 0)
+			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+	}
 
-	close(stdin_save);
-	close(stdout_save);
+	if (close(read_pipe_fd[0]) < 0)
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	return;
 }
