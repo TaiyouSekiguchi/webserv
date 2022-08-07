@@ -2,7 +2,7 @@
 #include <sstream>
 #include "RegularFile.hpp"
 
-RegularFile::RegularFile(const std::string& path, const mode_t open_mode)
+RegularFile::RegularFile(const std::string& path, const int open_mode)
 	: AIo(open(path.c_str(), open_mode)), path_(path), failed_(false)
 {
 	if (fd_ == -1)
@@ -28,7 +28,7 @@ bool	RegularFile::Fail() const
 
 const std::string&	RegularFile::GetName() const { return (name_); }
 
-int		RegularFile::ReadFile(std::string* str) const
+ssize_t		RegularFile::ReadFile(std::string* str) const
 {
 	if (failed_)
 		throw std::runtime_error("regularfile error");
@@ -46,7 +46,7 @@ int		RegularFile::ReadFile(std::string* str) const
 	return (readsize);
 }
 
-int		RegularFile::WriteToFile(const std::string& str) const
+ssize_t		RegularFile::WriteToFile(const std::string& str) const
 {
 	if (failed_)
 		throw std::runtime_error("regularfile error");

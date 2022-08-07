@@ -1,14 +1,21 @@
-all			:	test
+all		:	test
 
-test		:	config nl utils
+test	:	compile
+			make test -C config_test		&& echo
+			make test -C HTTPMethod_test	&& echo
+			make test -C HTTPRequest_test	&& echo
+			make test -C HTTPResponse_test	&& echo
+			make test -C URI_test			&& echo
+			make test -C utils_test			&& echo
+			make test -C WebServ_test
 
-config:
-	make test -C config_test
+compile	:
+			make -C config_test
+			make -C HTTPMethod_test
+			make -C HTTPRequest_test
+			make -C HTTPResponse_test
+			make -C URI_test
+			make -C utils_test
+			make -C WebServ_test
 
-utils:
-	make test -C utils_test
-
-nl:
-	@echo
-
-.PHONY		:	all test config utils nl
+.PHONY		:	all test compile
