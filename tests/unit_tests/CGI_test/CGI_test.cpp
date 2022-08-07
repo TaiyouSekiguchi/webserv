@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest.h>
 #include <iostream>
-#include "./HTTPRequest.hpp"
+#include "HTTPRequest.hpp"
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"
@@ -17,7 +17,7 @@ class CGITest : public ::testing::Test
 		const std::vector<ServerDirective>&				servers = config.GetServers();
 		std::vector<ServerDirective>::const_iterator	itr = servers.begin();
 
-		lsocket_ = new ListenSocket(*itr);
+		lsocket_ = new ListenSocket(*itr, servers.at(0));
 		lsocket_->ListenConnection();
 		csocket_ = new ClientSocket();
 		csocket_->ConnectServer("127.0.0.1", 8080);

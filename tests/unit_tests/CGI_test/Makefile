@@ -4,7 +4,7 @@ vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SR
 
 SRCS	=	CGI.cpp \
 			CGIEnv.cpp \
-			CGI_test.cpp \
+			New_CGI_test.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
@@ -14,7 +14,9 @@ SRCS	=	CGI.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp  \
 			Tokens.cpp \
-			HTTPRequest.cpp
+			HTTPRequest.cpp \
+			URI.cpp
+
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
