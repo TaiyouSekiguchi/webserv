@@ -84,8 +84,9 @@ void	CGI::ExecuteCGI(void)
 	int		stdin_save;
 	int		stdout_save;
 
-	stdin_save = dup(STDIN_FILENO);
-	stdout_save = dup(STDOUT_FILENO);
+	if ((stdin_save = dup(STDIN_FILENO)) < 0
+		|| (stdout_save = dup(STDOUT_FILENO)) < 0)
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
 
 	if (pipe(write_pipe_fd) < 0
 		|| pipe(read_pipe_fd) < 0
@@ -97,8 +98,10 @@ void	CGI::ExecuteCGI(void)
 	else
 		ReceiveData(write_pipe_fd, read_pipe_fd, pid);
 
-	dup2(stdin_save, STDIN_FILENO);
-	dup2(stdout_save, STDOUT_FILENO);
+	if (dup2(stdin_save, STDIN_FILENO) < 0
+		|| dup2(stdout_save, STDOUT_FILENO) < 0)
+		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+
 	close(stdin_save);
 	close(stdout_save);
 
