@@ -38,7 +38,7 @@ void	CGI::SendData(const int write_pipe_fd[2], const int read_pipe_fd[2])
 	if (close(read_pipe_fd[0]) < 0 || !pipe_set(read_pipe_fd[1], STDOUT_FILENO))
 		std::exit(EXIT_FAILURE);
 
-	argv[0] = const_cast<char *>(file_path_.c_str());
+	argv[0] = const_cast<char *>(uri_.GetAccessPath().c_str());
 	argv[1] = NULL;
 
 	if (execve(argv[0], argv, env.GetEnv()) < 0)
@@ -57,17 +57,17 @@ void	CGI::ReceiveData(const int write_pipe_fd[2], const int read_pipe_fd[2], con
 	{
 		if (close(write_pipe_fd[0]) < 0
 			|| write(write_pipe_fd[1], req_.GetBody().c_str(), req_.GetBody().size()) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 	}
 
 	if (close(read_pipe_fd[1]) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 
 	while (1)
 	{
 		read_byte = read(read_pipe_fd[0], buf, buf_size);
 		if (read_byte < 0)
-			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 		if (read_byte == 0)
 			break;
 		buf[read_byte] = '\0';
@@ -78,7 +78,7 @@ void	CGI::ReceiveData(const int write_pipe_fd[2], const int read_pipe_fd[2], con
 	if (ret_pid < 0
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 }
 
 void	CGI::ExecuteCGI(void)
@@ -90,12 +90,12 @@ void	CGI::ExecuteCGI(void)
 	if (req_.GetMethod() == "POST")
 	{
 		if (pipe(write_pipe_fd) < 0)
-			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 	}
 
 	if (pipe(read_pipe_fd) < 0
 		|| (pid = fork()) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
 	if (pid == 0)
 		SendData(write_pipe_fd, read_pipe_fd);
@@ -105,11 +105,11 @@ void	CGI::ExecuteCGI(void)
 	if (req_.GetMethod() == "POST")
 	{
 		if (close(write_pipe_fd[1]) < 0)
-			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 	}
 
 	if (close(read_pipe_fd[0]) < 0)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
 	return;
 }
@@ -127,7 +127,7 @@ void	CGI::ParseHeader(const std::string& line)
 
 	pos = line.find(":");
 	if (pos == std::string::npos)
-		throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseHeader");
 
 	field = line.substr(0, pos);
 	content = line.substr(pos + 1);
@@ -155,7 +155,7 @@ void	CGI::ParseCGI(void)
 	{
 		pos = data_.find("\n", offset);
 		if (pos == std::string::npos)
-			throw HTTPError(HTTPError::INTERNAL_SERVER_ERROR);
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseCGI");
 
 		line = data_.substr(offset, pos - offset);
 		offset = pos + 1;

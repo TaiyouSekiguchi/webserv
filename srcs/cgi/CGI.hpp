@@ -11,9 +11,11 @@
 # include <map>
 # include <utility>
 
-# include "HTTPRequest.hpp"
 # include "CGIEnv.hpp"
+# include "URI.hpp"
+# include "HTTPRequest.hpp"
 # include "HTTPError.hpp"
+# include "HTTPStatusCode.hpp"
 # include "utils.hpp"
 
 class CGI
@@ -31,8 +33,8 @@ class CGI
 
 		void	ExecuteCGI(void);
 		void	ParseCGI(void);
-		void	SendData(const int pipe_fd[2]);
-		void	ReceiveData(const int pipe_fd[2], const pid_t pid);
+		void	SendData(const int write_pipe_fd[2], const int read_pipe_fd[2]);
+		void	ReceiveData(const int write_pipe_fd[2], const int read_pipe_fd[2], const pid_t pid);
 		void	ParseHeader(const std::string& line);
 		void	ParseContentType(const std::string& content);
 
