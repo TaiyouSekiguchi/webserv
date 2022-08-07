@@ -14,7 +14,7 @@ OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils
+INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils -I$(SRCSDIR)/server
 NAME	=	unit_test
 
 CC		=	c++

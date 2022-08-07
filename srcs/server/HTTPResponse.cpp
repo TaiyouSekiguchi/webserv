@@ -4,11 +4,11 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 
-HTTPResponse::HTTPResponse(e_StatusCode status_code, const HTTPRequest &req, const HTTPMethod &method)
-	: req_(req), method_(method), server_conf_(req.GetServerConf()), status_code_(status_code)
+HTTPResponse::HTTPResponse(const HTTPRequest &req, const HTTPMethod &method)
+	: req_(req), method_(method),
+	  server_conf_(req.GetServerConf()), status_code_(method.GetStatusCode())
 {
 	CheckConnection();
-	SelectBody();
 	AppendHeaders();
 	res_msg_ = CreateResponse();
 }
@@ -17,9 +17,12 @@ HTTPResponse::~HTTPResponse()
 {
 }
 
-void HTTPResponse::SendResponse(const ServerSocket *ssocket)
+const std::string&	HTTPResponse::GetResMsg() const { return (res_msg_); }
+const bool&			HTTPResponse::GetConnection() const { return (connection_); }
+
+void HTTPResponse::SendResponse(const ServerSocket& ssocket)
 {
-	ssocket->SendData(res_msg_);
+	ssocket.SendData(res_msg_);
 }
 
 void HTTPResponse::CheckConnection()
@@ -40,15 +43,11 @@ void HTTPResponse::AppendHeaders()
 	AppendHeader("Content-type", method_.GetContentType());
 	AppendHeader("Location", method_.GetLocation());
 	AppendHeader("Content-Length",
-		(req_.GetMethod() == "GET" || !IsNormalStatus()) ? Utils::ToString(body_.size()) : "");
+		(req_.GetMethod() == "GET" || !IsNormalStatus()) ? Utils::ToString(method_.GetBody().size()) : "");
 }
 
 void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
 {
-	if (headers_.find(key) != headers_.end())
-	{
-		return;
-	}
 	if (value.empty())
 	{
 		return;
@@ -67,60 +66,9 @@ std::string HTTPResponse::GetDate() const
 	return (str);
 }
 
-void HTTPResponse::SelectBody()
-{
-	if (!IsNormalStatus())
-	{
-		body_ = GenerateHTML();
-		return;
-	}
-	body_ = method_.GetBody();
-}
-
 bool HTTPResponse::IsNormalStatus() const
 {
 	return (status_code_ < 300);
-}
-
-std::string HTTPResponse::GenerateHTML()
-{
-	std::string str;
-	std::map<int, std::string>::const_iterator ite = server_conf_->GetErrorPages().find(status_code_);
-	if (ite != server_conf_->GetErrorPages().end())
-	{
-		std::string error_page_path = ite->second;
-		if (error_page_path.at(0) == '/')
-		{
-			error_page_path = error_page_path.substr(1);
-			std::ifstream ifs(error_page_path);
-			if (ifs.fail())
-			{
-				status_code_ = SC_NOT_FOUND;
-				str = GenerateDefaultHTML();
-				return (str);
-			}
-			std::string file_str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-			return (file_str);
-		}
-		status_code_ = SC_FOUND;
-		AppendHeader("Location", ite->second);
-	}
-	str = GenerateDefaultHTML();
-	return (str);
-}
-
-std::string HTTPResponse::GenerateDefaultHTML() const
-{
-	std::stringstream ss;
-
-	ss << "<html>\r\n";
-	ss << "<head><title>" << status_code_ << " " << kStatusMsg_[status_code_] <<"</title></head>\r\n";
-	ss << "<body>\r\n";
-	ss << "<center><h1>" << status_code_ << " " << kStatusMsg_[status_code_] << "</h1></center>\r\n";
-	ss << "<hr><center>" << "Webserv" << "</center>\r\n";
-	ss << "</body>\r\n";
-	ss << "</html>\r\n";
-	return (ss.str());
 }
 
 std::string HTTPResponse::CreateResponse()
@@ -128,12 +76,12 @@ std::string HTTPResponse::CreateResponse()
 	std::stringstream ss;
 
 	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_[status_code_] << "\r\n";
-	ss << HeaderFeild();
-	ss << body_;
+	ss << HeaderField();
+	ss << method_.GetBody();
 	return (ss.str());
 }
 
-std::string HTTPResponse::HeaderFeild() const
+std::string	HTTPResponse::HeaderField() const
 {
 	std::stringstream ss;
 	std::map<std::string, std::string>::const_iterator ite = headers_.begin();
@@ -146,7 +94,7 @@ std::string HTTPResponse::HeaderFeild() const
 	return (ss.str());
 }
 
-const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
+const std::pair<e_StatusCode, std::string> HTTPResponse::kPairs_[] = {
 	std::make_pair(SC_CONTINUE, "Continue"),
 	std::make_pair(SC_SWITCHING_PROTOCOLS, "Switching Protocols"),
 	std::make_pair(SC_OK, "OK"),
@@ -184,6 +132,4 @@ const std::pair<int, std::string> HTTPResponse::kPairs_[] = {
 	std::make_pair(SC_HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported"),
 };
 
-std::map<int, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[35]);
-const std::string &HTTPResponse::GetResMsg() const { return res_msg_; }
-const bool &HTTPResponse::GetConnection() const { return connection_; }
+std::map<e_StatusCode, std::string>HTTPResponse::kStatusMsg_(kPairs_, &kPairs_[35]);
