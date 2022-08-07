@@ -361,5 +361,5 @@ void	HTTPMethod::MethodDisplay() const
 	std::cout << "status_code: " << status_code_ << std::endl;
 	std::cout << "content_type: " << content_type_ << std::endl;
 	std::cout << "location: " << location_ << std::endl;
-	std::cout << "[body]\n" << body_ << std::endl;
+	std::cout << "[ Body ]\n" << body_ << std::endl;
 }

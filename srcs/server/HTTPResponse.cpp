@@ -48,10 +48,6 @@ void HTTPResponse::AppendHeaders()
 
 void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
 {
-	if (headers_.find(key) != headers_.end())
-	{
-		return;
-	}
 	if (value.empty())
 	{
 		return;
