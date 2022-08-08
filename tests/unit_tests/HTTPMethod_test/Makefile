@@ -5,6 +5,7 @@ vpath	%.cpp	srcs:\
 				$(SRCSDIR)/exception \
 				$(SRCSDIR)/io:\
 				$(SRCSDIR)/server \
+				$(SRCSDIR)/cgi \
 				$(SRCSDIR)/utils
 SRCS	=	Config.cpp \
 			Tokens.cpp \
@@ -22,6 +23,8 @@ SRCS	=	Config.cpp \
 			URI.cpp \
 			Dir.cpp \
 			Stat.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
 			utils.cpp
 
 SRCS	+=	ClientSocket.cpp
@@ -41,6 +44,7 @@ INCLUDE =	-I./srcs \
 			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
+			-I$(SRCSDIR)/cgi \
 			-I$(SRCSDIR)/utils
 NAME	=	unit_test
 
