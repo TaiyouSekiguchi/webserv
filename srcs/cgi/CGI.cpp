@@ -4,6 +4,7 @@ CGI::CGI(const URI& uri, const HTTPRequest& req)
 	: uri_(uri)
 	, req_(req)
 	, server_conf_(req.GetServerConf())
+	, status_code_(SC_OK)
 {
 	ExecuteCGI();
 	ParseCGI();
@@ -120,9 +121,11 @@ void	CGI::ExecuteCGI(void)
 void	CGI::ParseHeader(const std::string& line)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
-		std::make_pair("Content-type", &CGI::ParseContentType)
+		std::make_pair("content-type", &CGI::ParseContentType),
+		std::make_pair("location", &CGI::ParseLocation),
+		std::make_pair("status", &CGI::ParseStatusCode)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[1]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[3]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 	std::string											field;
 	std::string											content;
@@ -134,6 +137,7 @@ void	CGI::ParseHeader(const std::string& line)
 
 	field = line.substr(0, pos);
 	content = line.substr(pos + 1);
+	field = Utils::StringToLower(field);
 	found = parse_funcs.find(field);
 	if (found != parse_funcs.end())
 		(this->*(found->second))(content);
@@ -144,6 +148,32 @@ void	CGI::ParseHeader(const std::string& line)
 void	CGI::ParseContentType(const std::string& content)
 {
 	content_type_ = Utils::MyTrim(content, " ");
+}
+
+void	CGI::ParseLocation(const std::string& content)
+{
+	bool		is_url;
+
+	is_url = content.find("http://") != std::string::npos;
+	is_url |= content.find("https://") != std::string::npos;
+	
+	if (is_url)
+	{
+		location_ = Utils::MyTrim(content, " ");
+		status_code_ = SC_FOUND;
+	}
+}
+
+void	CGI::ParseStatusCode(const std::string& content)
+{
+	long	status_code;
+	char*	endptr;
+
+	status_code =  std::strtol(content.c_str(), &endptr, 10);
+	if (*endptr != '\0' || errno == ERANGE || status_code < 1 || 999 < status_code)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseStatusCode");
+
+	status_code_ = static_cast<e_StatusCode>(status_code);
 }
 
 void	CGI::ParseCGI(void)
@@ -172,4 +202,6 @@ void	CGI::ParseCGI(void)
 
 std::string		CGI::GetData(void) const { return (data_); }
 std::string		CGI::GetContentType(void) const { return (content_type_); }
+std::string		CGI::GetLocation(void) const { return (location_); }
+e_StatusCode	CGI::GetStatusCode(void) const { return (status_code_); }
 std::string		CGI::GetBody(void) const { return (body_); }
