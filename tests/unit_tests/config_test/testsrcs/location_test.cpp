@@ -68,11 +68,11 @@ TEST(ReturnTest, Valid)
 	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
 	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
-	EXPECT_EQ(litr->GetReturn(), std::make_pair(301, std::string("http://localhost:8080")));
-	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(301, std::string("")));
-	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(302, std::string("http://localhost:8080")));
-	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(1, std::string("abc")));
-	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(999, std::string("1")));
+	EXPECT_EQ(litr->GetReturn(), std::make_pair(static_cast<e_StatusCode>(301), std::string("http://localhost:8080")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(static_cast<e_StatusCode>(301), std::string("")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(static_cast<e_StatusCode>(302), std::string("http://localhost:8080")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(static_cast<e_StatusCode>(1), std::string("abc")));
+	EXPECT_EQ((++litr)->GetReturn(), std::make_pair(static_cast<e_StatusCode>(999), std::string("1")));
 }
 TEST(ReturnTest, Error)
 {

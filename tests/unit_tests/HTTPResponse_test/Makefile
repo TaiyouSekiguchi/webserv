@@ -1,35 +1,36 @@
 SRCSDIR	= ../../../srcs
 vpath	%.cpp	testsrcs: \
 				$(SRCSDIR)/config: \
-				$(SRCSDIR)/socket: \
-				$(SRCSDIR)/utils: \
-				$(SRCSDIR)/server
+				$(SRCSDIR)/io: \
+				$(SRCSDIR)/server: \
+				$(SRCSDIR)/utils
 
-SRCS	=	ASocket.cpp \
-			EventQueue.cpp \
-			ClientSocket.cpp \
-			ServerSocket.cpp \
-			ListenSocket.cpp \
-			Tokens.cpp \
-			Config.cpp \
+SRCS	=	Config.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp \
-			HTTPServer.cpp \
+			Tokens.cpp \
+			AIo.cpp \
+			ASocket.cpp \
+			ServerSocket.cpp \
+			ListenSocket.cpp \
+			RegularFile.cpp \
 			HTTPRequest.cpp \
-			utils.cpp \
+			HTTPResponse.cpp \
 			HTTPMethod.cpp \
 			Stat.cpp \
 			Dir.cpp \
-			HTTPResponse.cpp
-			
-SRCS	+=	Response_test.cpp 
+			utils.cpp
+
+SRCS	+=	ClientSocket.cpp
+SRCS	+=	Response_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
 INCLUDE =	-I $(SRCSDIR)/exception \
-			-I $(SRCSDIR)/socket \
+			-I $(SRCSDIR)/io \
+			-I $(SRCSDIR)/event \
 			-I $(SRCSDIR)/config \
 			-I $(SRCSDIR)/utils \
 			-I $(SRCSDIR)/server

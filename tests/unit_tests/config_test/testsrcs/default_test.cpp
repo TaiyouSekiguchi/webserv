@@ -20,8 +20,8 @@ TEST(DefaultTest, Basic)
 	EXPECT_EQ(sitr->GetServerNames()[1], "default");
 	EXPECT_EQ(sitr->GetClientMaxBodySize(), 1 * 1024 * 1024);
 	EXPECT_EQ(sitr->GetErrorPages().size(), (size_t)2);
-	EXPECT_EQ(sitr->GetErrorPages().find(403)->second, "/40x.html");
-	EXPECT_EQ(sitr->GetErrorPages().find(404)->second, "/40x.html");
+	EXPECT_EQ(sitr->GetErrorPages().find(static_cast<e_StatusCode>(403))->second, "/40x.html");
+	EXPECT_EQ(sitr->GetErrorPages().find(static_cast<e_StatusCode>(404))->second, "/40x.html");
 	{
 		locations = sitr->GetLocations();
 		litr = locations.begin();

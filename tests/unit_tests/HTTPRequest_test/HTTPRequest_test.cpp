@@ -5,8 +5,7 @@
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"
-#include "EventQueue.hpp"
-#include "HTTPServer.hpp"
+#include "HTTPRequest.hpp"
 
 class RequestTest : public ::testing::Test
 {
@@ -72,8 +71,6 @@ class RequestTest : public ::testing::Test
 
 			ssocket_ = new ServerSocket(**target_lsocket);
 			req_ = new HTTPRequest(*ssocket_);
-			// csocket.SendRequest(msg);
-			// req_->ParseRequest();
 			try
 			{
 				csocket.SendRequest(msg);
