@@ -95,10 +95,8 @@ void	CGI::ExecuteCGI(void)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 	}
 
-	if (pipe(read_pipe_fd) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
-
-	if ((pid = fork()) < 0)
+	if (pipe(read_pipe_fd) < 0
+		|| (pid = fork()) < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
 	if (pid == 0)
@@ -114,33 +112,6 @@ void	CGI::ExecuteCGI(void)
 
 	if (close(read_pipe_fd[0]) < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
-
-	return;
-}
-
-void	CGI::ParseHeader(const std::string& line)
-{
-	const std::pair<std::string, ParseFunc> p[] = {
-		std::make_pair("content-type", &CGI::ParseContentType),
-		std::make_pair("location", &CGI::ParseLocation),
-		std::make_pair("status", &CGI::ParseStatusCode)
-	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[3]);
-	std::map<std::string, ParseFunc>::const_iterator	found;
-	std::string											field;
-	std::string											content;
-	std::string::size_type								pos;
-
-	pos = line.find(":");
-	if (pos == std::string::npos)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseHeader");
-
-	field = line.substr(0, pos);
-	content = line.substr(pos + 1);
-	field = Utils::StringToLower(field);
-	found = parse_funcs.find(field);
-	if (found != parse_funcs.end())
-		(this->*(found->second))(content);
 
 	return;
 }
@@ -174,6 +145,30 @@ void	CGI::ParseStatusCode(const std::string& content)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseStatusCode");
 
 	status_code_ = static_cast<e_StatusCode>(status_code);
+}
+
+void	CGI::ParseHeader(const std::string& line)
+{
+	std::string::size_type	pos;
+	std::string				field;
+	std::string				content;
+
+	pos = line.find(":");
+	if (pos == std::string::npos)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseHeader");
+
+	field = line.substr(0, pos);
+	content = line.substr(pos + 1);
+	field = Utils::StringToLower(field);
+
+	if (field == "content-type")
+		ParseContentType(content);
+	else if (field == "location")
+		ParseLocation(content);
+	else if (field == "status")
+		ParseStatusCode(content);
+
+	return;
 }
 
 void	CGI::ParseCGI(void)
