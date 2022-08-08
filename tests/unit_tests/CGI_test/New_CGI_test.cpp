@@ -125,7 +125,7 @@ TEST_F(CGITest, SIMPLE_GET)
 	RunCommunication("GET /test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n", 8080);
 
 	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location.GetRoot(), req_->GetTarget());
+	URI							uri(location, req_->GetTarget());
 	CGI							cgi(uri, *req_);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
@@ -138,7 +138,7 @@ TEST_F(CGITest, COMMAND_ARG)
 	RunCommunication("GET /command_arg_test.cgi?aaa+bbb+ccc HTTP/1.1\r\nHost: localhost:8080\r\n\r\n", 8080);
 
 	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location.GetRoot(), req_->GetTarget());
+	URI							uri(location, req_->GetTarget());
 	CGI							cgi(uri, *req_);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
@@ -151,7 +151,7 @@ TEST_F(CGITest, ENV_TEST)
 	RunCommunication("GET /env_test.cgi?first=aaa&last=bbb HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: Debian\r\n\r\n", 8080);
 
 	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location.GetRoot(), req_->GetTarget());
+	URI							uri(location, req_->GetTarget());
 	CGI							cgi(uri, *req_);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
@@ -164,7 +164,7 @@ TEST_F(CGITest, PUT_BODY_TEST)
 	RunCommunication("POST /post_test.cgi HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 10\r\n\r\nVALUE=abcd", 8080);
 
 	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location.GetRoot(), req_->GetTarget());
+	URI							uri(location, req_->GetTarget());
 	CGI							cgi(uri, *req_);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
