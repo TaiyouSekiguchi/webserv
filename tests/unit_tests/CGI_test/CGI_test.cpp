@@ -37,7 +37,7 @@ class CGITest : public ::testing::Test
 TEST_F(CGITest, standard)
 {
 	HTTPRequest		req(*ssocket_, ssocket_->GetServerConf());
-	CGI				cgi("./test.cgi", req);
+	CGI				cgi("/test.cgi", req);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
 	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\nGATEWAY_INTERFACE [CGI/1.1]\nCONTENT_LENGTH    []\n</div>\n</body>\n</html>", cgi.GetBody());

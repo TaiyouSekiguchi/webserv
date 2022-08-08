@@ -15,14 +15,12 @@ CGI::~CGI(void)
 
 static int	pipe_set(int src, int dst)
 {
-	if (close(dst) < 0)
+	if (close(dst) < 0
+		|| dup2(src, dst) < 0
+		|| close(src) < 0)
+	{
 		return (0);
-
-	if (dup2(src, dst) < 0)
-		return (0);
-
-	if (close(src) < 0)
-		return (0);
+	}
 
 	return (1);
 }
@@ -38,13 +36,7 @@ void	CGI::SendData(int write_pipe_fd[2], int read_pipe_fd[2])
 			std::exit(EXIT_FAILURE);
 	}
 
-	if (close(read_pipe_fd[0]) < 0)
-		std::exit(EXIT_FAILURE);
-
-	if (close(read_pipe_fd[1]) < 0)
-		std::exit(EXIT_FAILURE);
-
-	if (!pipe_set(read_pipe_fd[1], STDOUT_FILENO))
+	if (close(read_pipe_fd[0]) < 0 || !pipe_set(read_pipe_fd[1], STDOUT_FILENO))
 		std::exit(EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(uri_.GetAccessPath().c_str());

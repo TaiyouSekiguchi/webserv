@@ -122,7 +122,7 @@ std::vector<ListenSocket*>	CGITest::lsockets_;
 
 TEST_F(CGITest, test1)
 {
-	RunCommunication("GET /cgi-bin/test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n", 8080);
+	RunCommunication("GET /test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n", 8080);
 
 	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
 	URI							uri(location.GetRoot(), req_->GetTarget());
@@ -130,7 +130,7 @@ TEST_F(CGITest, test1)
 	CGI							cgi(uri, *req_);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
-	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\nGATEWAY_INTERFACE [CGI/1.1]\nCONTENT_LENGTH    []\n</div>\n</body>\n</html>", cgi.GetBody());
+	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\nGATEWAY_INTERFACE [CGI/1.1]\nCONTENT_LENGTH    [0]\n</div>\n</body>\n</html>", cgi.GetBody());
 }
 
 /*
