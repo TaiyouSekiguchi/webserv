@@ -1,25 +1,33 @@
 vpath	%.cpp	srcs: \
 				srcs/server: \
-				srcs/socket: \
+				srcs/io: \
 				srcs/config: \
+				srcs/utils: \
+				srcs/webserv: \
 				srcs/cgi: \
-				srcs/utils
+				srcs/event
 SRCS	=	main.cpp \
-			HTTPServer.cpp \
+			WebServ.cpp \
 			EventQueue.cpp \
+			AIo.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
+			RegularFile.cpp \
 			Config.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp \
 			Tokens.cpp \
+			HTTPServer.cpp \
 			HTTPRequest.cpp \
-			utils.cpp \
 			HTTPMethod.cpp \
+			HTTPResponse.cpp \
+			AEvent.cpp \
+			AcceptClientEvent.cpp \
+			HTTPServerEvent.cpp \
+			utils.cpp \
 			Stat.cpp \
 			Dir.cpp \
-			HTTPResponse.cpp \
 			CGI.cpp \
 			CGIEnv.cpp \
 			URI.cpp
@@ -30,10 +38,12 @@ DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
 INCLUDE =	-I srcs/server \
 			-I srcs/utils \
-			-I srcs/socket \
+			-I srcs/io \
 			-I srcs/exception \
 			-I srcs/cgi \
-			-I srcs/config
+			-I srcs/config \
+			-I srcs/webserv \
+			-I srcs/event
 NAME	=	webserv
 
 #CC		=	c++

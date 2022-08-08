@@ -2,18 +2,34 @@ SRCSDIR	= ../../../srcs
 vpath	%.cpp	srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
-				$(SRCSDIR)/socket:\
+				$(SRCSDIR)/event \
+				$(SRCSDIR)/exception \
+				$(SRCSDIR)/io:\
+				$(SRCSDIR)/server \
+				$(SRCSDIR)/webserv:\
 				$(SRCSDIR)/utils
-SRCS	=	ListenSocket.cpp \
-			ServerSocket.cpp \
-			ASocket.cpp \
-			Config.cpp \
+SRCS	=	Config.cpp \
 			Tokens.cpp \
 			ServerDirective.cpp \
 			LocationDirective.cpp \
-			utils.cpp \
+			AcceptClientEvent.cpp \
+			AEvent.cpp \
+			HTTPServerEvent.cpp \
+			AIo.cpp \
+			ASocket.cpp \
+			ListenSocket.cpp \
+			RegularFile.cpp \
+			ServerSocket.cpp \
+			HTTPMethod.cpp \
+			HTTPRequest.cpp \
+			HTTPResponse.cpp \
+			HTTPServer.cpp \
+			URI.cpp \
+			Dir.cpp \
 			Stat.cpp \
-			Dir.cpp
+			utils.cpp \
+			EventQueue.cpp \
+			WebServ.cpp
 
 SRCS	+=	virtual_server_test.cpp
 
@@ -22,9 +38,14 @@ OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
 INCLUDE =	-I./srcs \
+			-I./testsrcs \
 			-I$(SRCSDIR)/config \
-			-I$(SRCSDIR)/socket \
-			-I$(SRCSDIR)/utils
+			-I$(SRCSDIR)/event \
+			-I$(SRCSDIR)/exception \
+			-I$(SRCSDIR)/io \
+			-I$(SRCSDIR)/server \
+			-I$(SRCSDIR)/utils \
+			-I$(SRCSDIR)/webserv
 NAME	=	unit_test
 
 CC		=	c++

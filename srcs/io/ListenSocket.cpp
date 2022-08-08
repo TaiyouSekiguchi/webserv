@@ -9,9 +9,8 @@
 
 ListenSocket::ListenSocket
 	(const ServerDirective::Listen& listen, const ServerDirective& server_conf)
-	: ASocket(-1, listen, server_conf)
+	: ASocket(socket(AF_INET, SOCK_STREAM, 0), listen, server_conf)
 {
-	fd_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_ == -1)
 		throw std::runtime_error("socket error");
 
