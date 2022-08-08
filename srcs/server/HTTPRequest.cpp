@@ -243,7 +243,23 @@ void HTTPRequest::ParseContentType(const std::string& content)
 
 void HTTPRequest::ParseTransferEncoding(const std::string& content)
 {
-	transfer_encoding_ = Utils::MyTrim(content, " ");
+	std::vector<std::string>			list;
+	std::vector<std::string>::iterator	it;
+	std::vector<std::string>::iterator	it_end;
+
+	list = Utils::MySplit(content, ",");
+	it = list.begin();
+	it_end = list.end();
+	for (; it != it_end; ++it)
+	{
+		*it = Utils::MyTrim(*it, " ");
+		*it = Utils::StringToLower(*it);
+		if (*it != "chunked")
+		{
+			throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
+		}
+		transfer_encoding_ = *it;
+	}
 }
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
@@ -277,7 +293,8 @@ static bool	IsOnlyOnceHeader(const std::string& field)
 static bool	IsAppendHeader(const std::string& field)
 {
 	if (field == "accept-encoding"
-		|| field == "connection")
+		|| field == "connection"
+		|| field == "transfer-encoding")
 		return (true);
 	return (false);
 }
@@ -355,20 +372,23 @@ void	HTTPRequest::CheckHeaders(void)
 void	HTTPRequest::ReceiveChunk(void)
 {
 	const std::string	FOOTER = "0\r\n\r\n";
+	const std::string	LINE_END = "\r\n";
 	std::string			buf;
 
 	raw_body_ = save_;
 	if (!raw_body_.empty() && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
 	{
-		while ((buf = GetLine()) != "")
+		while (1)
 		{
+			buf = ssocket_.RecvData();
+			if (buf.size() == 0)
+				throw ClientClosed();
 			raw_body_ += buf;
 			if (raw_body_.size() > client_max_body_size_)
-				throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ParseChunk");
+				throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ReceiveChunk");
+			if (!raw_body_.empty() && !raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
+				break;
 		}
-
-		if (!raw_body_.empty() && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
-			throw HTTPError(SC_BAD_REQUEST, "ParseChunk");
 	}
 }
 
