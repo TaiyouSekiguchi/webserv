@@ -224,23 +224,23 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	return (SEVENT_FILE_WRITE);
 }
 
-// bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
-// {
-// 	if (st.Fail() || !st.IsRegularFile())
-// 		return (false);
+ bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
+{
+	if (st.Fail() || !st.IsRegularFile())
+		return (false);
 
-// 	std::string::size_type	dot_pos;
-// 	std::string				extension;
-// 	const std::string&		access_path = st.GetPath();
+	std::string::size_type	dot_pos;
+	std::string				extension;
+	const std::string&		access_path = st.GetPath();
 
-// 	dot_pos = access_path.find_last_of('.');
-// 	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
-// 		return (false);
-// 	extension = access_path.substr(dot_pos + 1);
-// 	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
-// 		return (false);
-// 	return (true);
-// }
+	dot_pos = access_path.find_last_of('.');
+	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
+		return (false);
+	extension = access_path.substr(dot_pos + 1);
+	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
+		return (false);
+	return (true);
+}
 
 e_HTTPServerEventType	HTTPMethod::ExecCGI(const URI& uri)
 {
@@ -287,7 +287,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
 
-	URI		uri(locacion.GetRoot(), req_.GetTarget());
+	URI		uri(location.GetRoot(), req_.GetTarget());
 
 	Stat	cgi_st(uri.GetAccessPath());
 

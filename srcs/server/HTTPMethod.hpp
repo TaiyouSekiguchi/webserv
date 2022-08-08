@@ -53,8 +53,8 @@ class HTTPMethod
 		std::string 			GenerateDefaultHTML() const;
 
 		// CGI
-		// bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
-		// int		ExecCGI();
+		bool	CheckCGIScript(const Stat& st, const LocationDirective& location);
+		e_HTTPServerEventType	ExecCGI(const URI& uri);
 
 		const HTTPRequest&		req_;
 		const ServerDirective*	server_conf_;
