@@ -253,15 +253,15 @@ e_HTTPServerEventType	HTTPMethod::ExecCGI(const URI& uri)
 	return (SEVENT_NO);
 }
 
-e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(const LocationDirective& location)
+e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(const LocationDirective& location, const URI& uri)
 {
 	const std::string&	method = req_.GetMethod();
 
 	std::string			access_path;
 	if (method == "POST")
-		access_path = location.GetUploadRoot() + req_.GetTarget();
+		access_path = uri.GetUploadAccessPath();
 	else
-		access_path = location.GetRoot() + req_.GetTarget();
+		access_path = uri.GetAccessPath();
 
 	Stat	st(access_path);
 	if (st.Fail())
@@ -287,14 +287,14 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
 
-	URI		uri(location.GetRoot(), req_.GetTarget());
+	URI		uri(location, req_.GetTarget());
 
 	Stat	cgi_st(uri.GetAccessPath());
 
 	if (CheckCGIScript(cgi_st, location))
 		return (ExecCGI(uri));
 
-	return (ValidateAnyMethod(location));
+	return (ValidateAnyMethod(location, uri));
 }
 
 void	HTTPMethod::ReadErrorPage()

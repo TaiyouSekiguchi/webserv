@@ -45,7 +45,7 @@ class HTTPMethod
 		void	SetAutoIndexContent(const std::string& access_path);
 
 		// HTTPMethod
-		e_HTTPServerEventType	ValidateAnyMethod(const LocationDirective& location);
+		e_HTTPServerEventType	ValidateAnyMethod(const LocationDirective& location, const URI& uri);
 		e_HTTPServerEventType	ValidateGETMethod(const Stat& st, const LocationDirective& location);
 		e_HTTPServerEventType	ValidateDELETEMethod(const Stat& st);
 		e_HTTPServerEventType	ValidatePOSTMethod(const Stat& st);
