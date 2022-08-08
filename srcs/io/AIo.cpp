@@ -7,8 +7,8 @@ AIo::AIo(const int fd)
 {
 	if (fd_ == -1)
 	{
-		int val = fcntl(sockfd, F_GETFL, 0);
-		fcntl(sockfd, F_SETFL, val | O_NONBLOCK);
+		int val = fcntl(fd_, F_GETFL, 0);
+		fcntl(fd_, F_SETFL, val | O_NONBLOCK);
 	}
 }
 

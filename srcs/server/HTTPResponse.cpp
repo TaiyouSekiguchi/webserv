@@ -20,9 +20,12 @@ HTTPResponse::~HTTPResponse()
 const std::string&	HTTPResponse::GetResMsg() const { return (res_msg_); }
 const bool&			HTTPResponse::GetConnection() const { return (connection_); }
 
-void HTTPResponse::SendResponse(const ServerSocket& ssocket)
+e_HTTPServerEventType	HTTPResponse::SendResponse(const ServerSocket& ssocket)
 {
-	ssocket.SendData(res_msg_);
+	ssize_t send_size = ssocket.SendData(res_msg_);
+	if (send_size <= 0)
+		return (SEVENT_END);
+	return (SEVENT_NO);
 }
 
 void HTTPResponse::CheckConnection()

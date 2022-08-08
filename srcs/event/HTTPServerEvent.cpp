@@ -24,7 +24,8 @@ void	HTTPServerEvent::RunAnyEvent(EventQueue* equeue)
 	switch (event_type_)
 	{
 		case SEVENT_SOCKET_RECV:
-			hserver_ = new HTTPServer(*ssocket_);
+			if (hserver_ == NULL)
+				hserver_ = new HTTPServer(*ssocket_);
 			next_event_type = hserver_->Run();
 			break;
 		case SEVENT_FILE_READ:
