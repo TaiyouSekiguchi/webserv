@@ -145,3 +145,16 @@ TEST_F(CGITest, test2)
 	EXPECT_EQ("text/html", cgi.GetContentType());
 	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE7\x92\xB0\xE5\xA2\x83\xE5\xA4\x89\xE6\x95\xB0\n=================================\nAUTH_TYPE = [ TEST ]\nCONTENT_LENGTH = [  ]\nCONTENT_TYPE = [  ]\nGATEWAY_INTERFACE = [ CGI/1.1 ]\nHTTP_ACCEPT = [ TEST ]\nHTTP_FORWARDED = [  ]\nHTTP_REFERER = [ TEST ]\nHTTP_USER_AGENT = [ Debian ]\nHTTP_X_FORWARDED_FOR = [  ]\nPATH_INFO = [ /env_test.cgi ]\nPATH_TRANSLATED = [ ./env_test.cgi ]\nQUERY_STRING = [ first=aaa&amp;last=bbb ]\nREMOTE_ADDR = [  ]\nREMOTE_HOST = [  ]\nREMOTE_IDENT = [  ]\nREMOTE_USER = [  ]\nREQUEST_METHOD = [ GET ]\nSCRIPT_NAME = [ /env_test.cgi ]\nSERVER_NAME = [ localhost ]\nSERVER_PORT = [ 8080 ]\nSERVER_PROTOCOL = [ HTTP/1.1 ]\nSERVER_SOFTWARE = [ 42Webserv ]\n\n</pre>\n</body>\n</html>\n", cgi.GetBody());
 }
+
+TEST_F(CGITest, test3)
+{
+	RunCommunication("POST /post_test.cgi HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 10\r\n\r\nVALUE=abcd", 8080);
+
+	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
+	URI							uri(location.GetRoot(), req_->GetTarget());
+
+	CGI							cgi(uri, *req_);
+
+	EXPECT_EQ("text/html", cgi.GetContentType());
+	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]\n</pre>\n</body>\n</html>\n", cgi.GetBody());
+}
