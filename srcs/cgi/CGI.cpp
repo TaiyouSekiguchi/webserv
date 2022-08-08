@@ -14,7 +14,30 @@ CGI::~CGI(void)
 {
 }
 
-static int	pipe_set(int src, int dst)
+static void	CreatePipe(int* write_pipe_fd, int* read_pipe_fd, const std::string& method)
+{
+	if (method == "POST")
+	{
+		if (pipe(write_pipe_fd) < 0)
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
+	}
+	if (pipe(read_pipe_fd) < 0)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
+}
+
+static void	CleanPipe(int* write_pipe_fd, int* read_pipe_fd, const std::string& method)
+{
+	if (method == "POST")
+	{
+		if (close(write_pipe_fd[1]) < 0)
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
+	}
+
+	if (close(read_pipe_fd[0]) < 0)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
+}
+
+static int	SetPipe(int src, int dst)
 {
 	if (close(dst) < 0
 		|| dup2(src, dst) < 0
@@ -33,11 +56,11 @@ void	CGI::SendData(int write_pipe_fd[2], int read_pipe_fd[2])
 
 	if (req_.GetMethod() == "POST")
 	{
-		if (close(write_pipe_fd[1]) < 0 || !pipe_set(write_pipe_fd[0], STDIN_FILENO))
+		if (close(write_pipe_fd[1]) < 0 || !SetPipe(write_pipe_fd[0], STDIN_FILENO))
 			std::exit(EXIT_FAILURE);
 	}
 
-	if (close(read_pipe_fd[0]) < 0 || !pipe_set(read_pipe_fd[1], STDOUT_FILENO))
+	if (close(read_pipe_fd[0]) < 0 || !SetPipe(read_pipe_fd[1], STDOUT_FILENO))
 		std::exit(EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(uri_.GetAccessPath().c_str());
@@ -89,14 +112,9 @@ void	CGI::ExecuteCGI(void)
 	int		read_pipe_fd[2];
 	pid_t	pid;
 
-	if (req_.GetMethod() == "POST")
-	{
-		if (pipe(write_pipe_fd) < 0)
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
-	}
+	CreatePipe(write_pipe_fd, read_pipe_fd, req_.GetMethod());
 
-	if (pipe(read_pipe_fd) < 0
-		|| (pid = fork()) < 0)
+	if ((pid = fork()) < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
 	if (pid == 0)
@@ -104,14 +122,7 @@ void	CGI::ExecuteCGI(void)
 	else
 		ReceiveData(write_pipe_fd, read_pipe_fd, pid);
 
-	if (req_.GetMethod() == "POST")
-	{
-		if (close(write_pipe_fd[1]) < 0)
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
-	}
-
-	if (close(read_pipe_fd[0]) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
+	CleanPipe(write_pipe_fd, read_pipe_fd, req_.GetMethod());
 
 	return;
 }
