@@ -242,14 +242,16 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 // 	return (true);
 // }
 
-// int		HTTPMethod::ExecCGI(const std::string& access_path)
-// {
-// 	CGI cgi(access_path);
-// 	body_ = cgi.GetBody();
-// 	location_ = cgi.GetLocation();
-// 	content_type_ = cgi.GetContentType();
-// 	return (cgi.GetStatusCode());
-// }
+e_HTTPServerEventType	HTTPMethod::ExecCGI(const URI& uri)
+{
+	CGI		cgi(uri, req_);
+
+	body_ = cgi.GetBody();
+	content_type_ = cgi.GetContentType();
+	location_ = cgi.GetLocation();
+	status_code_ = cgi.GetStatusCode();
+	return (SEVENT_NO);
+}
 
 e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(const LocationDirective& location)
 {
@@ -285,11 +287,12 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
 
-	// Stat	cgi_st(location.GetRoot() + req_.GetTarget());
-	// if (CheckCGIScript(cgi_st, location))
-	// 	return (OK);
-		// return (ExecCGI(cgi_st.GetPath()));
-	}
+	URI		uri(locacion.GetRoot(), req_.GetTarget());
+
+	Stat	cgi_st(uri.GetAccessPath());
+
+	if (CheckCGIScript(cgi_st, location))
+		return (ExecCGI(uri));
 
 	return (ValidateAnyMethod(location));
 }
