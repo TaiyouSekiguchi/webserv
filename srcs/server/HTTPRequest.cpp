@@ -6,6 +6,7 @@ HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
 	, server_confs_(ssocket.GetServerConfs())
 	, server_conf_(server_confs_.at(0))
 	, client_max_body_size_(0)
+	, step_(0)
 	, content_length_(0)
 	, connection_(true)
 	, parse_pos_(0)
@@ -70,10 +71,8 @@ bool	HTTPRequest::IsTChar(char c)
 	return (false);
 }
 
-std::string		HTTPRequest::GetLine(void)
+bool		HTTPRequest::GetLine(std::string* line)
 {
-	std::string				data;
-	std::string				line;
 	std::string				separator;
 	std::string::size_type	separator_length;
 	std::string::size_type	pos;
@@ -81,18 +80,12 @@ std::string		HTTPRequest::GetLine(void)
 	separator = "\r\n";
 	separator_length = separator.length();
 
-	while ((pos = save_.find(separator)) == std::string::npos)
-	{
-		data = ssocket_.RecvData();
-		if (data.size() == 0)
-			throw ClientClosed();
-		save_ += data;
-	}
-
-	line = save_.substr(0, pos);
+	pos = save_.find(separator);
+	if (pos == std::string::npos)
+		return (false);
+	*line = save_.substr(0, pos);
 	save_ = save_.substr(pos + separator_length, save_.size());
-
-	return (line);
+	return (true);
 }
 
 void	HTTPRequest::ParseMethod(const std::string& method)
@@ -151,12 +144,16 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	version_ = version;
 }
 
-void	HTTPRequest::ParseRequestLine(void)
+bool	HTTPRequest::ReceiveRequestLine(void)
 {
 	std::string					line;
 	std::vector<std::string>	list;
 
-	while ((line = GetLine()) == "") { }
+	while (line == "")
+	{
+		if (!GetLine(&line))
+			return (false);
+	}
 
 	if (Utils::IsBlank(line.at(0)))
 		throw HTTPError(SC_BAD_REQUEST, "ParseRequestLine");
@@ -169,7 +166,7 @@ void	HTTPRequest::ParseRequestLine(void)
 	ParseTarget(list.at(1));
 	ParseVersion(list.at(2));
 
-	return;
+	return (true);
 }
 
 void HTTPRequest::ParseHost(const std::string& content)
@@ -249,11 +246,9 @@ void HTTPRequest::ParseTransferEncoding(const std::string& content)
 
 	list = Utils::MySplit(content, ",");
 	if (list.size() >= 2)
-	{
-		throw HTTPError(SC_BAD_REQUEST, "ParseTransferEncoding")
-	}
-	transfer_encoding_ = Utils::MyTrim(list.at[0], " ");
-	transfer_encoding_ = Utils::StringToLower(list.at[0]);
+		throw HTTPError(SC_BAD_REQUEST, "ParseTransferEncoding");
+	transfer_encoding_ = Utils::MyTrim(list.at(0), " ");
+	transfer_encoding_ = Utils::StringToLower(list.at(0));
 	if (transfer_encoding_ != "chunked")
 		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
 }
@@ -310,7 +305,7 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 	}
 }
 
-void	HTTPRequest::ReceiveHeaders(void)
+bool	HTTPRequest::ReceiveHeaders(void)
 {
 	std::string		array[7] = {
 		"host",
@@ -327,8 +322,12 @@ void	HTTPRequest::ReceiveHeaders(void)
 	std::string					content;
 	std::string::size_type		pos;
 
-	while ((line = GetLine()) != "")
+	while (1)
 	{
+		if (!GetLine(&line))
+			return (false);
+		if (line == "")
+			break;
 		if ((pos = line.find(":")) == std::string::npos)
 			continue;
 
@@ -339,6 +338,9 @@ void	HTTPRequest::ReceiveHeaders(void)
 		if (std::find(headers.begin(), headers.end(), field) != headers.end())
 			RegisterHeaders(field, content);
 	}
+	ParseHeaders();
+	CheckHeaders();
+	return (true);
 }
 
 void	HTTPRequest::ParseHeaders(void)
@@ -363,29 +365,6 @@ void	HTTPRequest::CheckHeaders(void)
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
 		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "CheckHeaders");
-}
-
-void	HTTPRequest::ReceiveChunk(void)
-{
-	const std::string	FOOTER = "0\r\n\r\n";
-	const std::string	LINE_END = "\r\n";
-	std::string			buf;
-
-	raw_body_ = save_;
-	if (raw_body_.size() >= 5 && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
-	{
-		while (1)
-		{
-			buf = ssocket_.RecvData();
-			if (buf.size() == 0)
-				throw ClientClosed();
-			raw_body_ += buf;
-			if (raw_body_.size() > client_max_body_size_)
-				throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ReceiveChunk");
-			if (!raw_body_.empty() && !raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
-				break;
-		}
-	}
 }
 
 void	HTTPRequest::ParseChunkSize(void)
@@ -425,10 +404,18 @@ void	HTTPRequest::ParseChunkData(void)
 	parse_pos_ += chunk_size_ + LINE_END.size();
 }
 
-void	HTTPRequest::ParseChunk(void)
+bool	HTTPRequest::ParseChunk(void)
 {
+	const std::string	FOOTER = "0\r\n\r\n";
+	const std::string	LINE_END = "\r\n";
 	size_t	remaining_byte;
 
+	if (body_.size() < 5 || body_.compare(body_.size() - 5, 5, FOOTER))
+		return (false);
+	if (body_.size() > client_max_body_size_)
+		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ParseChunk");
+
+	raw_body_ = body_;
 	while (1)
 	{
 		remaining_byte = raw_body_.size() - parse_pos_;
@@ -442,47 +429,28 @@ void	HTTPRequest::ParseChunk(void)
 		ParseChunkSize();
 		ParseChunkData();
 	}
+	return (true);
 }
 
-void	HTTPRequest::ParseBody(void)
+bool	HTTPRequest::ReceiveBody(void)
 {
-	std::string		data;
-	std::string		tmp;
-	size_t			remaining_byte;
-	size_t			default_recv_byte = 1024;
-	size_t			recv_byte;
-
-
-	if (transfer-encoding_ == "chunked")
+	raw_body_ += save_;
+	save_ = "";
+	if (transfer_encoding_ == "chunked")
 	{
-		ReceiveChunk();
-		ParseChunk();
-		content_length_ = body_.size();
+		if (!ParseChunk())
+			return (false);
+		else
+		{
+			content_length_ = body_.size();
+			return (true);
+		}
 	}
+	body_ = raw_body_;
+	if (body_.size() != content_length_)
+		return (false);
 	else
-	{
-		remaining_byte = content_length_;
-
-		if (save_.length() != 0)
-		{
-			tmp = save_;
-			remaining_byte -= save_.length();
-		}
-
-		while (remaining_byte != 0)
-		{
-			if (default_recv_byte < remaining_byte)
-				recv_byte = default_recv_byte;
-			else
-				recv_byte = remaining_byte;
-
-			data = ssocket_.RecvData(recv_byte);
-			remaining_byte -= data.length();
-			tmp += data;
-		}
-		if (method_ == "POST")
-			body_ = tmp;
-	}
+		return (true);
 }
 
 void	HTTPRequest::FindServerConf(void)
@@ -512,15 +480,25 @@ void	HTTPRequest::FindServerConf(void)
 	}
 }
 
-void	HTTPRequest::ParseRequest(void)
+e_HTTPServerEventType	HTTPRequest::ParseRequest(void)
 {
-	ParseRequestLine();
-	ReceiveHeaders();
-	ParseHeaders();
-	CheckHeaders();
-	ParseBody();
+	std::string	recv_data;
+	ssize_t 	recv_size = ssocket_.RecvData(&recv_data);
+	if (recv_size <= 0)
+		return (SEVENT_END);
+	save_ += recv_data;
 
-	return;
+	if (step_ == 0 && ReceiveRequestLine())
+		step_++;
+	if (step_ == 1 && ReceiveHeaders())
+		step_++;
+	if (step_ == 2 && ReceiveBody())
+		step_++;
+
+	if (step_ == 3)
+		return (SEVENT_NO);
+	else
+		return (SEVENT_SOCKET_RECV);
 }
 
 void	HTTPRequest::RequestDisplay(void) const
