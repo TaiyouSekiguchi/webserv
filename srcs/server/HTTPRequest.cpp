@@ -248,18 +248,14 @@ void HTTPRequest::ParseTransferEncoding(const std::string& content)
 	std::vector<std::string>::iterator	it_end;
 
 	list = Utils::MySplit(content, ",");
-	it = list.begin();
-	it_end = list.end();
-	for (; it != it_end; ++it)
+	if (list.size() >= 2)
 	{
-		*it = Utils::MyTrim(*it, " ");
-		*it = Utils::StringToLower(*it);
-		if (*it != "chunked")
-		{
-			throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
-		}
-		transfer_encoding_ = *it;
+		throw HTTPError(SC_BAD_REQUEST, "ParseTransferEncoding")
 	}
+	transfer_encoding_ = Utils::MyTrim(list.at[0], " ");
+	transfer_encoding_ = Utils::StringToLower(list.at[0]);
+	if (transfer_encoding_ != "chunked")
+		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
 }
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
@@ -285,7 +281,8 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 static bool	IsOnlyOnceHeader(const std::string& field)
 {
 	if (field == "host"
-		|| field == "content-length")
+		|| field == "content-length"
+		|| field == "transfer-encoding")
 		return (true);
 	return (false);
 }
@@ -293,8 +290,7 @@ static bool	IsOnlyOnceHeader(const std::string& field)
 static bool	IsAppendHeader(const std::string& field)
 {
 	if (field == "accept-encoding"
-		|| field == "connection"
-		|| field == "transfer-encoding")
+		|| field == "connection")
 		return (true);
 	return (false);
 }
@@ -376,7 +372,7 @@ void	HTTPRequest::ReceiveChunk(void)
 	std::string			buf;
 
 	raw_body_ = save_;
-	if (!raw_body_.empty() && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
+	if (raw_body_.size() >= 5 && raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
 	{
 		while (1)
 		{
@@ -409,6 +405,7 @@ void	HTTPRequest::ParseChunkSize(void)
 		line = line.substr(0, c_pos);
 
 	char *endptr;
+	line = Utils::MyTrim(line, " ");
 	chunk_size_ = strtol(line.c_str(), &endptr, 16);
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
@@ -430,7 +427,6 @@ void	HTTPRequest::ParseChunkData(void)
 
 void	HTTPRequest::ParseChunk(void)
 {
-	bool	state_size = true;
 	size_t	remaining_byte;
 
 	while (1)
@@ -443,17 +439,8 @@ void	HTTPRequest::ParseChunk(void)
 			else
 				throw HTTPError(SC_BAD_REQUEST, "ParseChunk");
 		}
-
-		if (state_size)
-		{
-			ParseChunkSize();
-			state_size = false;
-		}
-		else
-		{
-			ParseChunkData();
-			state_size = true;
-		}
+		ParseChunkSize();
+		ParseChunkData();
 	}
 }
 
@@ -466,10 +453,11 @@ void	HTTPRequest::ParseBody(void)
 	size_t			recv_byte;
 
 
-	if (headers_.count("transfer-encoding"))
+	if (transfer-encoding_ == "chunked")
 	{
 		ReceiveChunk();
 		ParseChunk();
+		content_length_ = body_.size();
 	}
 	else
 	{
