@@ -31,6 +31,8 @@ class CGITest : public ::testing::Test
 		{
 			delete req_;
 			delete ssocket_;
+			delete uri_;
+			delete cgi_;
 		}
 
 		static void	MyRegisterListenSockets(const Config& config)
@@ -82,6 +84,10 @@ class CGITest : public ::testing::Test
 				csocket.SendRequest(msg);
 				req_->ParseRequest();
 				status_code_ = 200;
+
+				const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
+				uri_ = new URI(location, req_->GetTarget());
+				cgi_ = new CGI(*uri_, *req_);
 			}
 			catch (const HTTPError& e)
 			{
@@ -115,6 +121,8 @@ class CGITest : public ::testing::Test
 		int									status_code_;
 		HTTPRequest*						req_;
 		ServerSocket*						ssocket_;
+		URI*								uri_;
+		CGI*								cgi_;
 };
 
 Config						CGITest::config_("default.conf");
@@ -124,50 +132,33 @@ TEST_F(CGITest, SIMPLE_GET)
 {
 	RunCommunication("GET /test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n", 8080);
 
-	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location, req_->GetTarget());
-	CGI							cgi(uri, *req_);
-
-	EXPECT_EQ("text/html", cgi.GetContentType());
-	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>", cgi.GetBody());
-	EXPECT_EQ(SC_OK, cgi.GetStatusCode());
+	EXPECT_EQ("text/html", cgi_->GetContentType());
+	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>", cgi_->GetBody());
+	EXPECT_EQ(SC_OK, cgi_->GetStatusCode());
 }
-
 TEST_F(CGITest, COMMAND_ARG)
 {
 	RunCommunication("GET /command_arg_test.cgi?aaa+bbb+ccc HTTP/1.1\r\nHost: localhost:8080\r\n\r\n", 8080);
 
-	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location, req_->GetTarget());
-	CGI							cgi(uri, *req_);
-
-	EXPECT_EQ("text/html", cgi.GetContentType());
-	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x82\xB3\xE3\x83\x9E\xE3\x83\xB3\xE3\x83\x89\xE5\xBC\x95\xE6\x95\xB0\n=================================\naaa\nbbb\nccc\n\n</pre>\n</body>\n</html>\n", cgi.GetBody());
-	EXPECT_EQ(SC_OK, cgi.GetStatusCode());
+	EXPECT_EQ("text/html", cgi_->GetContentType());
+	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x82\xB3\xE3\x83\x9E\xE3\x83\xB3\xE3\x83\x89\xE5\xBC\x95\xE6\x95\xB0\n=================================\naaa\nbbb\nccc\n\n</pre>\n</body>\n</html>\n", cgi_->GetBody());
+	EXPECT_EQ(SC_OK, cgi_->GetStatusCode());
 }
 
 TEST_F(CGITest, ENV_TEST)
 {
 	RunCommunication("GET /env_test.cgi?first=aaa&last=bbb HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: Debian\r\n\r\n", 8080);
 
-	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location, req_->GetTarget());
-	CGI							cgi(uri, *req_);
-
-	EXPECT_EQ("text/html", cgi.GetContentType());
-	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE7\x92\xB0\xE5\xA2\x83\xE5\xA4\x89\xE6\x95\xB0\n=================================\nAUTH_TYPE = [ TEST ]\nCONTENT_LENGTH = [  ]\nCONTENT_TYPE = [  ]\nGATEWAY_INTERFACE = [ CGI/1.1 ]\nHTTP_ACCEPT = [ TEST ]\nHTTP_FORWARDED = [  ]\nHTTP_REFERER = [ TEST ]\nHTTP_USER_AGENT = [ Debian ]\nHTTP_X_FORWARDED_FOR = [  ]\nPATH_INFO = [ /env_test.cgi ]\nPATH_TRANSLATED = [ ./env_test.cgi ]\nQUERY_STRING = [ first=aaa&amp;last=bbb ]\nREMOTE_ADDR = [  ]\nREMOTE_HOST = [  ]\nREMOTE_IDENT = [  ]\nREMOTE_USER = [  ]\nREQUEST_METHOD = [ GET ]\nSCRIPT_NAME = [ /env_test.cgi ]\nSERVER_NAME = [ localhost ]\nSERVER_PORT = [ 8080 ]\nSERVER_PROTOCOL = [ HTTP/1.1 ]\nSERVER_SOFTWARE = [ 42Webserv ]\n\n</pre>\n</body>\n</html>\n", cgi.GetBody());
-	EXPECT_EQ(SC_OK, cgi.GetStatusCode());
+	EXPECT_EQ("text/html", cgi_->GetContentType());
+	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE7\x92\xB0\xE5\xA2\x83\xE5\xA4\x89\xE6\x95\xB0\n=================================\nAUTH_TYPE = [ TEST ]\nCONTENT_LENGTH = [  ]\nCONTENT_TYPE = [  ]\nGATEWAY_INTERFACE = [ CGI/1.1 ]\nHTTP_ACCEPT = [ TEST ]\nHTTP_FORWARDED = [  ]\nHTTP_REFERER = [ TEST ]\nHTTP_USER_AGENT = [ Debian ]\nHTTP_X_FORWARDED_FOR = [  ]\nPATH_INFO = [ /env_test.cgi ]\nPATH_TRANSLATED = [ ./env_test.cgi ]\nQUERY_STRING = [ first=aaa&amp;last=bbb ]\nREMOTE_ADDR = [  ]\nREMOTE_HOST = [  ]\nREMOTE_IDENT = [  ]\nREMOTE_USER = [  ]\nREQUEST_METHOD = [ GET ]\nSCRIPT_NAME = [ /env_test.cgi ]\nSERVER_NAME = [ localhost ]\nSERVER_PORT = [ 8080 ]\nSERVER_PROTOCOL = [ HTTP/1.1 ]\nSERVER_SOFTWARE = [ 42Webserv ]\n\n</pre>\n</body>\n</html>\n", cgi_->GetBody());
+	EXPECT_EQ(SC_OK, cgi_->GetStatusCode());
 }
 
 TEST_F(CGITest, PUT_BODY_TEST)
 {
 	RunCommunication("POST /post_test.cgi HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 10\r\n\r\nVALUE=abcd", 8080);
 
-	const LocationDirective&	location = SelectLocation(req_->GetServerConf()->GetLocations());
-	URI							uri(location, req_->GetTarget());
-	CGI							cgi(uri, *req_);
-
-	EXPECT_EQ("text/html", cgi.GetContentType());
-	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]\n</pre>\n</body>\n</html>\n", cgi.GetBody());
-	EXPECT_EQ(SC_OK, cgi.GetStatusCode());
+	EXPECT_EQ("text/html", cgi_->GetContentType());
+	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]\n</pre>\n</body>\n</html>\n", cgi_->GetBody());
+	EXPECT_EQ(SC_OK, cgi_->GetStatusCode());
 }
