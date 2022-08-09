@@ -25,6 +25,11 @@ class GETTest : public ::testing::Test
 			delete ssocket_;
 			delete csocket_;
 		}
+		virtual void SetUp()
+		{
+			req_ = new HTTPRequest(*ssocket_);
+			method_ = new HTTPMethod(*req_);
+		}
 		virtual void TearDown()
 		{
 			delete req_;
@@ -60,11 +65,11 @@ class GETTest : public ::testing::Test
 		{
 			e_HTTPServerEventType	new_event;
 
-			req_ = new HTTPRequest(*ssocket_);
-			method_ = new HTTPMethod(*req_);
 			try
 			{
-				req_->ParseRequest();
+				new_event = req_->ParseRequest();
+				if (new_event != SEVENT_NO)
+					return (SEVENT_SOCKET_RECV);
 				new_event = method_->ValidateHTTPMethod();
 				if (new_event != SEVENT_NO)
 					return (new_event);
