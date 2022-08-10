@@ -244,10 +244,6 @@ void HTTPRequest::ParseTransferEncoding(const std::string& content)
 	std::vector<std::string>::iterator	it;
 	std::vector<std::string>::iterator	it_end;
 
-	// list = Utils::MySplit(content, ",");
-	// if (list.size() >= 2)
-	// 	throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
-	// transfer_encoding_ = Utils::MyTrim(list.at(0), " ");
 	transfer_encoding_ = Utils::MyTrim(content);
 	transfer_encoding_ = Utils::StringToLower(transfer_encoding_);
 	if (transfer_encoding_ != "chunked")
