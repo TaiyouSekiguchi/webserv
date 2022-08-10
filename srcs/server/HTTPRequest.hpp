@@ -24,6 +24,7 @@ class HTTPRequest
 
 		e_HTTPServerEventType	ParseRequest(void);
 		void					RequestDisplay(void) const;
+		void					HeadersDisplay(void);
 
 		// Getter
 		const ServerDirective::Listen&			GetListen(void) const;
@@ -68,9 +69,15 @@ class HTTPRequest
 		std::vector<std::string>					accept_encoding_;
 		bool										connection_;
 		std::string									content_type_;
+		std::string									transfer_encoding_;
 
 		// body
 		std::string									body_;
+
+		// chunk
+		std::string									raw_body_;
+		size_t										parse_pos_;
+		long										chunk_size_;
 
 		// func
 		bool			IsToken(const std::string& str);
@@ -91,8 +98,13 @@ class HTTPRequest
 		void			ParseAcceptEncoding(const std::string& content);
 		void			ParseConnection(const std::string& content);
 		void			ParseContentType(const std::string& content);
+		void			ParseTransferEncoding(const std::string& content);
+		void			ParseBody(void);
 		bool			ReceiveBody(void);
 		void			FindServerConf(void);
+		bool			ParseChunk(void);
+		void			ParseChunkSize(void);
+		void			ParseChunkData(void);
 };
 
 #endif

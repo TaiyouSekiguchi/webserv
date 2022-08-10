@@ -9,6 +9,7 @@ HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
 	, step_(0)
 	, content_length_(0)
 	, connection_(true)
+	, parse_pos_(0)
 {
 }
 
@@ -114,7 +115,6 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
 	const char*	tmp;
-	size_t		size;
 	size_t		i;
 
 	if (version.at(0) != 'H')
@@ -124,7 +124,6 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 		throw HTTPError(SC_BAD_REQUEST, "ParseVersion");
 
 	tmp = version.c_str();
-	size = version.size();
 
 	i = 5;
 	while (isdigit(tmp[i]))
@@ -239,6 +238,18 @@ void HTTPRequest::ParseContentType(const std::string& content)
 	content_type_ = Utils::MyTrim(content, " ");
 }
 
+void HTTPRequest::ParseTransferEncoding(const std::string& content)
+{
+	std::vector<std::string>			list;
+	std::vector<std::string>::iterator	it;
+	std::vector<std::string>::iterator	it_end;
+
+	transfer_encoding_ = Utils::MyTrim(content);
+	transfer_encoding_ = Utils::StringToLower(transfer_encoding_);
+	if (transfer_encoding_ != "chunked")
+		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
+}
+
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
@@ -247,22 +258,23 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("user-agent", &HTTPRequest::ParseUserAgent),
 		std::make_pair("accept-encoding", &HTTPRequest::ParseAcceptEncoding),
 		std::make_pair("connection", &HTTPRequest::ParseConnection),
-		std::make_pair("content-type", &HTTPRequest::ParseContentType)
+		std::make_pair("content-type", &HTTPRequest::ParseContentType),
+		std::make_pair("transfer-encoding", &HTTPRequest::ParseTransferEncoding)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[6]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[7]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
 	if (found != parse_funcs.end())
 		(this->*(found->second))(content);
-
 	return;
 }
 
 static bool	IsOnlyOnceHeader(const std::string& field)
 {
 	if (field == "host"
-		|| field == "content-length")
+		|| field == "content-length"
+		|| field == "transfer-encoding")
 		return (true);
 	return (false);
 }
@@ -292,15 +304,16 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 
 bool	HTTPRequest::ReceiveHeaders(void)
 {
-	std::string		array[6] = {
+	std::string		array[7] = {
 		"host",
 		"content-length",
 		"user-agent",
 		"accept-encoding",
 		"connection",
-		"content-type"
+		"content-type",
+		"transfer-encoding"
 	};
-	std::vector<std::string>	headers(array, array + 6);
+	std::vector<std::string>	headers(array, array + 7);
 	std::string					line;
 	std::string					field;
 	std::string					content;
@@ -343,15 +356,96 @@ void	HTTPRequest::CheckHeaders(void)
 	if (host_.first == "")
 		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
 
+	if (headers_.count("content-length") && transfer_encoding_ == "chunked")
+		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
+
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
 	if (client_max_body_size_ != 0 && content_length_ > client_max_body_size_)
 		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "CheckHeaders");
 }
 
+void	HTTPRequest::ParseChunkSize(void)
+{
+	const std::string	LINE_END = "\r\n";
+	size_t		line_end_pos;
+	std::string	line;
+
+	line_end_pos = raw_body_.find(LINE_END, parse_pos_);
+	if (line_end_pos == std::string::npos)
+		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+
+	line = raw_body_.substr(parse_pos_, line_end_pos - parse_pos_);
+	size_t c_pos = line.find(";");
+	if (c_pos != std::string::npos)
+		line = line.substr(0, c_pos);
+
+	line = Utils::MyTrim(line, " ");
+	for (size_t i = 0; i < line.size(); i++)
+		if (!isxdigit(line.at(i)))
+			throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+
+	char *endptr;
+	chunk_size_ = strtol(line.c_str(), &endptr, 16);
+	if (errno == ERANGE || *endptr != '\0')
+		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+
+	parse_pos_ = line_end_pos + LINE_END.size();
+}
+
+void	HTTPRequest::ParseChunkData(void)
+{
+	const std::string	LINE_END = "\r\n";
+	std::string	line;
+
+	if (raw_body_.size() - parse_pos_ < chunk_size_ + LINE_END.size())
+		throw HTTPError(SC_BAD_REQUEST, "ParseChunkData");
+	line = raw_body_.substr(parse_pos_, chunk_size_);
+	body_ += line;
+	parse_pos_ += chunk_size_ + LINE_END.size();
+}
+
+bool	HTTPRequest::ParseChunk(void)
+{
+	const std::string	FOOTER = "0\r\n\r\n";
+	const std::string	LINE_END = "\r\n";
+	size_t	remaining_byte;
+
+	if (raw_body_.size() < 5 || raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
+		return (false);
+	if (raw_body_.size() > client_max_body_size_)
+		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ParseChunk");
+
+	while (1)
+	{
+		remaining_byte = raw_body_.size() - parse_pos_;
+		if (remaining_byte <= 5)
+		{
+			if (remaining_byte == 5)
+				break;
+			else
+				throw HTTPError(SC_BAD_REQUEST, "ParseChunk");
+		}
+		ParseChunkSize();
+		ParseChunkData();
+	}
+	return (true);
+}
+
 bool	HTTPRequest::ReceiveBody(void)
 {
-	body_ += save_;
+	raw_body_ += save_;
 	save_ = "";
+	if (transfer_encoding_ == "chunked")
+	{
+		if (!ParseChunk())
+			return (false);
+		else
+		{
+			content_length_ = body_.size();
+			return (true);
+		}
+	}
+	body_ = raw_body_;
 	if (body_.size() != content_length_)
 		return (false);
 	else
@@ -414,8 +508,20 @@ void	HTTPRequest::RequestDisplay(void) const
 	std::cout << "host.first        : " << host_.first << std::endl;
 	std::cout << "host.second       : " << host_.second << std::endl;
 	std::cout << "content_length    : " << content_length_ << std::endl;
+	std::cout << "transfer-encoding : " << transfer_encoding_ << std::endl;
 	std::cout << "[ BODY ]" << std::endl;
 	std::cout << body_ << std::endl;
 
 	return;
+}
+
+void	HTTPRequest::HeadersDisplay(void)
+{
+	std::map<std::string, std::string>::const_iterator	it;
+	std::map<std::string, std::string>::const_iterator	it_end;
+
+	it = headers_.begin();
+	it_end = headers_.end();
+	for (; it != it_end; ++it)
+		std::cout << it->first << ": " << it->second << std::endl;
 }
