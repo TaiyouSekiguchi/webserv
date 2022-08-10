@@ -33,7 +33,7 @@ class HTTPMethod
 		void				ReadErrorPage();
 
 		void					PostToCgi();
-		e_HTTPServerEventType	ReceiveCgiResult();
+		e_HTTPServerEventType	ReceiveCgiResult(const bool eof_flag);
 
 		void				MethodDisplay() const;
 

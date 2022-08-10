@@ -80,11 +80,11 @@ void	HTTPMethod::PostToCgi()
 	// cgi_->PostToCgi();
 }
 
-e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
+e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult(const bool eof_flag)
 {
 	// e_HTTPServerEventType	event_type;
 
-	// event_type = cgi_->ReceiveCgiResult();
+	// event_type = cgi_->ReceiveCgiResult(eof_flag);
 	// if (event_type == SEVENT_NO)
 	// {
 	// 	body_ = cgi_->GetBody();
@@ -93,6 +93,7 @@ e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
 	// 	status_code_ = cgi_->GetStatusCode();
 	// }
 	// return (event_type);
+	(void)eof_flag;
 	return (SEVENT_NO);
 }
 

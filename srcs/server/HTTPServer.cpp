@@ -93,13 +93,13 @@ e_HTTPServerEventType	HTTPServer::RunPostToCgi()
 	return (RunCreateResponse());
 }
 
-e_HTTPServerEventType	HTTPServer::RunReceiveCgiResult()
+e_HTTPServerEventType	HTTPServer::RunReceiveCgiResult(const bool eof_flag)
 {
 	e_HTTPServerEventType	new_event;
 
 	try
 	{
-		new_event = method_->ReceiveCgiResult();
+		new_event = method_->ReceiveCgiResult(eof_flag);
 		if (new_event != SEVENT_NO)
 			return (new_event);
 	}
