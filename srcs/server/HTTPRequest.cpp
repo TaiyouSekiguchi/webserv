@@ -246,9 +246,9 @@ void HTTPRequest::ParseTransferEncoding(const std::string& content)
 
 	list = Utils::MySplit(content, ",");
 	if (list.size() >= 2)
-		throw HTTPError(SC_BAD_REQUEST, "ParseTransferEncoding");
+		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
 	transfer_encoding_ = Utils::MyTrim(list.at(0), " ");
-	transfer_encoding_ = Utils::StringToLower(list.at(0));
+	transfer_encoding_ = Utils::StringToLower(transfer_encoding_);
 	if (transfer_encoding_ != "chunked")
 		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
 }
@@ -383,8 +383,13 @@ void	HTTPRequest::ParseChunkSize(void)
 	if (c_pos != std::string::npos)
 		line = line.substr(0, c_pos);
 
-	char *endptr;
 	line = Utils::MyTrim(line, " ");
+
+	for (size_t i = 0; i < line.size(); i++)
+		if (!isxdigit(line.at(i)))
+			throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+
+	char *endptr;
 	chunk_size_ = strtol(line.c_str(), &endptr, 16);
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
@@ -410,12 +415,11 @@ bool	HTTPRequest::ParseChunk(void)
 	const std::string	LINE_END = "\r\n";
 	size_t	remaining_byte;
 
-	if (body_.size() < 5 || body_.compare(body_.size() - 5, 5, FOOTER))
+	if (raw_body_.size() < 5 || raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
 		return (false);
-	if (body_.size() > client_max_body_size_)
+	if (raw_body_.size() > client_max_body_size_)
 		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ParseChunk");
 
-	raw_body_ = body_;
 	while (1)
 	{
 		remaining_byte = raw_body_.size() - parse_pos_;

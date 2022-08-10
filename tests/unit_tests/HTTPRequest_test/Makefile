@@ -7,12 +7,13 @@ SRCS	=	HTTPRequest.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
 			utils.cpp \
-			HTTPRequest_test.cpp \
 			ClientSocket.cpp \
 			Config.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp  \
-			Tokens.cpp
+			Tokens.cpp \
+			HTTPRequest_test.cpp \
+			# sa_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
