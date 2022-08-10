@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sstream>
 #include "RegularFile.hpp"
+#include "Stat.hpp"
 
 RegularFile::RegularFile(const std::string& path, const int open_mode)
 	: AIo(open(path.c_str(), open_mode)), path_(path), failed_(false)
@@ -15,6 +16,14 @@ RegularFile::RegularFile(const std::string& path, const int open_mode)
 		name_ = path_;
 	else
 		name_ = path_.substr(slash_pos + 1);
+
+	Stat	st(path_);
+	if (st.Fail())
+	{
+		failed_ = true;
+		return;
+	}
+	size_ = st.GetSize();
 }
 
 RegularFile::~RegularFile()
@@ -27,6 +36,7 @@ bool	RegularFile::Fail() const
 }
 
 const std::string&	RegularFile::GetName() const { return (name_); }
+size_t				RegularFile::GetSize() const { return (size_); }
 
 ssize_t		RegularFile::ReadFile(std::string* str) const
 {
