@@ -21,13 +21,6 @@ const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
-void	HTTPMethod::DeleteTargetFile()
-{
-	if (target_rfile_ == NULL)
-		return;
-	delete target_rfile_;
-	target_rfile_ = NULL;
-}
 
 void	HTTPMethod::ExecGETMethod()
 {
@@ -35,6 +28,8 @@ void	HTTPMethod::ExecGETMethod()
 	std::string	body;
 
 	ret = target_rfile_->ReadFile(&body);
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 
@@ -44,16 +39,19 @@ void	HTTPMethod::ExecGETMethod()
 
 void	HTTPMethod::ExecPOSTMethod()
 {
-	ssize_t		ret;
+	ssize_t				ret;
+	const std::string	file_name = target_rfile_->GetName();
 
 	ret = target_rfile_->WriteToFile(req_.GetBody());
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecPOSTMethod");
 
 	if (*(req_.GetTarget().rbegin()) == '/')
-		location_ = req_.GetTarget() + target_rfile_->GetName();
+		location_ = req_.GetTarget() + file_name;
 	else
-		location_ = req_.GetTarget() + "/" + target_rfile_->GetName();
+		location_ = req_.GetTarget() + "/" + file_name;
 	status_code_ = SC_CREATED;
 }
 
@@ -62,6 +60,8 @@ void	HTTPMethod::ExecDELETEMethod()
 	int		ret;
 
 	ret = target_rfile_->DeleteFile();
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecDELETEMethod");
 
@@ -312,9 +312,12 @@ void	HTTPMethod::ReadErrorPage()
 	std::string	body;
 
 	ret = target_rfile_->ReadFile(&body);
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 	{
-		body_ = "";
+		status_code_ = SC_FORBIDDEN;
+		body_ = GenerateDefaultHTML();
 		return;
 	}
 	body_ = body;
@@ -347,17 +350,18 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 		std::string		error_page_path = found->second;
 		if (error_page_path.at(0) == '/')
 		{
-			if (target_rfile_)
-				delete target_rfile_;
-			target_rfile_ = new RegularFile("." + error_page_path, O_RDONLY);
-			if (target_rfile_->Fail())
+			Stat	st("." + error_page_path);
+			if (st.Fail())
+				status_code_ = SC_NOT_FOUND;
+			else
 			{
+				target_rfile_ = new RegularFile(st.GetPath(), O_RDONLY);
+				if (!target_rfile_->Fail())
+					return (PublishReadEvent(SEVENT_ERRORPAGE_READ));
 				delete target_rfile_;
 				target_rfile_ = NULL;
-				status_code_ = SC_NOT_FOUND;
+				status_code_ = SC_FORBIDDEN;
 			}
-			else
-				return (PublishReadEvent(SEVENT_ERRORPAGE_READ));
 		}
 		else
 		{

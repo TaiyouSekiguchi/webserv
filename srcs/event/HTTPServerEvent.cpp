@@ -59,12 +59,6 @@ void	HTTPServerEvent::DeleteEvent(EventQueue* equeue)
 		case SEVENT_SOCKET_SEND:
 			equeue->SetIoEvent(ssocket_->GetFd(), ET_WRITE, EA_DELETE, this);
 			break;
-		case SEVENT_FILE_READ:
-		case SEVENT_FILE_WRITE:
-		case SEVENT_FILE_DELETE:
-		case SEVENT_ERRORPAGE_READ:
-			hserver_->DeleteMethodTargetFile();
-			break;
 		default: {}
 	}
 }
