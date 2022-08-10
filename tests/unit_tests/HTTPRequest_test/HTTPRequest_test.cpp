@@ -255,12 +255,22 @@ TEST_F(RequestTest, test20)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
 		"Transfer-Encoding: chunked\r\n\r\n"
+		"3\r\naaa\r\n5\r\nbbbbb\r\n7\r\nccccccc\r\n0\r\n\r\n";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ(SC_OK, status_code_);
+	EXPECT_EQ(req_->GetBody(), "aaabbbbbccccccc");
+}
+
+TEST_F(RequestTest, test21)
+{
+	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
+		"Transfer-Encoding: chunked\r\n\r\n"
 		"0x3\r\naaa\r\n0\r\n\r\n";
 	RunCommunication(msg, 8080);
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
-TEST_F(RequestTest, test21)
+TEST_F(RequestTest, test22)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
 		"Transfer-Encoding: chunked\r\nContent-Length:3\r\n\r\n"
@@ -269,7 +279,7 @@ TEST_F(RequestTest, test21)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
-TEST_F(RequestTest, test22)
+TEST_F(RequestTest, test23)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
 		"Transfer-Encoding: chunked\r\n\r\n"
@@ -278,7 +288,7 @@ TEST_F(RequestTest, test22)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
-TEST_F(RequestTest, test23)
+TEST_F(RequestTest, test24)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
 		"Transfer-Encoding: chunked\r\n\r\n"
@@ -287,7 +297,7 @@ TEST_F(RequestTest, test23)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
-TEST_F(RequestTest, test24)
+TEST_F(RequestTest, test25)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
 		"Transfer-Encoding: chunked\r\n\r\n"
@@ -296,7 +306,7 @@ TEST_F(RequestTest, test24)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
-TEST_F(RequestTest, test25)
+TEST_F(RequestTest, test26)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2:8080\r\n"
 		"Transfer-Encoding: chunked\r\n\r\n"

@@ -244,10 +244,11 @@ void HTTPRequest::ParseTransferEncoding(const std::string& content)
 	std::vector<std::string>::iterator	it;
 	std::vector<std::string>::iterator	it_end;
 
-	list = Utils::MySplit(content, ",");
-	if (list.size() >= 2)
-		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
-	transfer_encoding_ = Utils::MyTrim(list.at(0), " ");
+	// list = Utils::MySplit(content, ",");
+	// if (list.size() >= 2)
+	// 	throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
+	// transfer_encoding_ = Utils::MyTrim(list.at(0), " ");
+	transfer_encoding_ = Utils::MyTrim(content);
 	transfer_encoding_ = Utils::StringToLower(transfer_encoding_);
 	if (transfer_encoding_ != "chunked")
 		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
@@ -359,7 +360,7 @@ void	HTTPRequest::CheckHeaders(void)
 	if (host_.first == "")
 		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
 
-	if (headers_.count("content-length") && headers_.count("transfer-encoding"))
+	if (headers_.count("content-length") && transfer_encoding_ == "chunked")
 		throw HTTPError(SC_BAD_REQUEST, "CheckHeaders");
 
 	client_max_body_size_ = server_conf_->GetClientMaxBodySize();
@@ -373,18 +374,16 @@ void	HTTPRequest::ParseChunkSize(void)
 	size_t		line_end_pos;
 	std::string	line;
 
-
 	line_end_pos = raw_body_.find(LINE_END, parse_pos_);
 	if (line_end_pos == std::string::npos)
 		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
-	line = raw_body_.substr(parse_pos_, line_end_pos);
 
+	line = raw_body_.substr(parse_pos_, line_end_pos - parse_pos_);
 	size_t c_pos = line.find(";");
 	if (c_pos != std::string::npos)
 		line = line.substr(0, c_pos);
 
 	line = Utils::MyTrim(line, " ");
-
 	for (size_t i = 0; i < line.size(); i++)
 		if (!isxdigit(line.at(i)))
 			throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
@@ -394,7 +393,7 @@ void	HTTPRequest::ParseChunkSize(void)
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
 
-	parse_pos_ += line_end_pos + LINE_END.size();
+	parse_pos_ = line_end_pos + LINE_END.size();
 }
 
 void	HTTPRequest::ParseChunkData(void)
