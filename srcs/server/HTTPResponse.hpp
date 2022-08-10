@@ -7,6 +7,7 @@
 #include "HTTPRequest.hpp"
 #include "HTTPMethod.hpp"
 #include "ServerDirective.hpp"
+#include "HTTPServerEventType.hpp"
 
 class HTTPResponse
 {
@@ -19,7 +20,7 @@ class HTTPResponse
 		const std::string&	GetResMsg() const;
 		const bool&			GetConnection() const;
 
-		void 				SendResponse(const ServerSocket& ssocket);
+		e_HTTPServerEventType 	SendResponse(const ServerSocket& ssocket);
 
 	private:
 		static const std::pair<e_StatusCode, std::string>	kPairs_[];

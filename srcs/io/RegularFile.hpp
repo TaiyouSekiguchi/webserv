@@ -14,6 +14,7 @@ class RegularFile : public AIo
 
 		bool				Fail() const;
 		const std::string&	GetName() const;
+		size_t				GetSize() const;
 
 		ssize_t	ReadFile(std::string* str) const;
 		ssize_t	WriteToFile(const std::string& str) const;
@@ -22,6 +23,7 @@ class RegularFile : public AIo
 	private:
 		std::string		path_;
 		std::string		name_;
+		size_t			size_;
 		bool			failed_;
 };
 

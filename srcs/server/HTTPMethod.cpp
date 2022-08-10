@@ -23,13 +23,6 @@ const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
-void	HTTPMethod::DeleteTargetFile()
-{
-	if (target_rfile_ == NULL)
-		return;
-	delete target_rfile_;
-	target_rfile_ = NULL;
-}
 
 void	HTTPMethod::ExecGETMethod()
 {
@@ -37,6 +30,8 @@ void	HTTPMethod::ExecGETMethod()
 	std::string	body;
 
 	ret = target_rfile_->ReadFile(&body);
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 
@@ -46,16 +41,20 @@ void	HTTPMethod::ExecGETMethod()
 
 void	HTTPMethod::ExecPOSTMethod()
 {
-	ssize_t		ret;
+	ssize_t				ret;
+	const std::string	file_name = target_rfile_->GetName();
 
 	ret = target_rfile_->WriteToFile(req_.GetBody());
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecPOSTMethod");
 
 	if (*(uri_->GetTargetPath().rbegin()) == '/')
-		location_ = uri_->GetTargetPath() + target_rfile_->GetName();
+		location_ = uri_->GetTargetPath() + file_name;
 	else
-		location_ = uri_->GetTargetPath() + "/" + target_rfile_->GetName();
+		location_ = uri_->GetTargetPath() + "/" + file_name;
+
 	status_code_ = SC_CREATED;
 }
 
@@ -64,6 +63,8 @@ void	HTTPMethod::ExecDELETEMethod()
 	int		ret;
 
 	ret = target_rfile_->DeleteFile();
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecDELETEMethod");
 
@@ -94,6 +95,19 @@ e_StatusCode	HTTPMethod::Redirect(const std::string& location, const e_StatusCod
 {
 	location_ = location;
 	return (status_code);
+}
+
+e_HTTPServerEventType	HTTPMethod::PublishReadEvent(const e_HTTPServerEventType event_type)
+{
+	if (target_rfile_->GetSize() == 0)
+	{
+		delete target_rfile_;
+		target_rfile_ = NULL;
+		status_code_ = SC_OK;
+		return (SEVENT_NO);
+	}
+	else
+		return (event_type);
 }
 
 bool	HTTPMethod::IsReadableFile(const std::string& access_path)
@@ -145,7 +159,7 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
 		body_stream
 			<< "<a href=\"" << *itr << "\">" << *itr << "</a>\t\t"
-			<< st.GetModifyTime() << "\t" << st.GetSize() << "\r\n";
+			<< st.GetModifyTime() << "\t" << st.GetSizeStr() << "\r\n";
 		++itr;
 	}
 
@@ -161,7 +175,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st)
 	if (st.IsRegularFile())
 	{
 		if (IsReadableFile(access_path))
-			return (SEVENT_FILE_READ);
+			return (PublishReadEvent(SEVENT_FILE_READ));
 		throw HTTPError(SC_FORBIDDEN, "ValidateGETMethod");
 	}
 	else if (st.IsDirectory())
@@ -305,9 +319,12 @@ void	HTTPMethod::ReadErrorPage()
 	std::string	body;
 
 	ret = target_rfile_->ReadFile(&body);
+	delete target_rfile_;
+	target_rfile_ = NULL;
 	if (ret == -1)
 	{
-		body_ = "";
+		status_code_ = SC_FORBIDDEN;
+		body_ = GenerateDefaultHTML();
 		return;
 	}
 	body_ = body;
@@ -340,17 +357,18 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 		std::string		error_page_path = found->second;
 		if (error_page_path.at(0) == '/')
 		{
-			if (target_rfile_)
-				delete target_rfile_;
-			target_rfile_ = new RegularFile("." + error_page_path, O_RDONLY);
-			if (target_rfile_->Fail())
+			Stat	st("." + error_page_path);
+			if (st.Fail())
+				status_code_ = SC_NOT_FOUND;
+			else
 			{
+				target_rfile_ = new RegularFile(st.GetPath(), O_RDONLY);
+				if (!target_rfile_->Fail())
+					return (PublishReadEvent(SEVENT_ERRORPAGE_READ));
 				delete target_rfile_;
 				target_rfile_ = NULL;
-				status_code_ = SC_NOT_FOUND;
+				status_code_ = SC_FORBIDDEN;
 			}
-			else
-				return (SEVENT_ERRORPAGE_READ);
 		}
 		else
 		{

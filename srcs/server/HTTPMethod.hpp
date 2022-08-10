@@ -37,7 +37,8 @@ class HTTPMethod
 
 	private:
 		const LocationDirective*	SelectLocation(const std::vector<LocationDirective>& locations) const;
-		e_StatusCode		Redirect(const std::string& location, const e_StatusCode status_code);
+		e_StatusCode			Redirect(const std::string& location, const e_StatusCode status_code);
+		e_HTTPServerEventType	PublishReadEvent(const e_HTTPServerEventType event_type);
 
 		// GET
 		bool	IsReadableFile(const std::string& access_path);
