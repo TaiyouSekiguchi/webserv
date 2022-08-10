@@ -3,7 +3,6 @@
 #include "HTTPRequest.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"
-#include "ClientClosed.hpp"
 #include "HTTPError.hpp"
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
@@ -13,14 +12,14 @@
 HTTPServer::HTTPServer(const ServerSocket& ssocket)
 	:	ssocket_(ssocket), request_(NULL), method_(NULL), response_(NULL)
 {
+	request_ = new HTTPRequest(ssocket_);
+	method_ = new HTTPMethod(*request_);
 }
 
 HTTPServer::~HTTPServer()
 {
-	if (request_)
-		delete request_;
-	if (method_)
-		delete method_;
+	delete request_;
+	delete method_;
 	if (response_)
 		delete response_;
 }
@@ -32,18 +31,14 @@ e_HTTPServerEventType	HTTPServer::Run()
 {
 	e_HTTPServerEventType	new_event;
 
-	request_ = new HTTPRequest(ssocket_);
-	method_ = new HTTPMethod(*request_);
 	try
 	{
-		request_->ParseRequest();
+		new_event = request_->ParseRequest();
+		if (new_event != SEVENT_NO)
+			return (new_event);
 		new_event = method_->ValidateHTTPMethod();
 		if (new_event != SEVENT_NO)
 			return (new_event);
-	}
-	catch (const ClientClosed& e)
-	{
-		return (SEVENT_END);
 	}
 	catch (const HTTPError& e)
 	{
@@ -95,15 +90,12 @@ e_HTTPServerEventType	HTTPServer::RunCreateResponse()
 
 e_HTTPServerEventType	HTTPServer::RunSendResponse()
 {
-	try
-	{
-		response_->SendResponse(ssocket_);
-		if (response_->GetConnection() == false)
-			return (SEVENT_END);
-	}
-	catch (const ClientClosed& e)
-	{
+	e_HTTPServerEventType	new_event;
+
+	new_event = response_->SendResponse(ssocket_);
+	if (new_event != SEVENT_NO)
 		return (SEVENT_END);
-	}
+	else if (response_->GetConnection() == false)
+		return (SEVENT_END);
 	return (SEVENT_SOCKET_RECV);
 }

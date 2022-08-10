@@ -11,10 +11,10 @@
 #include <cctype>
 #include <cerrno>
 #include "ServerSocket.hpp"
-#include "ClientClosed.hpp"
 #include "HTTPError.hpp"
 #include "HTTPStatusCode.hpp"
 #include "utils.hpp"
+# include "HTTPServerEventType.hpp"
 
 class HTTPRequest
 {
@@ -22,8 +22,8 @@ class HTTPRequest
 		explicit HTTPRequest(const ServerSocket& ssocket);
 		~HTTPRequest();
 
-		void	ParseRequest(void);
-		void	RequestDisplay(void) const;
+		e_HTTPServerEventType	ParseRequest(void);
+		void					RequestDisplay(void) const;
 
 		// Getter
 		const ServerDirective::Listen&			GetListen(void) const;
@@ -53,6 +53,7 @@ class HTTPRequest
 
 		// GetLine
 		std::string									save_;
+		int											step_;
 
 		// request line
 		std::string									method_;
@@ -74,13 +75,13 @@ class HTTPRequest
 		// func
 		bool			IsToken(const std::string& str);
 		bool			IsTChar(char c);
-		std::string		GetLine(void);
-		void			ParseRequestLine(void);
+		bool			GetLine(std::string* line);
+		bool			ReceiveRequestLine(void);
 		void			ParseMethod(const std::string& method);
 		void			ParseTarget(const std::string& target);
 		void			ParseVersion(const std::string& version);
 		void			RegisterHeaders(const std::string& field, const std::string& content);
-		void			ReceiveHeaders(void);
+		bool			ReceiveHeaders(void);
 		void			ParseHeaders(void);
 		void			CheckHeaders(void);
 		void			ParseHeader(const std::string& field, const std::string& content);
@@ -90,7 +91,7 @@ class HTTPRequest
 		void			ParseAcceptEncoding(const std::string& content);
 		void			ParseConnection(const std::string& content);
 		void			ParseContentType(const std::string& content);
-		void			ParseBody(void);
+		bool			ReceiveBody(void);
 		void			FindServerConf(void);
 };
 

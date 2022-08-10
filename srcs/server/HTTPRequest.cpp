@@ -6,6 +6,7 @@ HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
 	, server_confs_(ssocket.GetServerConfs())
 	, server_conf_(server_confs_.at(0))
 	, client_max_body_size_(0)
+	, step_(0)
 	, content_length_(0)
 	, connection_(true)
 {
@@ -69,10 +70,8 @@ bool	HTTPRequest::IsTChar(char c)
 	return (false);
 }
 
-std::string		HTTPRequest::GetLine(void)
+bool		HTTPRequest::GetLine(std::string* line)
 {
-	std::string				data;
-	std::string				line;
 	std::string				separator;
 	std::string::size_type	separator_length;
 	std::string::size_type	pos;
@@ -80,18 +79,12 @@ std::string		HTTPRequest::GetLine(void)
 	separator = "\r\n";
 	separator_length = separator.length();
 
-	while ((pos = save_.find(separator)) == std::string::npos)
-	{
-		data = ssocket_.RecvData();
-		if (data.size() == 0)
-			throw ClientClosed();
-		save_ += data;
-	}
-
-	line = save_.substr(0, pos);
+	pos = save_.find(separator);
+	if (pos == std::string::npos)
+		return (false);
+	*line = save_.substr(0, pos);
 	save_ = save_.substr(pos + separator_length, save_.size());
-
-	return (line);
+	return (true);
 }
 
 void	HTTPRequest::ParseMethod(const std::string& method)
@@ -152,12 +145,16 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	version_ = version;
 }
 
-void	HTTPRequest::ParseRequestLine(void)
+bool	HTTPRequest::ReceiveRequestLine(void)
 {
 	std::string					line;
 	std::vector<std::string>	list;
 
-	while ((line = GetLine()) == "") { }
+	while (line == "")
+	{
+		if (!GetLine(&line))
+			return (false);
+	}
 
 	if (Utils::IsBlank(line.at(0)))
 		throw HTTPError(SC_BAD_REQUEST, "ParseRequestLine");
@@ -170,7 +167,7 @@ void	HTTPRequest::ParseRequestLine(void)
 	ParseTarget(list.at(1));
 	ParseVersion(list.at(2));
 
-	return;
+	return (true);
 }
 
 void HTTPRequest::ParseHost(const std::string& content)
@@ -293,7 +290,7 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 	}
 }
 
-void	HTTPRequest::ReceiveHeaders(void)
+bool	HTTPRequest::ReceiveHeaders(void)
 {
 	std::string		array[6] = {
 		"host",
@@ -309,8 +306,12 @@ void	HTTPRequest::ReceiveHeaders(void)
 	std::string					content;
 	std::string::size_type		pos;
 
-	while ((line = GetLine()) != "")
+	while (1)
 	{
+		if (!GetLine(&line))
+			return (false);
+		if (line == "")
+			break;
 		if ((pos = line.find(":")) == std::string::npos)
 			continue;
 
@@ -321,6 +322,9 @@ void	HTTPRequest::ReceiveHeaders(void)
 		if (std::find(headers.begin(), headers.end(), field) != headers.end())
 			RegisterHeaders(field, content);
 	}
+	ParseHeaders();
+	CheckHeaders();
+	return (true);
 }
 
 void	HTTPRequest::ParseHeaders(void)
@@ -344,36 +348,14 @@ void	HTTPRequest::CheckHeaders(void)
 		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "CheckHeaders");
 }
 
-void	HTTPRequest::ParseBody(void)
+bool	HTTPRequest::ReceiveBody(void)
 {
-	std::string		data;
-	std::string		tmp;
-	size_t			remaining_byte;
-	size_t			default_recv_byte = 1024;
-	size_t			recv_byte;
-
-	remaining_byte = content_length_;
-
-	if (save_.length() != 0)
-	{
-		tmp = save_;
-		remaining_byte -= save_.length();
-	}
-
-	while (remaining_byte != 0)
-	{
-		if (default_recv_byte < remaining_byte)
-			recv_byte = default_recv_byte;
-		else
-			recv_byte = remaining_byte;
-
-		data = ssocket_.RecvData(recv_byte);
-		remaining_byte -= data.length();
-		tmp += data;
-	}
-
-	if (method_ == "POST")
-		body_ = tmp;
+	body_ += save_;
+	save_ = "";
+	if (body_.size() != content_length_)
+		return (false);
+	else
+		return (true);
 }
 
 void	HTTPRequest::FindServerConf(void)
@@ -403,15 +385,25 @@ void	HTTPRequest::FindServerConf(void)
 	}
 }
 
-void	HTTPRequest::ParseRequest(void)
+e_HTTPServerEventType	HTTPRequest::ParseRequest(void)
 {
-	ParseRequestLine();
-	ReceiveHeaders();
-	ParseHeaders();
-	CheckHeaders();
-	ParseBody();
+	std::string	recv_data;
+	ssize_t 	recv_size = ssocket_.RecvData(&recv_data);
+	if (recv_size <= 0)
+		return (SEVENT_END);
+	save_ += recv_data;
 
-	return;
+	if (step_ == 0 && ReceiveRequestLine())
+		step_++;
+	if (step_ == 1 && ReceiveHeaders())
+		step_++;
+	if (step_ == 2 && ReceiveBody())
+		step_++;
+
+	if (step_ == 3)
+		return (SEVENT_NO);
+	else
+		return (SEVENT_SOCKET_RECV);
 }
 
 void	HTTPRequest::RequestDisplay(void) const
