@@ -17,7 +17,6 @@ class HTTPServer
 		~HTTPServer();
 
 		int		GetMethodTargetFileFd() const;
-		void	DeleteMethodTargetFile();
 
 		e_HTTPServerEventType	Run();
 		e_HTTPServerEventType	RunExecHTTPMethod(const e_HTTPServerEventType event_type);

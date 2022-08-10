@@ -71,10 +71,12 @@ class RequestTest : public ::testing::Test
 
 			ssocket_ = new ServerSocket(**target_lsocket);
 			req_ = new HTTPRequest(*ssocket_);
+			e_HTTPServerEventType	event_type = SEVENT_SOCKET_RECV;
 			try
 			{
 				csocket.SendRequest(msg);
-				req_->ParseRequest();
+				while (event_type != SEVENT_NO)
+					event_type = req_->ParseRequest();
 				status_code_ = 200;
 			}
 			catch (const HTTPError& e)

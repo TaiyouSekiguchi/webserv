@@ -25,7 +25,6 @@ HTTPServer::~HTTPServer()
 }
 
 int		HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
-void	HTTPServer::DeleteMethodTargetFile() 	  { return (method_->DeleteTargetFile()); }
 
 e_HTTPServerEventType	HTTPServer::Run()
 {
