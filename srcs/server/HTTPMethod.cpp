@@ -6,6 +6,7 @@
 
 HTTPMethod::HTTPMethod(const HTTPRequest& req)
 	: req_(req), target_rfile_(NULL)
+	// , cgi_(NULL)
 {
 }
 
@@ -13,6 +14,8 @@ HTTPMethod::~HTTPMethod()
 {
 	if (target_rfile_)
 		delete target_rfile_;
+	// if (cgi_)
+	// 	delete cgi_;
 }
 
 const std::string&	HTTPMethod::GetContentType() const	{ return (content_type_); }
@@ -21,6 +24,10 @@ const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
+// int		HTTPMethod::GetCgiReadPipeFd() const { return (cgi_->GetReadPipeFd()); }
+int		HTTPMethod::GetCgiReadPipeFd() const { return (0); }
+// int		HTTPMethod::GetCgiWritePipeFd() const { return (cgi_->GetWritePipeFd()); }
+int		HTTPMethod::GetCgiWritePipeFd() const { return (0); }
 
 void	HTTPMethod::ExecGETMethod()
 {
@@ -66,6 +73,27 @@ void	HTTPMethod::ExecDELETEMethod()
 		throw HTTPError(SC_FORBIDDEN, "ExecDELETEMethod");
 
 	status_code_ = SC_NO_CONTENT;
+}
+
+void	HTTPMethod::PostToCgi()
+{
+	// cgi_->PostToCgi();
+}
+
+e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
+{
+	// e_HTTPServerEventType	event_type;
+
+	// event_type = cgi_->ReceiveCgiResult();
+	// if (event_type == SEVENT_NO)
+	// {
+	// 	body_ = cgi_->GetBody();
+	// 	location_ = cgi_->GetLocation();
+	// 	content_type_ = cgi_->GetContentType();
+	// 	status_code_ = cgi_->GetStatusCode();
+	// }
+	// return (event_type);
+	return (SEVENT_NO);
 }
 
 LocationDirective	HTTPMethod::SelectLocation
@@ -237,32 +265,31 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	return (SEVENT_FILE_WRITE);
 }
 
-// bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
-// {
-// 	if (st.Fail() || !st.IsRegularFile())
-// 		return (false);
+bool	HTTPMethod::CheckCGIScript(const Stat& st, const LocationDirective& location)
+{
+	if (st.Fail() || !st.IsRegularFile())
+		return (false);
 
-// 	std::string::size_type	dot_pos;
-// 	std::string				extension;
-// 	const std::string&		access_path = st.GetPath();
+	std::string::size_type	dot_pos;
+	std::string				extension;
+	const std::string&		access_path = st.GetPath();
 
-// 	dot_pos = access_path.find_last_of('.');
-// 	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
-// 		return (false);
-// 	extension = access_path.substr(dot_pos + 1);
-// 	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
-// 		return (false);
-// 	return (true);
-// }
+	dot_pos = access_path.find_last_of('.');
+	if (dot_pos == std::string::npos || dot_pos + 1 == access_path.size())
+		return (false);
+	extension = access_path.substr(dot_pos + 1);
+	if (Utils::IsNotFound(location.GetCGIEnableExtension(), extension))
+		return (false);
+	return (true);
+}
 
-// int		HTTPMethod::ExecCGI(const std::string& access_path)
-// {
-// 	CGI cgi(access_path);
-// 	body_ = cgi.GetBody();
-// 	location_ = cgi.GetLocation();
-// 	content_type_ = cgi.GetContentType();
-// 	return (cgi.GetStatusCode());
-// }
+e_HTTPServerEventType	HTTPMethod::ExecCGI(const std::string& access_path)
+{
+	(void)access_path;
+	// cgi_ = new CGI();
+	// return (SEVENT_CGI_WRITE);
+	return (SEVENT_NO);
+}
 
 e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(const LocationDirective& location)
 {
@@ -298,10 +325,9 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ValidateHTTPMethod");
 
-	// Stat	cgi_st(location.GetRoot() + req_.GetTarget());
-	// if (CheckCGIScript(cgi_st, location))
-	// 	return (OK);
-		// return (ExecCGI(cgi_st.GetPath()));
+	Stat	cgi_st(location.GetRoot() + req_.GetTarget());
+	if (CheckCGIScript(cgi_st, location))
+		return (ExecCGI(cgi_st.GetPath()));
 
 	return (ValidateAnyMethod(location));
 }
