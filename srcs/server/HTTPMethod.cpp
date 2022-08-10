@@ -94,6 +94,19 @@ e_StatusCode	HTTPMethod::Redirect(const std::string& location, const e_StatusCod
 	return (status_code);
 }
 
+e_HTTPServerEventType	HTTPMethod::PublishReadEvent(const e_HTTPServerEventType event_type)
+{
+	if (target_rfile_->GetSize() == 0)
+	{
+		delete target_rfile_;
+		target_rfile_ = NULL;
+		status_code_ = SC_OK;
+		return (SEVENT_NO);
+	}
+	else
+		return (event_type);
+}
+
 bool	HTTPMethod::IsReadableFile(const std::string& access_path)
 {
 	target_rfile_ = new RegularFile(access_path, O_RDONLY);
@@ -143,7 +156,7 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "GetAutoIndexFile");
 		body_stream
 			<< "<a href=\"" << *itr << "\">" << *itr << "</a>\t\t"
-			<< st.GetModifyTime() << "\t" << st.GetSize() << "\r\n";
+			<< st.GetModifyTime() << "\t" << st.GetSizeStr() << "\r\n";
 		++itr;
 	}
 
@@ -159,7 +172,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 	if (st.IsRegularFile())
 	{
 		if (IsReadableFile(access_path))
-			return (SEVENT_FILE_READ);
+			return (PublishReadEvent(SEVENT_FILE_READ));
 		throw HTTPError(SC_FORBIDDEN, "ValidateGETMethod");
 	}
 	else if (st.IsDirectory())
@@ -172,7 +185,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 			throw HTTPError(Redirect(location, SC_MOVED_PERMANENTLY), "ValidateGETMethod");
 		}
 		else if (IsReadableFileWithIndex(access_path, location.GetIndex()))
-			return (SEVENT_FILE_READ);
+			return (PublishReadEvent(SEVENT_FILE_READ));
 		else if (location.GetAutoIndex())
 		{
 			SetAutoIndexContent(access_path);
@@ -344,7 +357,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 				status_code_ = SC_NOT_FOUND;
 			}
 			else
-				return (SEVENT_ERRORPAGE_READ);
+				return (PublishReadEvent(SEVENT_ERRORPAGE_READ));
 		}
 		else
 		{

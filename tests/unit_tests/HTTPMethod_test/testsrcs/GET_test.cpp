@@ -166,3 +166,10 @@ TEST_F(GETTest, DirForbiddenTest)
 	RunCommunication("GET /sub2/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_FORBIDDEN);
 }
+
+TEST_F(GETTest, EmptyFileTest)
+{
+	RunCommunication("GET /empty.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_OK);
+	EXPECT_EQ(method_->GetBody(), "");
+}

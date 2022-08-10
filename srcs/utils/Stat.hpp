@@ -16,7 +16,8 @@ class Stat
 		bool				IsRegularFile() const;
 		bool				IsDirectory() const;
 		const std::string	GetModifyTime() const;
-		const std::string	GetSize() const;
+		const std::string	GetSizeStr() const;
+		size_t				GetSize() const;
 
 	private:
 		struct stat		st_;

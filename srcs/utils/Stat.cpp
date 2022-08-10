@@ -45,7 +45,7 @@ const std::string	Stat::GetModifyTime() const
 	return (mtime.substr(0, mtime.size() - 1));
 }
 
-const std::string	Stat::GetSize() const
+const std::string	Stat::GetSizeStr() const
 {
 	if (failed_)
 		throw std::runtime_error("stat error");
@@ -56,4 +56,12 @@ const std::string	Stat::GetSize() const
 	else
 		ss << "-";
 	return (ss.str());
+}
+
+size_t	Stat::GetSize() const
+{
+	if (failed_)
+		throw std::runtime_error("stat error");
+
+	return (st_.st_size);
 }
