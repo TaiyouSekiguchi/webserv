@@ -24,18 +24,19 @@ class CGI
 		CGI(const URI& uri, const HTTPRequest& req);
 		~CGI(void);
 
-		std::string		GetData(void) const;
-		std::string		GetContentType(void) const;
-		std::string		GetLocation(void) const;
-		e_StatusCode	GetStatusCode(void) const;
-		std::string		GetBody(void) const;
-		int				GetCgiWriteFd(void) const;
-		int				GetCgiReadFd(void) const;
+		e_HTTPServerEventType	ExecuteCGI(void);
+
+		std::string				GetData(void) const;
+		std::string				GetContentType(void) const;
+		std::string				GetLocation(void) const;
+		e_StatusCode			GetStatusCode(void) const;
+		std::string				GetBody(void) const;
+		int						GetCgiWriteFd(void) const;
+		int						GetCgiReadFd(void) const;
 
 	private:
 		typedef	void (CGI::*ParseFunc)(const std::string& content);
 
-		void	ExecuteCGI(void);
 		void	ParseCGI(void);
 		void	SendData(void);
 		void	ReceiveData(const pid_t pid);
@@ -53,6 +54,7 @@ class CGI
 		e_StatusCode			status_code_;
 		std::string				body_;
 
+		pid_t					pid_;
 		Pipe					write_pipe_;
 		Pipe					read_pipe_;
 };

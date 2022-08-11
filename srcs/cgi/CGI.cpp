@@ -8,15 +8,13 @@ CGI::CGI(const URI& uri, const HTTPRequest& req)
 	, write_pipe_(WRITE)
 	, read_pipe_(READ)
 {
-	ExecuteCGI();
-	ParseCGI();
 }
 
 CGI::~CGI(void)
 {
 }
 
-void	CGI::SendData(void)
+void	CGI::ExecveCGIScript(void)
 {
 	CGIEnv	env(uri_, req_);
 	char*	argv[2];
@@ -34,6 +32,7 @@ void	CGI::SendData(void)
 		std::exit(EXIT_FAILURE);
 }
 
+/*
 void	CGI::ReceiveData(pid_t pid)
 {
 	const size_t	buf_size = 4;
@@ -46,6 +45,8 @@ void	CGI::ReceiveData(pid_t pid)
 		|| read_pipe_.CloseUnusedPipeInParentProcess() < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 
+
+	//PostToCgi()
 	if (req_.GetMethod() == "POST")
 	{
 		if (write_pipe_.WriteToPipe(req_.GetBody().c_str(), req_.GetBody().size()) < 0)
@@ -69,22 +70,72 @@ void	CGI::ReceiveData(pid_t pid)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 }
+*/
 
-void	CGI::ExecuteCGI(void)
+e_HTTPServerEventType	CGI::ExecuteCGI(void)
 {
-	pid_t	pid;
-
-	if (write_pipe_.OpenNonBlockingPipe() < 0
-		|| read_pipe_.OpenNonBlockingPipe() < 0)
+	if (write_pipe_.OpenPipe() < 0
+		|| read_pipe_.OpenPipe() < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
-	if ((pid = fork()) < 0)
+	if ((pid_ = fork()) < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
-	if (pid == 0)
-		SendData();
+	if (pid_ == 0)
+		ExecveCGIScript();
 	else
-		ReceiveData(pid);
+	{
+		write_pipe_.NonBlockingPipe();
+		read_pipe_.NonBlockingPipe();
+
+		if (write_pipe_.CloseUnusedPipeInParentProcess() < 0
+			|| read_pipe_.CloseUnusedPipeInParentProcess() < 0)
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
+
+		if (req_.GetMethod() == "POST")
+			return (SEVENT_CGI_WRITE);
+		else
+			return (SEVENT_CGI_READ);
+	}
+}
+
+void	CGI::PostToCGI(void)
+{
+	if (req_.GetMethod() == "POST")
+	{
+		if (write_pipe_.WriteToPipe(req_.GetBody().c_str(), req_.GetBody().size()) < 0)
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "PostToCGI");
+	}
+}
+
+e_HTTPServerEventType	CGI::ReceiveCgiResult(const bool eof_flag)
+{
+	const size_t	buf_size = 4;
+	char			buf[buf_size + 1];
+	int				read_byte;
+	pid_t			ret_pid;
+	int				status;
+
+	if (!eof_flag)
+	{
+		read_byte = read_pipe_.ReadFromPipe(buf, buf_size);
+		buf[read_byte] = '\0';
+		data_ += std::string(buf);
+
+		return (SEVENT_CGI_READ);
+	}
+	else
+	{
+		ret_pid = waitpid(pid_, &status, 0);
+		if (ret_pid < 0
+			|| !WIFEXITED(status)
+			|| WEXITSTATUS(status) == EXIT_FAILURE)
+			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
+
+		ParseCGI();
+
+		return (SEVENT_NO);
+	}
 }
 
 void	CGI::ParseContentType(const std::string& content)

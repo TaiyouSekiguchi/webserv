@@ -15,20 +15,23 @@ Pipe::~Pipe()
 		close(pipe_[WRITE]);
 }
 
-int		Pipe::OpenNonBlockingPipe(void)
+int		Pipe::OpenPipe(void)
 {
-	int		result;
+	return (pipe(pipe_));
+}
 
-	if ((result = pipe(pipe_)) < 0)
-		return (result);
-
-	val = fcntl(pipe_[READ], F_GETFL, 0);
-	fcntl(pipe_[READ], F_SETFL, val | O_NONBLOCK);
-
-	val = fcntl(pipe_[WRITE], F_GETFL, 0);
-	fcntl(pipe_[WRITE], F_SETFL, val | O_NONBLOCK);
-
-	return (result);
+void	Pipe::NonBlockingPipe(void)
+{
+	if (type_ == WRITE)
+	{
+		val = fcntl(pipe_[WRITE], F_GETFL, 0);
+		fcntl(pipe_[WRITE], F_SETFL, val | O_NONBLOCK);
+	}
+	else
+	{
+		val = fcntl(pipe_[READ], F_GETFL, 0);
+		fcntl(pipe_[READ], F_SETFL, val | O_NONBLOCK);
+	}
 }
 
 static int	MyClose(int* fd)

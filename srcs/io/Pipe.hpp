@@ -13,7 +13,8 @@ class Pipe
 		Pipe(e_PipeIo type);
 		~Pipe();
 
-		int			OpenNonBlockingPipe(void);
+		int			OpenPipe(void);
+		void		NonBlockingPipe(void);
 		int			CloseUnusedPipeInParentProcess(void);
 		int			CloseUnusedPipeInChildProcess(void);
 		int			WriteToPipe(void* buf, unsigned int byte) const;

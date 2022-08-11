@@ -79,24 +79,22 @@ void	HTTPMethod::ExecDELETEMethod()
 
 void	HTTPMethod::PostToCgi()
 {
-	// cgi_->PostToCgi();
+	cgi_->PostToCgi();
 }
 
 e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult(const bool eof_flag)
 {
-	// e_HTTPServerEventType	event_type;
+	e_HTTPServerEventType	event_type;
 
-	// event_type = cgi_->ReceiveCgiResult(eof_flag);
-	// if (event_type == SEVENT_NO)
-	// {
-	// 	body_ = cgi_->GetBody();
-	// 	location_ = cgi_->GetLocation();
-	// 	content_type_ = cgi_->GetContentType();
-	// 	status_code_ = cgi_->GetStatusCode();
-	// }
-	// return (event_type);
-	(void)eof_flag;
-	return (SEVENT_NO);
+	event_type = cgi_->ReceiveCgiResult(eof_flag);
+	if (event_type == SEVENT_NO)
+	{
+		body_ = cgi_->GetBody();
+		location_ = cgi_->GetLocation();
+		content_type_ = cgi_->GetContentType();
+		status_code_ = cgi_->GetStatusCode();
+	}
+	return (event_type);
 }
 
 const LocationDirective*	HTTPMethod::SelectLocation
@@ -288,27 +286,11 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	return (true);
 }
 
-// old exec
-/*
-e_HTTPServerEventType	HTTPMethod::ExecCGI(void)
-{
-	CGI		cgi(*uri_, req_);
-
-	body_ = cgi.GetBody();
-	content_type_ = cgi.GetContentType();
-	location_ = cgi.GetLocation();
-	status_code_ = cgi.GetStatusCode();
-	return (SEVENT_NO);
-}
-*/
-
-// new exec
 e_HTTPServerEventType	HTTPMethod::ExecCGI(const std::string& access_path)
 {
-	(void)access_path;
-	// cgi_ = new CGI();
-	// return (SEVENT_CGI_WRITE);
-	return (SEVENT_NO);
+	cgi_ = new CGI(uri_, req_);
+
+	return (cgi_->ExecCGI());
 }
 
 e_HTTPServerEventType	HTTPMethod::ValidateAnyMethod(void)
