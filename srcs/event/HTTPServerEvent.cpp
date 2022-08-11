@@ -33,6 +33,12 @@ void	HTTPServerEvent::RunAnyEvent(EventQueue* equeue)
 		case SEVENT_FILE_DELETE:
 			next_event_type = hserver_->RunExecHTTPMethod(event_type_);
 			break;
+		case SEVENT_CGI_WRITE:
+			next_event_type = hserver_->RunPostToCgi();
+			break;
+		case SEVENT_CGI_READ:
+			next_event_type = hserver_->RunReceiveCgiResult(IsEOF());
+			break;
 		case SEVENT_ERRORPAGE_READ:
 			next_event_type = hserver_->RunReadErrorPage();
 			break;
@@ -44,6 +50,8 @@ void	HTTPServerEvent::RunAnyEvent(EventQueue* equeue)
 		default:
 			throw std::runtime_error("RunAnyEvent error");
 	}
+	if (event_type_ == next_event_type)
+		return;
 	DeleteEvent(equeue);
 	event_type_ = next_event_type;
 	RegisterEvent(equeue);
@@ -80,6 +88,12 @@ void	HTTPServerEvent::RegisterEvent(EventQueue* equeue)
 		case SEVENT_FILE_WRITE:
 		case SEVENT_FILE_DELETE:
 			equeue->SetIoEvent(hserver_->GetMethodTargetFileFd(), ET_WRITE, EA_ADD, this);
+			break;
+		case SEVENT_CGI_WRITE:
+			equeue->SetIoEvent(hserver_->GetCgiWritePipeFd(), ET_WRITE, EA_ADD, this);
+			break;
+		case SEVENT_CGI_READ:
+			equeue->SetIoEvent(hserver_->GetCgiReadPipeFd(), ET_READ, EA_ADD, this);
 			break;
 		default: {}
 	}

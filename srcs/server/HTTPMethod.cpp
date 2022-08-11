@@ -5,7 +5,7 @@
 #include "Dir.hpp"
 
 HTTPMethod::HTTPMethod(const HTTPRequest& req)
-	: req_(req), target_rfile_(NULL), uri_(NULL)
+	: req_(req), target_rfile_(NULL), uri_(NULL), cgi_(NULL)
 {
 }
 
@@ -15,6 +15,8 @@ HTTPMethod::~HTTPMethod()
 		delete target_rfile_;
 	if (uri_)
 		delete uri_;
+	if (cgi_)
+		delete cgi_;
 }
 
 const std::string&	HTTPMethod::GetContentType() const	{ return (content_type_); }
@@ -23,6 +25,10 @@ const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
+// int		HTTPMethod::GetCgiReadPipeFd() const { return (cgi_->GetReadPipeFd()); }
+int		HTTPMethod::GetCgiReadPipeFd() const { return (0); }
+// int		HTTPMethod::GetCgiWritePipeFd() const { return (cgi_->GetWritePipeFd()); }
+int		HTTPMethod::GetCgiWritePipeFd() const { return (0); }
 
 void	HTTPMethod::ExecGETMethod()
 {
@@ -69,6 +75,28 @@ void	HTTPMethod::ExecDELETEMethod()
 		throw HTTPError(SC_FORBIDDEN, "ExecDELETEMethod");
 
 	status_code_ = SC_NO_CONTENT;
+}
+
+void	HTTPMethod::PostToCgi()
+{
+	// cgi_->PostToCgi();
+}
+
+e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult(const bool eof_flag)
+{
+	// e_HTTPServerEventType	event_type;
+
+	// event_type = cgi_->ReceiveCgiResult(eof_flag);
+	// if (event_type == SEVENT_NO)
+	// {
+	// 	body_ = cgi_->GetBody();
+	// 	location_ = cgi_->GetLocation();
+	// 	content_type_ = cgi_->GetContentType();
+	// 	status_code_ = cgi_->GetStatusCode();
+	// }
+	// return (event_type);
+	(void)eof_flag;
+	return (SEVENT_NO);
 }
 
 const LocationDirective*	HTTPMethod::SelectLocation
@@ -260,6 +288,8 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	return (true);
 }
 
+// old exec
+/*
 e_HTTPServerEventType	HTTPMethod::ExecCGI(void)
 {
 	CGI		cgi(*uri_, req_);
@@ -268,6 +298,16 @@ e_HTTPServerEventType	HTTPMethod::ExecCGI(void)
 	content_type_ = cgi.GetContentType();
 	location_ = cgi.GetLocation();
 	status_code_ = cgi.GetStatusCode();
+	return (SEVENT_NO);
+}
+*/
+
+// new exec
+e_HTTPServerEventType	HTTPMethod::ExecCGI(const std::string& access_path)
+{
+	(void)access_path;
+	// cgi_ = new CGI();
+	// return (SEVENT_CGI_WRITE);
 	return (SEVENT_NO);
 }
 

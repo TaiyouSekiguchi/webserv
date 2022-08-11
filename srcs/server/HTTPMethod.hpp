@@ -26,12 +26,16 @@ class HTTPMethod
 		const e_StatusCode&	GetStatusCode() const;
 
 		int					GetTargetFileFd() const;
-		void				DeleteTargetFile();
+		int					GetCgiReadPipeFd() const;
+		int					GetCgiWritePipeFd() const;
 
 		void				ExecGETMethod();
 		void				ExecPOSTMethod();
 		void				ExecDELETEMethod();
 		void				ReadErrorPage();
+
+		void					PostToCgi();
+		e_HTTPServerEventType	ReceiveCgiResult(const bool eof_flag);
 
 		void				MethodDisplay() const;
 
@@ -55,7 +59,8 @@ class HTTPMethod
 
 		// CGI
 		bool	CheckCGIScript(void);
-		e_HTTPServerEventType	ExecCGI(void);
+		//e_HTTPServerEventType	ExecCGI(void);  old
+		e_HTTPServerEventType	ExecCGI(const std::string& access_path);
 
 		const HTTPRequest&			req_;
 		const ServerDirective*		server_conf_;
@@ -67,6 +72,7 @@ class HTTPMethod
 		e_StatusCode	status_code_;
 		RegularFile*	target_rfile_;
 		URI*			uri_;
+		// CGI*			cgi_;
 };
 
 #endif
