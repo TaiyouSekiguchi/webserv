@@ -171,3 +171,5 @@ std::string		CGI::GetContentType(void) const { return (content_type_); }
 std::string		CGI::GetLocation(void) const { return (location_); }
 e_StatusCode	CGI::GetStatusCode(void) const { return (status_code_); }
 std::string		CGI::GetBody(void) const { return (body_); }
+int				CGI::GetCgiWriteFd(void) const { return (write_pipe_.GetPipeFd()); }
+int				CGI::GetCgiReadFd(void) const { return (read_pipe_.GetPipeFd()); }

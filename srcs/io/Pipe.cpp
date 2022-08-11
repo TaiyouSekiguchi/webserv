@@ -68,12 +68,12 @@ int		Pipe::CloseUnusedPipeInChildProcess(void)
 	return (result);
 }
 
-int		Pipe::WriteToPipe(void* buf, unsigned int byte)
+int		Pipe::WriteToPipe(void* buf, unsigned int byte) const
 {
 	return (write(pipe_[WRITE], buf, byte));
 }
 
-ssize_t	Pipe::ReadFromPipe(void* buf, size_t byte)
+ssize_t	Pipe::ReadFromPipe(void* buf, size_t byte) const
 {
 	return (read(pipe_[READ], buf, byte));
 }
@@ -102,4 +102,12 @@ int		Pipe::RedirectToPipe(void)
 		}
 		return (1);
 	}
+}
+
+int		Pipe::GetPipeFd(void) const
+{
+	if (type_ == WRITE)
+		return (pipe_[WRITE]);
+	else
+		return (pipe_[READ]);
 }

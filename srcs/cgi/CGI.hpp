@@ -29,14 +29,16 @@ class CGI
 		std::string		GetLocation(void) const;
 		e_StatusCode	GetStatusCode(void) const;
 		std::string		GetBody(void) const;
+		int				GetCgiWriteFd(void) const;
+		int				GetCgiReadFd(void) const;
 
 	private:
 		typedef	void (CGI::*ParseFunc)(const std::string& content);
 
 		void	ExecuteCGI(void);
 		void	ParseCGI(void);
-		void	SendData(int write_pipe_fd[2], int read_pipe_fd[2]);
-		void	ReceiveData(int write_pipe_fd[2], int read_pipe_fd[2], const pid_t pid);
+		void	SendData(void);
+		void	ReceiveData(const pid_t pid);
 		void	ParseHeader(const std::string& line);
 		void	ParseContentType(const std::string& content);
 		void	ParseLocation(const std::string& content);

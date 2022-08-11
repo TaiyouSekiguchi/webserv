@@ -13,16 +13,17 @@ class Pipe
 		Pipe(e_PipeIo type);
 		~Pipe();
 
-		int			OpenNonBlockingPipe(void)
-		int			CloseUnusedPipeInParentProcess(void)
-		int			CloseUnusedPipeInChildProcess(void)
-		int			WriteToPipe(void* buf, unsigned int byte)
-		ssize_t		ReadFromPipe(void* buf, size_t byte)
-		int			RedirectToPipe(void)
+		int			OpenNonBlockingPipe(void);
+		int			CloseUnusedPipeInParentProcess(void);
+		int			CloseUnusedPipeInChildProcess(void);
+		int			WriteToPipe(void* buf, unsigned int byte) const;
+		ssize_t		ReadFromPipe(void* buf, size_t byte) const;
+		int			RedirectToPipe(void);
+		int			GetPipeFd(void) const;
 
 	private:
-		int			pipe_[2];
-		e_PipeIo	type_;
+		int				pipe_[2];
+		const e_PipeIo	type_;
 };
 
 #endif
