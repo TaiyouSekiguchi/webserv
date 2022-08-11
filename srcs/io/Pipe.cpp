@@ -1,42 +1,71 @@
 #include "Pipe.hpp"
 
-Pipe::Pipe(void)
+Pipe::Pipe(e_PipeIo type)
+	: type_(type)
 {
-	OpenPipe();
-	NonBlockingPipe();
+	pipe_[READ] = -1;
+	pipe_[WRITE] = -1;
 }
 
 Pipe::~Pipe()
 {
+	if (pipe_[READ] != -1)
+		close(pipe_[READ]);
+	if (pipe_[WRITE] != -1)
+		close(pipe_[WRITE]);
 }
 
-void	Pipe::OpenPipe(void)
+int		Pipe::OpenNonBlockingPipe(void)
 {
-	if (pipe(pipe_) < 0)
-		throw std::runtime_error("pipe error");
-}
+	int		result;
 
-void	Pipe::NonBlockingPipe(void)
-{
-	int		val;
+	if ((result = pipe(pipe_)) < 0)
+		return (result);
 
 	val = fcntl(pipe_[READ], F_GETFL, 0);
 	fcntl(pipe_[READ], F_SETFL, val | O_NONBLOCK);
 
 	val = fcntl(pipe_[WRITE], F_GETFL, 0);
 	fcntl(pipe_[WRITE], F_SETFL, val | O_NONBLOCK);
+
+	return (result);
 }
 
-void	Pipe::CloseReadPipe(void)
+static int	MyClose(int* fd)
 {
-	if (close(pipe_[READ]) < 0)
-		throw std::runtime_error("close error");
+	int		result = 0;
+
+	if (*fd != -1)
+	{
+		result = close(*fd);
+		fd* = -1;
+	}
+
+	return (result);
 }
 
-void	Pipe::CloseWritePipe(void)
+int		Pipe::CloseUnusedPipeInParentProcess(void)
 {
-	if (close(pipe_[WRITE]) < 0)
-		throw std::runtime_error("close error");
+	int		result = 0;
+
+	if (type_ == WRITE)
+		result = MyClose(&pipe_[READ]);
+	else
+		result = MyClose(&pipe_[WRITE]);
+
+	return (result);
+}
+
+int		Pipe::CloseUnusedPipeInChildProcess(void)
+{
+	int		result;
+
+	if (type_ == WRITE)
+		result = MyClose(&pipe_[WRITE]);
+	else
+		result = MyClose(&pipe_[READ]);
+
+	return (result);
 }
 
 int		Pipe::WriteToPipe(void* buf, unsigned int byte)
@@ -49,26 +78,28 @@ ssize_t	Pipe::ReadFromPipe(void* buf, size_t byte)
 	return (read(pipe_[READ], buf, byte));
 }
 
-int		Pipe::StdinRedirectToReadPipe(void)
+int		Pipe::RedirectToPipe(void)
 {
-	if (close(STDIN_FILENO) < 0
-		|| dup2(pipe_[READ], STDIN_FILENO) < 0
-		|| close(pipe_[READ]) < 0)
+	int		result = 0;
+
+	if (type_ == WRITE)
 	{
-		return (0);
+		if (close(STDIN_FILENO) < 0
+			|| dup2(pipe_[READ], STDIN_FILENO) < 0
+			|| MyClose(&pipe_[READ]) < 0)
+		{
+			return (0);
+		}
+		return (1);
 	}
-
-	return (1);
-}
-
-int		Pipe::StdoutRedirectToWritePipe(void)
-{
-	if (close(STDOUT_FILENO) < 0
-		|| dup2(pipe_[WRITE], STDOUT_FILENO) < 0
-		|| close(pipe_[WRITE]) < 0)
+	else
 	{
-		return (0);
+		if (close(STDOUT_FILENO) < 0
+			|| dup2(pipe_[WRITE], STDOUT_FILENO) < 0
+			|| MyClose(&pipe_[WRITE]) < 0)
+		{
+			return (0);
+		}
+		return (1);
 	}
-
-	return (1);
 }

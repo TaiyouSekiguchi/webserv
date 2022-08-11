@@ -5,6 +5,8 @@ CGI::CGI(const URI& uri, const HTTPRequest& req)
 	, req_(req)
 	, server_conf_(req.GetServerConf())
 	, status_code_(SC_OK)
+	, write_pipe_(WRITE)
+	, read_pipe_(READ)
 {
 	ExecuteCGI();
 	ParseCGI();
@@ -14,39 +16,15 @@ CGI::~CGI(void)
 {
 }
 
-void	CreatePipe(int* write_pipe_fd, int* read_pipe_fd)
-{
-	if (pipe(write_pipe_fd) < 0
-		|| pipe(read_pipe_fd) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "CreatePipe");
-}
-
-void	CleanPipe(int* write_pipe_fd, int* read_pipe_fd)
-{
-	if (close(write_pipe_fd[1]) < 0
-		|| close(read_pipe_fd[0]) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "CleanPipe");
-}
-
-static int	SetPipe(int src, int dst)
-{
-	if (close(dst) < 0
-		|| dup2(src, dst) < 0
-		|| close(src) < 0)
-	{
-		return (0);
-	}
-
-	return (1);
-}
-
-void	CGI::SendData(int write_pipe_fd[2], int read_pipe_fd[2])
+void	CGI::SendData(void)
 {
 	CGIEnv	env(uri_, req_);
 	char*	argv[2];
 
-	if (close(write_pipe_fd[1]) < 0 || !SetPipe(write_pipe_fd[0], STDIN_FILENO)
-		|| close(read_pipe_fd[0]) < 0 || !SetPipe(read_pipe_fd[1], STDOUT_FILENO))
+	if (write_pipe_.CloseUnusedPipeInChildProcess() < 0
+		|| write_pipe_.RedirectToPipe() < 0
+		|| read_pipe_.CloseUnusedPipeInChildProcess() < 0
+		|| read_pipe_.RedirectToPipe() < 0)
 		std::exit(EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(uri_.GetAccessPath().c_str());
@@ -56,7 +34,7 @@ void	CGI::SendData(int write_pipe_fd[2], int read_pipe_fd[2])
 		std::exit(EXIT_FAILURE);
 }
 
-void	CGI::ReceiveData(int write_pipe_fd[2], int read_pipe_fd[2], pid_t pid)
+void	CGI::ReceiveData(pid_t pid)
 {
 	const size_t	buf_size = 4;
 	char			buf[buf_size + 1];
@@ -64,19 +42,19 @@ void	CGI::ReceiveData(int write_pipe_fd[2], int read_pipe_fd[2], pid_t pid)
 	pid_t			ret_pid;
 	int				status;
 
-	if (close(write_pipe_fd[0]) < 0
-		|| close(read_pipe_fd[1]) < 0)
+	if (write_pipe_.CloseUnusedPipeInParentProcess() < 0
+		|| read_pipe_.CloseUnusedPipeInParentProcess() < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 
 	if (req_.GetMethod() == "POST")
 	{
-		if (write(write_pipe_fd[1], req_.GetBody().c_str(), req_.GetBody().size()) < 0)
+		if (write_pipe_.WriteToPipe(req_.GetBody().c_str(), req_.GetBody().size()) < 0)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 	}
 
 	while (1)
 	{
-		read_byte = read(read_pipe_fd[0], buf, buf_size);
+		read_byte = read_pipe_.ReadFromPipe(buf, buf_size);
 		if (read_byte < 0)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveData");
 		if (read_byte == 0)
@@ -94,23 +72,19 @@ void	CGI::ReceiveData(int write_pipe_fd[2], int read_pipe_fd[2], pid_t pid)
 
 void	CGI::ExecuteCGI(void)
 {
-	int		write_pipe_fd[2];
-	int		read_pipe_fd[2];
 	pid_t	pid;
 
-	CreatePipe(write_pipe_fd, read_pipe_fd);
+	if (write_pipe_.OpenNonBlockingPipe() < 0
+		|| read_pipe_.OpenNonBlockingPipe() < 0)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
 	if ((pid = fork()) < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecuteCGI");
 
 	if (pid == 0)
-		SendData(write_pipe_fd, read_pipe_fd);
+		SendData();
 	else
-		ReceiveData(write_pipe_fd, read_pipe_fd, pid);
-
-	CleanPipe(write_pipe_fd, read_pipe_fd);
-
-	return;
+		ReceiveData(pid);
 }
 
 void	CGI::ParseContentType(const std::string& content)

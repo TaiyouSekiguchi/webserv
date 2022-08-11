@@ -4,27 +4,25 @@
 class Pipe
 {
 	public:
-		Pipe();
-		~Pipe();
-
-		void		CloseReadPipe(void)
-		void		CloseWritePipe(void)
-		int			WriteToPipe(void* buf, unsigned int byte)
-		ssize_t		ReadFromPipe(void* buf, size_t byte)
-		int			StdinRedirectToReadPipe(void)
-		int			StdoutRedirectToWritePipe(void)
-
-	private:
 		enum	e_PipeIo
 		{
 			READ = 0,
 			WRITE = 1
 		}
 
-		void		OpenPipe(void);
-		void		NonBlockingPipe(void);
+		Pipe(e_PipeIo type);
+		~Pipe();
 
+		int			OpenNonBlockingPipe(void)
+		int			CloseUnusedPipeInParentProcess(void)
+		int			CloseUnusedPipeInChildProcess(void)
+		int			WriteToPipe(void* buf, unsigned int byte)
+		ssize_t		ReadFromPipe(void* buf, size_t byte)
+		int			RedirectToPipe(void)
+
+	private:
 		int			pipe_[2];
+		e_PipeIo	type_;
 };
 
 #endif

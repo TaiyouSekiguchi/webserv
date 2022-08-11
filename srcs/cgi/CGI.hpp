@@ -50,6 +50,9 @@ class CGI
 		std::string				location_;
 		e_StatusCode			status_code_;
 		std::string				body_;
+
+		Pipe					write_pipe_;
+		Pipe					read_pipe_;
 };
 
 #endif
