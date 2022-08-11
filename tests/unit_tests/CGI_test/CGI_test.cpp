@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest.h>
 #include <iostream>
-#include "./HTTPRequest.hpp"
+#include "HTTPRequest.hpp"
 #include "./ClientSocket.hpp"
 #include "ListenSocket.hpp"
 #include "Config.hpp"
@@ -17,7 +17,7 @@ class CGITest : public ::testing::Test
 		const std::vector<ServerDirective>&				servers = config.GetServers();
 		std::vector<ServerDirective>::const_iterator	itr = servers.begin();
 
-		lsocket_ = new ListenSocket(*itr);
+		lsocket_ = new ListenSocket(*itr, servers.at(0));
 		lsocket_->ListenConnection();
 		csocket_ = new ClientSocket();
 		csocket_->ConnectServer("127.0.0.1", 8080);
@@ -37,7 +37,7 @@ class CGITest : public ::testing::Test
 TEST_F(CGITest, standard)
 {
 	HTTPRequest		req(*ssocket_, ssocket_->GetServerConf());
-	CGI				cgi("./test.cgi", req);
+	CGI				cgi("/test.cgi", req);
 
 	EXPECT_EQ("text/html", cgi.GetContentType());
 	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\nGATEWAY_INTERFACE [CGI/1.1]\nCONTENT_LENGTH    []\n</div>\n</body>\n</html>", cgi.GetBody());

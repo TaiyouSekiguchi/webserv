@@ -1,10 +1,5 @@
 #!/usr/bin/perl
-# 上の１行の前には空行も空白文字もはいらないようにしてください。
-# perlのパス名はプロバイダや環境に合わせて変更してください。
 
-#
-# HTMLのメタ文字をエスケープする関数を用意します
-#
 sub html {
     $str = $_[0];
     $str =~ s/&/&amp;/g;
@@ -15,9 +10,6 @@ sub html {
     return $str;
 }
 
-#
-# ヘッダ部を書き出します
-#
 print <<EOF;
 Content-Type: text/html
 
@@ -32,20 +24,6 @@ Content-Type: text/html
 <pre>
 EOF
 
-#
-# コマンド引数を書き出します
-#
-print "=================================\n";
-print "コマンド引数\n";
-print "=================================\n";
-for ($i = 0; $i <= $#ARGV; $i++) {
-	print "ARGV[$i] = [ " . html($ARGV[$i]) . " ]\n";
-}
-print "\n";
-
-#
-# CGIスクリプトが参照可能な環境変数を書き出します。
-#
 print "=================================\n";
 print "環境変数\n";
 print "=================================\n";
@@ -73,37 +51,6 @@ print "SERVER_PROTOCOL = [ " . html($ENV{'SERVER_PROTOCOL'}) . " ]\n";
 print "SERVER_SOFTWARE = [ " . html($ENV{'SERVER_SOFTWARE'}) . " ]\n";
 print "\n";
 
-#
-# フォームに指定した値を書き出します
-#
-print "=================================\n";
-print "フォーム変数\n";
-print "=================================\n";
-if ($ENV{'REQUEST_METHOD'} eq "POST") {
-	# POSTであれば標準入力から読込みます
-	read(STDIN, $query_string, $ENV{'CONTENT_LENGTH'});
-} else {
-	# GETであれば環境変数から読込みます
-	$query_string = $ENV{'QUERY_STRING'};
-}
-# 「変数名1=値1&変数名2=値2」の形式をアンパサンド( & )で分解します
-@a = split(/&/, $query_string);
-# それぞれの「変数名=値」について
-foreach $a (@a) {
-	# イコール( = )で分解します
-	($name, $value) = split(/=/, $a);
-	# + や %8A などをデコードします
-	$value =~ tr/+/ /;
-	$value =~ s/%([0-9a-fA-F][0-9a-fA-F])/pack("C", hex($1))/eg;
-	# 変数名と値を書き出します
-	print "$name = [ " . html($value) . " \n";
-	# 後で使用する場合は、$FORM{'変数名'} に代入しておきます
-	$FORM{$name} = $value;
-}
-
-#
-# フッター部を書き出します
-#
 print <<EOF;
 </pre>
 </body>

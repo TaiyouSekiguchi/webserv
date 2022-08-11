@@ -7,6 +7,7 @@ vpath	%.cpp	srcs:\
 				$(SRCSDIR)/io:\
 				$(SRCSDIR)/server \
 				$(SRCSDIR)/webserv:\
+				$(SRCSDIR)/cgi:\
 				$(SRCSDIR)/utils
 SRCS	=	Config.cpp \
 			Tokens.cpp \
@@ -29,6 +30,8 @@ SRCS	=	Config.cpp \
 			Stat.cpp \
 			utils.cpp \
 			EventQueue.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
 			WebServ.cpp
 
 SRCS	+=	virtual_server_test.cpp
@@ -45,6 +48,7 @@ INCLUDE =	-I./srcs \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
 			-I$(SRCSDIR)/utils \
+			-I$(SRCSDIR)/cgi \
 			-I$(SRCSDIR)/webserv
 NAME	=	unit_test
 

@@ -1,10 +1,10 @@
 SRCSDIR	= ../../../srcs
-vpath	%.hpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config:$(SRCSDIR)/cgi
-vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config:$(SRCSDIR)/cgi
+vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config:$(SRCSDIR)/cgi:$(SRCSDIR)/io:$(SRCSDIR)/webserv:$(SRCSDIR)/event
+
 
 SRCS	=	CGI.cpp \
 			CGIEnv.cpp \
-			CGI_test.cpp \
+			New_CGI_test.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
 			ServerSocket.cpp \
@@ -14,20 +14,23 @@ SRCS	=	CGI.cpp \
 			LocationDirective.cpp \
 			ServerDirective.cpp  \
 			Tokens.cpp \
-			HTTPRequest.cpp
+			HTTPRequest.cpp \
+			AIo.cpp \
+			URI.cpp
+
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRCSDIR)/exception -I $(SRCSDIR)/config -I $(SRCSDIR)/cgi
+INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRCSDIR)/exception -I $(SRCSDIR)/config -I $(SRCSDIR)/cgi -I $(SRCSDIR)/io -I $(SRCSDIR)/webserv -I $(SRCSDIR)/event
 
 NAME	=	unit_test
 
-CC		=	c++
-#CC		=	clang++
+#CC		=	c++
+CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
-#CFLAGS	+=	-g -fsanitize=address
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

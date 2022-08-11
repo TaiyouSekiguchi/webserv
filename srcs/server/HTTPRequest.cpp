@@ -114,7 +114,7 @@ void	HTTPRequest::ParseTarget(const std::string& target)
 void	HTTPRequest::ParseVersion(const std::string& version)
 {
 	const char*	tmp;
-	size_t		size;
+	//size_t		size;
 	size_t		i;
 
 	if (version.at(0) != 'H')
@@ -124,7 +124,7 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 		throw HTTPError(SC_BAD_REQUEST, "ParseVersion");
 
 	tmp = version.c_str();
-	size = version.size();
+	//size = version.size();
 
 	i = 5;
 	while (isdigit(tmp[i]))
