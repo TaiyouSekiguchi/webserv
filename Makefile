@@ -30,7 +30,8 @@ SRCS	=	main.cpp \
 			Dir.cpp \
 			CGI.cpp \
 			CGIEnv.cpp \
-			URI.cpp
+			URI.cpp \
+			Pipe.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))

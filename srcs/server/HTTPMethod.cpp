@@ -286,9 +286,9 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	return (true);
 }
 
-e_HTTPServerEventType	HTTPMethod::ExecCGI(const std::string& access_path)
+e_HTTPServerEventType	HTTPMethod::ExecCGI(void)
 {
-	cgi_ = new CGI(uri_, req_);
+	cgi_ = new CGI(*uri_, req_);
 
 	return (cgi_->ExecCGI());
 }

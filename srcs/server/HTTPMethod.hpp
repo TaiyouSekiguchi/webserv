@@ -37,12 +37,12 @@ class HTTPMethod
 		void					PostToCgi();
 		e_HTTPServerEventType	ReceiveCgiResult(const bool eof_flag);
 
-		void				MethodDisplay() const;
+		void					MethodDisplay() const;
 
 	private:
 		const LocationDirective*	SelectLocation(const std::vector<LocationDirective>& locations) const;
-		e_StatusCode			Redirect(const std::string& location, const e_StatusCode status_code);
-		e_HTTPServerEventType	PublishReadEvent(const e_HTTPServerEventType event_type);
+		e_StatusCode				Redirect(const std::string& location, const e_StatusCode status_code);
+		e_HTTPServerEventType		PublishReadEvent(const e_HTTPServerEventType event_type);
 
 		// GET
 		bool	IsReadableFile(const std::string& access_path);
@@ -54,13 +54,11 @@ class HTTPMethod
 		e_HTTPServerEventType	ValidateGETMethod(const Stat& st);
 		e_HTTPServerEventType	ValidateDELETEMethod(const Stat& st);
 		e_HTTPServerEventType	ValidatePOSTMethod(const Stat& st);
-
 		std::string 			GenerateDefaultHTML() const;
 
 		// CGI
-		bool	CheckCGIScript(void);
-		//e_HTTPServerEventType	ExecCGI(void);  old
-		e_HTTPServerEventType	ExecCGI(const std::string& access_path);
+		bool						CheckCGIScript(void);
+		e_HTTPServerEventType		ExecCGI(void);
 
 		const HTTPRequest&			req_;
 		const ServerDirective*		server_conf_;
@@ -72,7 +70,7 @@ class HTTPMethod
 		e_StatusCode	status_code_;
 		RegularFile*	target_rfile_;
 		URI*			uri_;
-		// CGI*			cgi_;
+		CGI*			cgi_;
 };
 
 #endif
