@@ -88,9 +88,15 @@ LocationDirective	HTTPMethod::SelectLocation
 	return (*longest);
 }
 
-e_StatusCode	HTTPMethod::Redirect(const std::string& location, const e_StatusCode status_code)
+e_StatusCode	HTTPMethod::Redirect(const std::string& url, const e_StatusCode status_code)
 {
-	location_ = location;
+	if (status_code == SC_MOVED_PERMANENTLY
+		|| status_code == SC_FOUND
+		|| status_code == SC_SEE_OTHER
+		|| status_code == SC_TEMPORARY_REDIRECT)
+		location_ = url;
+	else
+		body_ = url;
 	return (status_code);
 }
 
