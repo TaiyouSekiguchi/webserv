@@ -35,7 +35,7 @@ class HTTPMethod
 
 	private:
 		LocationDirective		SelectLocation(const std::vector<LocationDirective>& locations) const;
-		e_StatusCode			Redirect(const std::string& url, const e_StatusCode status_code);
+		e_HTTPServerEventType	Redirect(const std::string& url, const e_StatusCode status_code);
 		e_HTTPServerEventType	PublishReadEvent(const e_HTTPServerEventType event_type);
 
 

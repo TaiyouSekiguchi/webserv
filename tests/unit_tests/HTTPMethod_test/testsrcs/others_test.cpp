@@ -131,9 +131,26 @@ ClientSocket*			OthersTest::csocket_ = NULL;
 
 TEST_F(OthersTest, ReturnTest)
 {
-	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("AAA /sub2 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_MOVED_PERMANENTLY);
 	EXPECT_EQ(method_->GetLocation(), "http://localhost:8080");
+	EXPECT_NE(method_->GetBody().find("301 Moved Permanently"), std::string::npos);
+}
+
+TEST_F(OthersTest, ReturnErrorPageTest)
+{
+	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_TEMPORARY_REDIRECT);
+	EXPECT_EQ(method_->GetLocation(), "http://localhost:8080");
+	EXPECT_EQ(method_->GetBody(), "html/hello.html\n");
+}
+
+TEST_F(OthersTest, ReturnLocationTest)
+{
+	RunCommunication("AAA /sub1/noindex HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	EXPECT_EQ(method_->GetStatusCode(), SC_BAD_REQUEST);
+	EXPECT_EQ(method_->GetLocation(), "");
+	EXPECT_EQ(method_->GetBody(), "http://localhost:8080");
 }
 
 TEST_F(OthersTest, UnknownMethodTest)
@@ -164,7 +181,7 @@ TEST_F(OthersTest, AutoIndexTest)
 // 405 Method Not Allowed
 TEST_F(OthersTest, DefaultErrorPageTest)
 {
-	RunCommunication("DELETE /sub2 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
+	RunCommunication("DELETE /sub1 HTTP/1.1\r\nHost: localhost:8085\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_METHOD_NOT_ALLOWED);
 	EXPECT_NE(method_->GetBody().find("405 Method Not Allowed"), std::string::npos);
 }
