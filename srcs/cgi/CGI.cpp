@@ -13,8 +13,6 @@ CGI::~CGI(void)
 
 e_HTTPServerEventType	CGI::ExecCGI(void)
 {
-	std::cout << "CGI::ExecCGI called." << std::endl;
-
 	if (to_cgi_pipe_.OpenPipe() < 0
 		|| from_cgi_pipe_.OpenPipe() < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
@@ -46,27 +44,24 @@ void	CGI::PostToCgi(void)
 {
 	if (req_.GetMethod() == "POST")
 	{
-		if (to_cgi_pipe_.WriteToPipe(const_cast<char*>(req_.GetBody().c_str()), req_.GetBody().size()) < 0)
+		if (to_cgi_pipe_.WriteToPipe(req_.GetBody()) < 0)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "PostToCGI");
 	}
 }
 
 e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 {
-	const size_t	buf_size = 4;
-	char			buf[buf_size + 1];
-	int				read_byte;
+	std::string		tmp;
+	ssize_t			read_byte;
 	pid_t			ret_pid;
 	int				status;
 
-	//(void)eof_flag;
-	read_byte = from_cgi_pipe_.ReadFromPipe(buf, buf_size);
+	read_byte = from_cgi_pipe_.ReadFromPipe(&tmp);
 	if (read_byte == -1)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult1");
 	else if (read_byte != 0)
 	{
-		buf[read_byte] = '\0';
-		data_ += std::string(buf);
+		data_ += tmp;
 		return (SEVENT_CGI_READ);
 	}
 	ret_pid = waitpid(pid_, &status, 0);
@@ -134,7 +129,10 @@ void	CGI::ExecveCGIScript(void)
 	argv[1] = NULL;
 
 	if (execve(argv[0], argv, env.GetEnv()) < 0)
+	{
+		std::cerr << "execve failed." << std::endl;
 		std::exit(EXIT_FAILURE);
+	}
 }
 
 void	CGI::ParseCGI(void)

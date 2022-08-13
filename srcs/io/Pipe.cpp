@@ -40,14 +40,23 @@ void	Pipe::NonBlockingPipe(e_PipeIo type) const
 	fcntl(pipe_[type], F_SETFL, val | O_NONBLOCK);
 }
 
-int		Pipe::WriteToPipe(void* buf, unsigned int byte) const
+int		Pipe::WriteToPipe(const std::string& str) const
 {
-	return (write(pipe_[WRITE], buf, byte));
+	return (write(pipe_[WRITE], str.c_str(), str.size()));
 }
 
-ssize_t	Pipe::ReadFromPipe(void* buf, size_t byte) const
+ssize_t	Pipe::ReadFromPipe(std::string* str) const
 {
-	return (read(pipe_[READ], buf, byte));
+	const int			buf_size = 8;
+	char				buf[buf_size + 1];
+	ssize_t				readsize;
+
+	if((readsize = read(pipe_[READ], &buf, buf_size)) > 0)
+	{
+		buf[readsize] = '\0';
+		*str += buf;
+	}
+	return (readsize);
 }
 
 int		Pipe::RedirectToPipe(e_PipeIo type, int fd)
