@@ -30,7 +30,9 @@ e_HTTPServerEventType	HTTPResponse::SendResponse(const ServerSocket& ssocket)
 
 void HTTPResponse::CheckConnection()
 {
-	if (status_code_ == SC_BAD_REQUEST || status_code_ == SC_HTTP_VERSION_NOT_SUPPORTED)
+	if (status_code_ == SC_BAD_REQUEST || status_code_ == SC_REQUEST_TIMEOUT || status_code_ == SC_LENGTH_REQUIRED
+		|| status_code_ == SC_URI_TOO_LONG || status_code_ == SC_INTERNAL_SERVER_ERROR || status_code_ == SC_NOT_IMPLEMENTED
+		|| status_code_ == SC_SERVISE_UNAVAILABLE || status_code_ == SC_HTTP_VERSION_NOT_SUPPORTED)
 	{
 		connection_ = false;
 		return;
