@@ -18,4 +18,9 @@ compile	:
 			make -C utils_test
 			make -C WebServ_test
 
-.PHONY		:	all test compile
+clean	:
+			rm -rf */objs
+
+re		:	clean test
+
+.PHONY		:	all test compile clean re
