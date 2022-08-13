@@ -57,7 +57,7 @@ class GETTest : public ::testing::Test
 						event_type = RunPostToCgi();
 						break;
 					case SEVENT_CGI_READ:
-						event_type = RunReceiveCgiResult(IsEOF());
+						event_type = RunReceiveCgiResult();
 						break;
 					case SEVENT_ERRORPAGE_READ:
 						event_type = RunReadErrorPage();
@@ -130,13 +130,13 @@ class GETTest : public ::testing::Test
 			return (SEVENT_NO);
 		}
 
-		e_HTTPServerEventType	RunReceiveCgiResult(const bool eof_flag)
+		e_HTTPServerEventType	RunReceiveCgiResult()
 		{
 			e_HTTPServerEventType	new_event;
 
 			try
 			{
-				new_event = method_->ReceiveCgiResult(eof_flag);
+				new_event = method_->ReceiveCgiResult();
 				if (new_event != SEVENT_NO)
 					return (new_event);
 			}
@@ -174,7 +174,7 @@ ClientSocket*			GETTest::csocket_ = NULL;
 
 TEST_F(GETTest, SimpleGet)
 {
-	RunCommunication("GET /test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("GET /cgi-bin/test.pl HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
 	EXPECT_EQ("text/html", method_->GetContentType());
 	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>", method_->GetBody());

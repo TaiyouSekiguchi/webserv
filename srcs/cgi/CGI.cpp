@@ -13,6 +13,8 @@ CGI::~CGI(void)
 
 e_HTTPServerEventType	CGI::ExecCGI(void)
 {
+	std::cout << "CGI::ExecCGI called." << std::endl;
+
 	if (to_cgi_pipe_.OpenPipe() < 0
 		|| from_cgi_pipe_.OpenPipe() < 0)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
@@ -49,8 +51,34 @@ void	CGI::PostToCgi(void)
 	}
 }
 
-e_HTTPServerEventType	CGI::ReceiveCgiResult(const bool eof_flag)
+e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 {
+	const size_t	buf_size = 4;
+	char			buf[buf_size + 1];
+	int				read_byte;
+	pid_t			ret_pid;
+	int				status;
+
+	//(void)eof_flag;
+	read_byte = from_cgi_pipe_.ReadFromPipe(buf, buf_size);
+	if (read_byte == -1)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult1");
+	else if (read_byte != 0)
+	{
+		buf[read_byte] = '\0';
+		data_ += std::string(buf);
+		return (SEVENT_CGI_READ);
+	}
+	ret_pid = waitpid(pid_, &status, 0);
+	if (ret_pid < 0
+		|| !WIFEXITED(status)
+		|| WEXITSTATUS(status) == EXIT_FAILURE)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult2");
+	ParseCGI();
+	return (SEVENT_NO);
+}
+
+	/*
 	const size_t	buf_size = 4;
 	char			buf[buf_size + 1];
 	int				read_byte;
@@ -61,12 +89,23 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(const bool eof_flag)
 	{
 		read_byte = from_cgi_pipe_.ReadFromPipe(buf, buf_size);
 		buf[read_byte] = '\0';
+
 		data_ += std::string(buf);
 
 		return (SEVENT_CGI_READ);
 	}
 	else
 	{
+		read_byte = from_cgi_pipe_.ReadFromPipe(buf, buf_size);
+		buf[read_byte] = '\0';
+
+		if (read_byte > 0)
+		{
+			data_ += std::string(buf);
+
+			return (SEVENT_CGI_READ);
+		}
+
 		ret_pid = waitpid(pid_, &status, 0);
 		if (ret_pid < 0
 			|| !WIFEXITED(status)
@@ -78,6 +117,7 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(const bool eof_flag)
 		return (SEVENT_NO);
 	}
 }
+*/
 
 void	CGI::ExecveCGIScript(void)
 {

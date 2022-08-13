@@ -72,6 +72,7 @@ void	LocationDirective::SetInitValue()
 	autoindex_ = -1;
 	allowed_methods_.push_back("GET");
 	upload_root_ = "";
+	cgi_enable_extension_.push_back("cgi");
 }
 
 void	LocationDirective::SetDefaultValue()

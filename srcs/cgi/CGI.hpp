@@ -23,7 +23,7 @@ class CGI
 
 		e_HTTPServerEventType	ExecCGI(void);
 		void					PostToCgi(void);
-		e_HTTPServerEventType	ReceiveCgiResult(const bool eof_flag);
+		e_HTTPServerEventType	ReceiveCgiResult(void);
 
 		std::string				GetData(void) const;
 		std::string				GetContentType(void) const;

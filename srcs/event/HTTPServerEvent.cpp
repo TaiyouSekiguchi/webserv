@@ -37,7 +37,7 @@ void	HTTPServerEvent::RunAnyEvent(EventQueue* equeue)
 			next_event_type = hserver_->RunPostToCgi();
 			break;
 		case SEVENT_CGI_READ:
-			next_event_type = hserver_->RunReceiveCgiResult(IsEOF());
+			next_event_type = hserver_->RunReceiveCgiResult();
 			break;
 		case SEVENT_ERRORPAGE_READ:
 			next_event_type = hserver_->RunReadErrorPage();

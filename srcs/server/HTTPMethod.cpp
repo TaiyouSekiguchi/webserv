@@ -80,11 +80,11 @@ void	HTTPMethod::PostToCgi()
 	cgi_->PostToCgi();
 }
 
-e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult(const bool eof_flag)
+e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
 {
 	e_HTTPServerEventType	event_type;
 
-	event_type = cgi_->ReceiveCgiResult(eof_flag);
+	event_type = cgi_->ReceiveCgiResult();
 	if (event_type == SEVENT_NO)
 	{
 		body_ = cgi_->GetBody();
