@@ -90,10 +90,10 @@ void	HTTPServerEvent::RegisterEvent(EventQueue* equeue)
 			equeue->SetIoEvent(hserver_->GetMethodTargetFileFd(), ET_WRITE, EA_ADD, this);
 			break;
 		case SEVENT_CGI_WRITE:
-			equeue->SetIoEvent(hserver_->GetCgiWritePipeFd(), ET_WRITE, EA_ADD, this);
+			equeue->SetIoEvent(hserver_->GetToCgiPipeFd(), ET_WRITE, EA_ADD, this);
 			break;
 		case SEVENT_CGI_READ:
-			equeue->SetIoEvent(hserver_->GetCgiReadPipeFd(), ET_READ, EA_ADD, this);
+			equeue->SetIoEvent(hserver_->GetFromCgiPipeFd(), ET_READ, EA_ADD, this);
 			break;
 		default: {}
 	}

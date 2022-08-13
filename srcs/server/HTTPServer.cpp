@@ -25,8 +25,8 @@ HTTPServer::~HTTPServer()
 }
 
 int		HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
-int		HTTPServer::GetCgiWritePipeFd() const	  { return (method_->GetCgiWritePipeFd()); }
-int		HTTPServer::GetCgiReadPipeFd() const 	  { return (method_->GetCgiReadPipeFd()); }
+int		HTTPServer::GetToCgiPipeFd() const	  { return (method_->GetToCgiPipeFd()); }
+int		HTTPServer::GetFromCgiPipeFd() const 	  { return (method_->GetFromCgiPipeFd()); }
 
 e_HTTPServerEventType	HTTPServer::Run()
 {

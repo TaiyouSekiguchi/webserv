@@ -26,8 +26,8 @@ class HTTPMethod
 		const e_StatusCode&	GetStatusCode() const;
 
 		int					GetTargetFileFd() const;
-		int					GetCgiReadPipeFd() const;
-		int					GetCgiWritePipeFd() const;
+		int					GetToCgiPipeFd() const;
+		int					GetFromCgiPipeFd() const;
 
 		void				ExecGETMethod();
 		void				ExecPOSTMethod();

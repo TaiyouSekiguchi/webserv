@@ -25,10 +25,8 @@ const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
-// int		HTTPMethod::GetCgiReadPipeFd() const { return (cgi_->GetReadPipeFd()); }
-int		HTTPMethod::GetCgiReadPipeFd() const { return (0); }
-// int		HTTPMethod::GetCgiWritePipeFd() const { return (cgi_->GetWritePipeFd()); }
-int		HTTPMethod::GetCgiWritePipeFd() const { return (0); }
+int		HTTPMethod::GetToCgiPipeFd() const { return (cgi_->GetToCgiFd()); }
+int		HTTPMethod::GetFromCgiPipeFd() const { return (cgi_->GetFromCgiFd()); }
 
 void	HTTPMethod::ExecGETMethod()
 {

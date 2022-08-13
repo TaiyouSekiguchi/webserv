@@ -17,8 +17,8 @@ class HTTPServer
 		~HTTPServer();
 
 		int		GetMethodTargetFileFd() const;
-		int		GetCgiWritePipeFd() const;
-		int		GetCgiReadPipeFd() const;
+		int		GetToCgiPipeFd() const;
+		int		GetFromCgiPipeFd() const;
 
 		e_HTTPServerEventType	Run();
 		e_HTTPServerEventType	RunExecHTTPMethod(const e_HTTPServerEventType event_type);
