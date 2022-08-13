@@ -117,10 +117,7 @@ void	HTTPRequest::ParseVersion(const std::string& version)
 	const char*	tmp;
 	size_t		i;
 
-	if (version.at(0) != 'H')
-		throw HTTPError(SC_NOT_FOUND, "ParseVersion");
-
-	if (version.compare(1, 4, "TTP/"))
+	if (version.compare(0, 5, "HTTP/"))
 		throw HTTPError(SC_BAD_REQUEST, "ParseVersion");
 
 	tmp = version.c_str();
