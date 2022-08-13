@@ -78,7 +78,10 @@ class GETTest : public ::testing::Test
 					return (SEVENT_SOCKET_RECV);
 				new_event = method_->ValidateHTTPMethod();
 				if (new_event != SEVENT_NO)
+				{
+					sleep(1);
 					return (new_event);
+				}
 			}
 			catch (const HTTPError& e)
 			{

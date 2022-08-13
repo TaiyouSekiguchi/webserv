@@ -45,7 +45,6 @@ ssize_t		RegularFile::ReadFile(std::string* str) const
 
 	const int			buf_size = 1024;
 	char				buf[buf_size + 1];
-	std::stringstream	ss;
 	ssize_t				readsize;
 
 	while ((readsize = read(fd_, &buf, buf_size)) > 0)
