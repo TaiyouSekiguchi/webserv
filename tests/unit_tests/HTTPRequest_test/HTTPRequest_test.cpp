@@ -350,3 +350,19 @@ TEST_F(RequestTest, test30)
 	RunCommunication(msg, 8080);
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
+
+TEST_F(RequestTest, test31)
+{
+	const std::string msg = "GET / HTTP/1.1\r\nHost: webserv2:8080\r\n"
+		"Accept: text/html, text/pain\r\n\r\n";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ(SC_OK, status_code_);
+}
+
+TEST_F(RequestTest, test32)
+{
+	const std::string msg = "GET / HTTP/1.1\r\nHost: webserv2:8080\r\n"
+		"Accept: text/html, text/pain, text/pain\r\nAccept:text/pain\r\n\r\n";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ(SC_OK, status_code_);
+}

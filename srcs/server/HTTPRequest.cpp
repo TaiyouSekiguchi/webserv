@@ -29,6 +29,7 @@ std::vector<std::string>		HTTPRequest::GetAcceptEncoding(void) const { return (a
 bool							HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string						HTTPRequest::GetContentType(void) const { return (content_type_); };
 std::string						HTTPRequest::GetBody(void) const { return (body_); }
+std::string						HTTPRequest::GetAccept(void) const { return (accept_); }
 
 bool	HTTPRequest::IsToken(const std::string& str)
 {
@@ -247,6 +248,40 @@ void HTTPRequest::ParseTransferEncoding(const std::string& content)
 		throw HTTPError(SC_NOT_IMPLEMENTED, "ParseTransferEncoding");
 }
 
+void HTTPRequest::ParseAccept(const std::string& content)
+{
+	std::set<std::string>				accept_set;
+	std::vector<std::string>			list;
+	std::vector<std::string>::iterator	it;
+	std::vector<std::string>::iterator	it_end;
+
+	list = Utils::MySplit(accept_, ",");
+	for (size_t i = 0; i < list.size(); ++i)
+		accept_set.insert(list.at(i));
+
+	list = Utils::MySplit(content, ",");
+	it = list.begin();
+	it_end = list.end();
+	for (; it != it_end; ++it)
+	{
+		*it = Utils::MyTrim(*it, " ");
+		*it = Utils::StringToLower(*it);
+		if (accept_set.count(*it) == 0)
+			accept_set.insert(*it);
+	}
+
+	std::set<std::string>::iterator	sit;
+	std::set<std::string>::iterator	sit_end;
+	sit = accept_set.begin();
+	sit_end = accept_set.end();
+	for (; sit != sit_end; ++sit)
+	{
+		if (sit != accept_set.begin())
+			accept_ += ",";
+		accept_ += *sit;
+	}
+}
+
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
@@ -256,9 +291,10 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("accept-encoding", &HTTPRequest::ParseAcceptEncoding),
 		std::make_pair("connection", &HTTPRequest::ParseConnection),
 		std::make_pair("content-type", &HTTPRequest::ParseContentType),
-		std::make_pair("transfer-encoding", &HTTPRequest::ParseTransferEncoding)
+		std::make_pair("transfer-encoding", &HTTPRequest::ParseTransferEncoding),
+		std::make_pair("accept", &HTTPRequest::ParseAccept),
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[7]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[8]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
@@ -279,7 +315,8 @@ static bool	IsOnlyOnceHeader(const std::string& field)
 static bool	IsAppendHeader(const std::string& field)
 {
 	if (field == "accept-encoding"
-		|| field == "connection")
+		|| field == "connection"
+		|| field == "accept")
 		return (true);
 	return (false);
 }
@@ -301,16 +338,17 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 
 bool	HTTPRequest::ReceiveHeaders(void)
 {
-	std::string		array[7] = {
+	std::string		array[8] = {
 		"host",
 		"content-length",
 		"user-agent",
 		"accept-encoding",
 		"connection",
 		"content-type",
-		"transfer-encoding"
+		"transfer-encoding",
+		"accept"
 	};
-	std::vector<std::string>	headers(array, array + 7);
+	std::vector<std::string>	headers(array, array + 8);
 	std::string					line;
 	std::string					field;
 	std::string					content;
