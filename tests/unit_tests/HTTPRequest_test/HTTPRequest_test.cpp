@@ -357,12 +357,14 @@ TEST_F(RequestTest, test31)
 		"Accept: text/html, text/pain\r\n\r\n";
 	RunCommunication(msg, 8080);
 	EXPECT_EQ(SC_OK, status_code_);
+	EXPECT_EQ("text/html,text/pain", req_->GetAccept());
 }
 
 TEST_F(RequestTest, test32)
 {
 	const std::string msg = "GET / HTTP/1.1\r\nHost: webserv2:8080\r\n"
-		"Accept: text/html, text/pain, text/pain\r\nAccept:text/pain\r\n\r\n";
+		"Accept: text/html, text/pain, text/pain\r\nAccept:text/pain, text/csv\r\n\r\n";
 	RunCommunication(msg, 8080);
 	EXPECT_EQ(SC_OK, status_code_);
+	EXPECT_EQ("text/csv,text/html,text/pain", req_->GetAccept());
 }
