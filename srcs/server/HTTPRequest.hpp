@@ -41,6 +41,7 @@ class HTTPRequest
 		std::string								GetContentType(void) const;
 		std::string								GetBody(void) const;
 		std::string								GetAccept(void) const;
+		std::pair<std::string, std::string>		GetAuthorization(void) const;
 
 	private:
 		typedef void (HTTPRequest::*ParseFunc)(const std::string& content);
@@ -73,6 +74,7 @@ class HTTPRequest
 		std::string									content_type_;
 		std::string									transfer_encoding_;
 		std::string									accept_;
+		std::pair<std::string, std::string>			authorization_;
 
 		// body
 		std::string									body_;
@@ -109,6 +111,7 @@ class HTTPRequest
 		void			ParseChunkSize(void);
 		void			ParseChunkData(void);
 		void			ParseAccept(const std::string& content);
+		void			ParseAuthorization(const std::string& content);
 };
 
 #endif

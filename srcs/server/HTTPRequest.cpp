@@ -30,6 +30,8 @@ bool							HTTPRequest::GetConnection(void) const { return (connection_); }
 std::string						HTTPRequest::GetContentType(void) const { return (content_type_); };
 std::string						HTTPRequest::GetBody(void) const { return (body_); }
 std::string						HTTPRequest::GetAccept(void) const { return (accept_); }
+std::pair<std::string, std::string>	HTTPRequest::GetAuthorization(void) const { return (authorization_); }
+
 
 bool	HTTPRequest::IsToken(const std::string& str)
 {
@@ -277,6 +279,16 @@ void HTTPRequest::ParseAccept(const std::string& content)
 	}
 }
 
+void HTTPRequest::ParseAuthorization(const std::string& content)
+{
+	std::vector<std::string>	list;
+
+	list = Utils::MySplit(content, " ");
+	authorization_.first = Utils::MyTrim(list.at(0), " ");
+	if (list.size() >= 2)
+		authorization_.second = Utils::MyTrim(list.at(1), " ");
+}
+
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
@@ -287,9 +299,10 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("connection", &HTTPRequest::ParseConnection),
 		std::make_pair("content-type", &HTTPRequest::ParseContentType),
 		std::make_pair("transfer-encoding", &HTTPRequest::ParseTransferEncoding),
-		std::make_pair("accept", &HTTPRequest::ParseAccept)
+		std::make_pair("accept", &HTTPRequest::ParseAccept),
+		std::make_pair("authorization", &HTTPRequest::ParseAuthorization)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[8]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[9]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
@@ -302,7 +315,8 @@ static bool	IsOnlyOnceHeader(const std::string& field)
 {
 	if (field == "host"
 		|| field == "content-length"
-		|| field == "transfer-encoding")
+		|| field == "transfer-encoding"
+		|| field == "authorization")
 		return (true);
 	return (false);
 }
@@ -333,7 +347,7 @@ void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& c
 
 bool	HTTPRequest::ReceiveHeaders(void)
 {
-	std::string		array[8] = {
+	std::string		array[9] = {
 		"host",
 		"content-length",
 		"user-agent",
@@ -341,9 +355,10 @@ bool	HTTPRequest::ReceiveHeaders(void)
 		"connection",
 		"content-type",
 		"transfer-encoding",
-		"accept"
+		"accept",
+		"authorization"
 	};
-	std::vector<std::string>	headers(array, array + 8);
+	std::vector<std::string>	headers(array, array + 9);
 	std::string					line;
 	std::string					field;
 	std::string					content;

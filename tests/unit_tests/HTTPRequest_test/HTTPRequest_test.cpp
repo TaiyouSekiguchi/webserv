@@ -368,3 +368,20 @@ TEST_F(RequestTest, test32)
 	EXPECT_EQ(SC_OK, status_code_);
 	EXPECT_EQ("text/csv,text/html,text/pain", req_->GetAccept());
 }
+
+TEST_F(RequestTest, test33)
+{
+	const std::string msg = "GET / HTTP/1.1\r\nHost: webserv2:8080\r\n"
+		"Authorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l\r\n\r\n";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ("Basic", req_->GetAuthorization().first);
+	EXPECT_EQ("YWxhZGRpbjpvcGVuc2VzYW1l", req_->GetAuthorization().second);
+}
+
+TEST_F(RequestTest, test34)
+{
+	const std::string msg = "GET / HTTP/1.1\r\nHost: webserv2:8080\r\n"
+		"Authorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l\r\nAuthorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l\r\n\r\n";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
+}
