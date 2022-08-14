@@ -46,6 +46,7 @@ void	CGI::PostToCgi(void)
 	{
 		if (to_cgi_pipe_.WriteToPipe(req_.GetBody()) < 0)
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "PostToCGI");
+		to_cgi_pipe_.ClosePipe(Pipe::WRITE);
 	}
 }
 
@@ -64,6 +65,7 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 		data_ += tmp;
 		return (SEVENT_CGI_READ);
 	}
+	from_cgi_pipe_.ClosePipe(Pipe::READ);
 	ret_pid = waitpid(pid_, &status, 0);
 	if (ret_pid < 0
 		|| !WIFEXITED(status)

@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <fstream>
 #include "ListenSocket.hpp"
 #include "ServerSocket.hpp"
 #include "ClientSocket.hpp"
@@ -9,7 +8,7 @@
 #include "HTTPResponse.hpp"
 #include "HTTPStatusCode.hpp"
 
-class DELETETest : public ::testing::Test
+class POSTTest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
@@ -54,6 +53,13 @@ class DELETETest : public ::testing::Test
 					case SEVENT_FILE_DELETE:
 						event_type = RunExecHTTPMethod(event_type);
 						break;
+					case SEVENT_CGI_WRITE:
+						event_type = RunPostToCgi();
+						break;
+					case SEVENT_CGI_READ:
+						usleep(1000);
+						event_type = RunReceiveCgiResult();
+						break;
 					case SEVENT_ERRORPAGE_READ:
 						event_type = RunReadErrorPage();
 						break;
@@ -68,12 +74,16 @@ class DELETETest : public ::testing::Test
 
 			try
 			{
+				sleep(1);
 				new_event = req_->ParseRequest();
 				if (new_event != SEVENT_NO)
 					return (SEVENT_SOCKET_RECV);
 				new_event = method_->ValidateHTTPMethod();
 				if (new_event != SEVENT_NO)
+				{
+					sleep(1);
 					return (new_event);
+				}
 			}
 			catch (const HTTPError& e)
 			{
@@ -106,6 +116,45 @@ class DELETETest : public ::testing::Test
 			return (SEVENT_NO);
 		}
 
+		e_HTTPServerEventType	RunPostToCgi()
+		{
+			e_HTTPServerEventType	new_event;
+
+			try
+			{
+				method_->PostToCgi();
+				return (SEVENT_CGI_READ);
+			}
+			catch (const HTTPError& e)
+			{
+				e.PutMsg();
+				new_event = method_->ValidateErrorPage(e.GetStatusCode());
+				if (new_event != SEVENT_NO)
+					return (new_event);
+			}
+			return (SEVENT_NO);
+		}
+
+		e_HTTPServerEventType	RunReceiveCgiResult()
+		{
+			e_HTTPServerEventType	new_event;
+
+			try
+			{
+				new_event = method_->ReceiveCgiResult();
+				if (new_event != SEVENT_NO)
+					return (new_event);
+			}
+			catch (const HTTPError& e)
+			{
+				e.PutMsg();
+				new_event = method_->ValidateErrorPage(e.GetStatusCode());
+				if (new_event != SEVENT_NO)
+					return (new_event);
+			}
+			return (SEVENT_NO);
+		}
+
 		e_HTTPServerEventType	RunReadErrorPage()
 		{
 			method_->ReadErrorPage();
@@ -122,47 +171,17 @@ class DELETETest : public ::testing::Test
 		HTTPMethod*				method_;
 };
 
-Config					DELETETest::config_("conf/delete.conf");
-const ServerDirective&	DELETETest::server_conf_ = *(config_.GetServers().begin());
-ListenSocket*			DELETETest::lsocket_ = NULL;
-ServerSocket*			DELETETest::ssocket_ = NULL;
-ClientSocket*			DELETETest::csocket_ = NULL;
+Config					POSTTest::config_("conf/post.conf");
+const ServerDirective&	POSTTest::server_conf_ = *(config_.GetServers().begin());
+ListenSocket*			POSTTest::lsocket_ = NULL;
+ServerSocket*			POSTTest::ssocket_ = NULL;
+ClientSocket*			POSTTest::csocket_ = NULL;
 
-TEST_F(DELETETest, NotAllowedTest)
+TEST_F(POSTTest, PUT_BODY_TEST)
 {
-	RunCommunication("DELETE /hoge/index.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(method_->GetStatusCode(), SC_METHOD_NOT_ALLOWED);
-}
+	RunCommunication("POST /cgi-bin/post_test.cgi HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 10\r\n\r\nVALUE=abcd");
 
-TEST_F(DELETETest, NotFoundTest)
-{
-	RunCommunication("DELETE /sub1/no.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(method_->GetStatusCode(), SC_NOT_FOUND);
-}
-
-TEST_F(DELETETest, NotSlashEndDirTest)
-{
-	RunCommunication("DELETE /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(method_->GetStatusCode(), SC_CONFLICT);
-}
-
-TEST_F(DELETETest, NotEmptyDirTest)
-{
-	RunCommunication("DELETE /sub1/hoge/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(method_->GetStatusCode(), SC_FORBIDDEN);
-}
-
-TEST_F(DELETETest, FileTest)
-{
-	std::fstream	output_fstream;
-	output_fstream.open("../../../html/sub1/delete.html", std::ios_base::out);
-	RunCommunication("DELETE /sub1/delete.html HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(method_->GetStatusCode(), SC_NO_CONTENT);
-}
-
-TEST_F(DELETETest, EmptyDirTest)
-{
-	mkdir("../../../html/sub1/empty", 0777);
-	RunCommunication("DELETE /sub1/empty/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
-	EXPECT_EQ(method_->GetStatusCode(), SC_NO_CONTENT);
+	EXPECT_EQ("text/html", method_->GetContentType());
+	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]\n</pre>\n</body>\n</html>\n", method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }

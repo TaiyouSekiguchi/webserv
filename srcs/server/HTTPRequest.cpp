@@ -446,10 +446,12 @@ bool	HTTPRequest::ReceiveBody(void)
 		}
 	}
 	body_ = raw_body_;
-	if (body_.size() != content_length_)
-		return (false);
-	else
+	if (body_.size() > content_length_)
+		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ReceiveBody");
+	else if (body_.size() == content_length_)
 		return (true);
+	else
+		return (false);
 }
 
 void	HTTPRequest::FindServerConf(void)

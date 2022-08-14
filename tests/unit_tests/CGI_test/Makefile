@@ -1,36 +1,54 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp $(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/utils:$(SRCSDIR)/exception:$(SRCSDIR)/config:$(SRCSDIR)/cgi:$(SRCSDIR)/io:$(SRCSDIR)/webserv:$(SRCSDIR)/event
-
-
-SRCS	=	CGI.cpp \
-			CGIEnv.cpp \
-			New_CGI_test.cpp \
+vpath	%.cpp	srcs:\
+				testsrcs:\
+				$(SRCSDIR)/config:\
+				$(SRCSDIR)/exception \
+				$(SRCSDIR)/io:\
+				$(SRCSDIR)/server \
+				$(SRCSDIR)/cgi \
+				$(SRCSDIR)/utils
+SRCS	=	Config.cpp \
+			Tokens.cpp \
+			ServerDirective.cpp \
+			LocationDirective.cpp \
+			AIo.cpp \
 			ASocket.cpp \
 			ListenSocket.cpp \
+			RegularFile.cpp \
 			ServerSocket.cpp \
-			utils.cpp \
-			ClientSocket.cpp \
-			Config.cpp \
-			LocationDirective.cpp \
-			ServerDirective.cpp  \
-			Tokens.cpp \
+			HTTPMethod.cpp \
 			HTTPRequest.cpp \
-			AIo.cpp \
-			URI.cpp
+			HTTPResponse.cpp \
+			HTTPServer.cpp \
+			URI.cpp \
+			Dir.cpp \
+			Stat.cpp \
+			CGI.cpp \
+			Pipe.cpp \
+			CGIEnv.cpp \
+			utils.cpp
 
+SRCS	+=	ClientSocket.cpp
+SRCS	+=	GET_test.cpp\
+			POST_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRCSDIR)/exception -I $(SRCSDIR)/config -I $(SRCSDIR)/cgi -I $(SRCSDIR)/io -I $(SRCSDIR)/webserv -I $(SRCSDIR)/event
-
+INCLUDE =	-I./srcs \
+			-I./testsrcs \
+			-I$(SRCSDIR)/config \
+			-I$(SRCSDIR)/event \
+			-I$(SRCSDIR)/exception \
+			-I$(SRCSDIR)/io \
+			-I$(SRCSDIR)/server \
+			-I$(SRCSDIR)/cgi \
+			-I$(SRCSDIR)/utils
 NAME	=	unit_test
 
-#CC		=	c++
-CC		=	clang++
-CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	+=	-g -fsanitize=address
+CC		=	c++
+CFLAGS	=	-Wall -Wextra -Werror -g
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main
@@ -49,7 +67,7 @@ $(OBJSDIR)/%.o	:	%.cpp
 
 test		:	all
 				@echo
-				@./$(NAME)
+				@./$(NAME) || :
 
 clean		:
 				-$(RM) $(OBJS) $(DEPS)
