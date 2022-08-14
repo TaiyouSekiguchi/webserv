@@ -255,10 +255,6 @@ void HTTPRequest::ParseAccept(const std::string& content)
 	std::vector<std::string>::iterator	it;
 	std::vector<std::string>::iterator	it_end;
 
-	list = Utils::MySplit(accept_, ",");
-	for (size_t i = 0; i < list.size(); ++i)
-		accept_set.insert(list.at(i));
-
 	list = Utils::MySplit(content, ",");
 	it = list.begin();
 	it_end = list.end();
@@ -266,8 +262,7 @@ void HTTPRequest::ParseAccept(const std::string& content)
 	{
 		*it = Utils::MyTrim(*it, " ");
 		*it = Utils::StringToLower(*it);
-		if (accept_set.count(*it) == 0)
-			accept_set.insert(*it);
+		accept_set.insert(*it);
 	}
 
 	std::set<std::string>::iterator	sit;
@@ -292,7 +287,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("connection", &HTTPRequest::ParseConnection),
 		std::make_pair("content-type", &HTTPRequest::ParseContentType),
 		std::make_pair("transfer-encoding", &HTTPRequest::ParseTransferEncoding),
-		std::make_pair("accept", &HTTPRequest::ParseAccept),
+		std::make_pair("accept", &HTTPRequest::ParseAccept)
 	};
 	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[8]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
