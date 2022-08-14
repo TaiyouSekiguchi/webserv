@@ -75,47 +75,6 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 	return (SEVENT_NO);
 }
 
-	/*
-	const size_t	buf_size = 4;
-	char			buf[buf_size + 1];
-	int				read_byte;
-	pid_t			ret_pid;
-	int				status;
-
-	if (!eof_flag)
-	{
-		read_byte = from_cgi_pipe_.ReadFromPipe(buf, buf_size);
-		buf[read_byte] = '\0';
-
-		data_ += std::string(buf);
-
-		return (SEVENT_CGI_READ);
-	}
-	else
-	{
-		read_byte = from_cgi_pipe_.ReadFromPipe(buf, buf_size);
-		buf[read_byte] = '\0';
-
-		if (read_byte > 0)
-		{
-			data_ += std::string(buf);
-
-			return (SEVENT_CGI_READ);
-		}
-
-		ret_pid = waitpid(pid_, &status, 0);
-		if (ret_pid < 0
-			|| !WIFEXITED(status)
-			|| WEXITSTATUS(status) == EXIT_FAILURE)
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
-
-		ParseCGI();
-
-		return (SEVENT_NO);
-	}
-}
-*/
-
 void	CGI::ExecveCGIScript(void)
 {
 	CGIEnv	env(uri_, req_);
