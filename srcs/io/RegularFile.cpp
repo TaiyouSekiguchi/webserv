@@ -50,7 +50,7 @@ ssize_t		RegularFile::ReadFile(std::string* str) const
 	while ((readsize = read(fd_, &buf, buf_size)) > 0)
 	{
 		buf[readsize] = '\0';
-		*str += buf;
+		(*str).append(buf, readsize);
 	}
 	return (readsize);
 }

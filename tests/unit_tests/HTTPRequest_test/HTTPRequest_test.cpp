@@ -166,7 +166,7 @@ TEST_F(RequestTest, test5)
 TEST_F(RequestTest, test6)
 {
 	RunCommunication("GET / tHTTP/1.1\r\n", 8080);
-	EXPECT_EQ(SC_NOT_FOUND, status_code_);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, test7)
