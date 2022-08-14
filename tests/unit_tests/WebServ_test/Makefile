@@ -32,6 +32,7 @@ SRCS	=	Config.cpp \
 			EventQueue.cpp \
 			CGI.cpp \
 			CGIEnv.cpp \
+			Pipe.cpp \
 			WebServ.cpp
 
 SRCS	+=	virtual_server_test.cpp

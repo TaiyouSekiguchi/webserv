@@ -8,6 +8,7 @@ test	:	compile
 			#make test -C URI_test			&& echo
 			make test -C utils_test			&& echo
 			make test -C WebServ_test
+			make test -C CGI_test			&& echo
 
 compile	:
 			make -C config_test
@@ -17,6 +18,7 @@ compile	:
 			#make -C URI_test
 			make -C utils_test
 			make -C WebServ_test
+			make -C CGI_test
 
 clean	:
 			rm -rf */objs

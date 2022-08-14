@@ -23,6 +23,7 @@ SRCS	=	Config.cpp \
 			URI.cpp \
 			CGI.cpp \
 			CGIEnv.cpp \
+			Pipe.cpp \
 			utils.cpp
 
 SRCS	+=	ClientSocket.cpp

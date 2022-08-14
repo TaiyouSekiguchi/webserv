@@ -64,8 +64,9 @@ TEST(DefaultTest, Basic)
 		EXPECT_EQ(litr->GetUploadRoot(), "html");
 		litr++;
 		EXPECT_EQ(litr->GetPath(), "/cgi-bin");
-		EXPECT_EQ(litr->GetCGIEnableExtension().size(), (size_t)1);
-		EXPECT_EQ(litr->GetCGIEnableExtension()[0], "pl");
+		EXPECT_EQ(litr->GetCGIEnableExtension().size(), (size_t)2);
+		EXPECT_EQ(litr->GetCGIEnableExtension()[0], "cgi");
+		EXPECT_EQ(litr->GetCGIEnableExtension()[1], "pl");
 		EXPECT_EQ(++litr, locations.end());
 	}
 	sitr++;
