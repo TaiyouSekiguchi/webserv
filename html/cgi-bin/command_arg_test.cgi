@@ -28,7 +28,7 @@ EOF
 # コマンド引数を書き出します
 #
 print "=================================\n";
-print "コマンド引数\n";
+print "Command Arguments\n";
 print "=================================\n";
 
 $query_string = $ENV{'QUERY_STRING'};

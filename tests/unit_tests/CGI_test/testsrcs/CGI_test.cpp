@@ -8,7 +8,7 @@
 #include "HTTPResponse.hpp"
 #include "HTTPStatusCode.hpp"
 
-class POSTTest : public ::testing::Test
+class CGITest : public ::testing::Test
 {
 	protected:
 		static void SetUpTestCase()
@@ -57,7 +57,7 @@ class POSTTest : public ::testing::Test
 						event_type = RunPostToCgi();
 						break;
 					case SEVENT_CGI_READ:
-						usleep(1000);
+						usleep(500);
 						event_type = RunReceiveCgiResult();
 						break;
 					case SEVENT_ERRORPAGE_READ:
@@ -74,7 +74,6 @@ class POSTTest : public ::testing::Test
 
 			try
 			{
-				sleep(1);
 				new_event = req_->ParseRequest();
 				if (new_event != SEVENT_NO)
 					return (SEVENT_SOCKET_RECV);
@@ -171,17 +170,47 @@ class POSTTest : public ::testing::Test
 		HTTPMethod*				method_;
 };
 
-Config					POSTTest::config_("conf/post.conf");
-const ServerDirective&	POSTTest::server_conf_ = *(config_.GetServers().begin());
-ListenSocket*			POSTTest::lsocket_ = NULL;
-ServerSocket*			POSTTest::ssocket_ = NULL;
-ClientSocket*			POSTTest::csocket_ = NULL;
+Config					CGITest::config_("conf/cgi.conf");
+const ServerDirective&	CGITest::server_conf_ = *(config_.GetServers().begin());
+ListenSocket*			CGITest::lsocket_ = NULL;
+ServerSocket*			CGITest::ssocket_ = NULL;
+ClientSocket*			CGITest::csocket_ = NULL;
 
-TEST_F(POSTTest, PUT_BODY_TEST)
+const std::string first = "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n";
+const std::string last = "\n</pre>\n</body>\n</html>\n";
+
+TEST_F(CGITest, SimpleGet)
+{
+	RunCommunication("GET /cgi-bin/test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("text/html", method_->GetContentType());
+	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>", method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, COMMAND_ARG)
+{
+	RunCommunication("GET /cgi-bin/command_arg_test.cgi?aaa+bbb+ccc HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("text/html", method_->GetContentType());
+	EXPECT_EQ(first + "=================================\nCommand Arguments\n=================================\naaa\nbbb\nccc\n" + last, method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, ENV_TEST)
+{
+	RunCommunication("GET /cgi-bin/env_test.cgi?first=aaa&last=bbb HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: Debian\r\n\r\n");
+
+	EXPECT_EQ("text/html", method_->GetContentType());
+	EXPECT_EQ(first + "=================================\nEnvironment Variable\n=================================\nAUTH_TYPE = [ TEST ]\nCONTENT_LENGTH = [  ]\nCONTENT_TYPE = [  ]\nGATEWAY_INTERFACE = [ CGI/1.1 ]\nHTTP_ACCEPT = [ TEST ]\nHTTP_FORWARDED = [  ]\nHTTP_REFERER = [ TEST ]\nHTTP_USER_AGENT = [ Debian ]\nHTTP_X_FORWARDED_FOR = [  ]\nPATH_INFO = [ /cgi-bin/env_test.cgi ]\nPATH_TRANSLATED = [ ../../../html/cgi-bin/env_test.cgi ]\nQUERY_STRING = [ first=aaa&amp;last=bbb ]\nREMOTE_ADDR = [  ]\nREMOTE_HOST = [  ]\nREMOTE_IDENT = [  ]\nREMOTE_USER = [  ]\nREQUEST_METHOD = [ GET ]\nSCRIPT_NAME = [ /cgi-bin/env_test.cgi ]\nSERVER_NAME = [  ]\nSERVER_PORT = [ 8080 ]\nSERVER_PROTOCOL = [ HTTP/1.1 ]\nSERVER_SOFTWARE = [ 42Webserv ]\n" + last, method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, PUT_BODY_TEST)
 {
 	RunCommunication("POST /cgi-bin/post_test.cgi HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 10\r\n\r\nVALUE=abcd");
 
 	EXPECT_EQ("text/html", method_->GetContentType());
-	EXPECT_EQ("<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]\n</pre>\n</body>\n</html>\n", method_->GetBody());
+	EXPECT_EQ(first + "=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]" + last, method_->GetBody());
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }

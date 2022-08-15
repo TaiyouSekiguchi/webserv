@@ -28,8 +28,7 @@ SRCS	=	Config.cpp \
 			utils.cpp
 
 SRCS	+=	ClientSocket.cpp
-SRCS	+=	GET_test.cpp\
-			POST_test.cpp
+SRCS	+=	CGI_test.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
@@ -48,7 +47,7 @@ NAME	=	unit_test
 
 CC		=	c++
 CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	+=	-g -fsanitize=address
+#CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

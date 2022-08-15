@@ -25,7 +25,7 @@ Content-Type: text/html
 EOF
 
 print "=================================\n";
-print "環境変数\n";
+print "Environment Variable\n";
 print "=================================\n";
 print "AUTH_TYPE = [ " . html($ENV{'AUTH_TYPE'}) . " ]\n";
 print "CONTENT_LENGTH = [ " . html($ENV{'CONTENT_LENGTH'}) . " ]\n";
