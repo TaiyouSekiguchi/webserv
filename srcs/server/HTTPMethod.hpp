@@ -3,6 +3,7 @@
 
 # include <string>
 # include <vector>
+# include <map>
 # include <utility>
 # include "HTTPRequest.hpp"
 # include "URI.hpp"

@@ -1,9 +1,16 @@
 #include "Pipe.hpp"
 
 Pipe::Pipe(void)
+	: failed_(false)
 {
 	pipe_[READ] = -1;
 	pipe_[WRITE] = -1;
+
+	if (pipe(pipe_) < 0)
+	{
+		failed_ = true;
+		return;
+	}
 }
 
 Pipe::~Pipe(void)
@@ -14,13 +21,16 @@ Pipe::~Pipe(void)
 		close(pipe_[WRITE]);
 }
 
-int		Pipe::OpenPipe(void)
+bool	Pipe::Fail() const
 {
-	return (pipe(pipe_));
+	return (failed_);
 }
 
-int		Pipe::ClosePipe(e_PipeIo type)
+int		Pipe::CloseFd(e_PipeIo type)
 {
+	if (failed_)
+		throw std::runtime_error("Pipe failed error");
+
 	int		result = 0;
 
 	if (pipe_[type] != -1)
@@ -32,8 +42,11 @@ int		Pipe::ClosePipe(e_PipeIo type)
 	return (result);
 }
 
-void	Pipe::NonBlockingPipe(e_PipeIo type) const
+void	Pipe::ChangeNonBlocking(e_PipeIo type) const
 {
+	if (failed_)
+		throw std::runtime_error("Pipe failed error");
+
 	int		val;
 
 	val = fcntl(pipe_[type], F_GETFL, 0);
@@ -42,11 +55,17 @@ void	Pipe::NonBlockingPipe(e_PipeIo type) const
 
 int		Pipe::WriteToPipe(const std::string& str) const
 {
+	if (failed_)
+		throw std::runtime_error("Pipe failed error");
+
 	return (write(pipe_[WRITE], str.c_str(), str.size()));
 }
 
 ssize_t	Pipe::ReadFromPipe(std::string* str) const
 {
+	if (failed_)
+		throw std::runtime_error("Pipe failed error");
+
 	const int			buf_size = 8;
 	char				buf[buf_size + 1];
 	ssize_t				readsize;
@@ -54,16 +73,19 @@ ssize_t	Pipe::ReadFromPipe(std::string* str) const
 	if((readsize = read(pipe_[READ], &buf, buf_size)) > 0)
 	{
 		buf[readsize] = '\0';
-		*str += buf;
+		(*str).append(buf, readsize);
 	}
 	return (readsize);
 }
 
 int		Pipe::RedirectToPipe(e_PipeIo type, int fd)
 {
+	if (failed_)
+		throw std::runtime_error("Pipe failed error");
+
 	if (close(fd) < 0
 		|| dup2(pipe_[type], fd) < 0
-		|| ClosePipe(type) < 0)
+		|| CloseFd(type) < 0)
 	{
 		return (0);
 	}
@@ -72,5 +94,8 @@ int		Pipe::RedirectToPipe(e_PipeIo type, int fd)
 
 int		Pipe::GetPipeFd(e_PipeIo type) const
 {
+	if (failed_)
+		throw std::runtime_error("Pipe failed error");
+
 	return (pipe_[type]);
 }

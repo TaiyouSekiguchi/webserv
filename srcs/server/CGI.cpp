@@ -13,8 +13,7 @@ CGI::~CGI(void)
 
 e_HTTPServerEventType	CGI::ExecCGI(void)
 {
-	if (to_cgi_pipe_.OpenPipe() < 0
-		|| from_cgi_pipe_.OpenPipe() < 0)
+	if (to_cgi_pipe_.Fail() || from_cgi_pipe_.Fail())
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
 
 	if ((pid_ = fork()) < 0)
@@ -24,11 +23,11 @@ e_HTTPServerEventType	CGI::ExecCGI(void)
 		ExecveCGIScript();
 	else
 	{
-		to_cgi_pipe_.NonBlockingPipe(Pipe::WRITE);
-		from_cgi_pipe_.NonBlockingPipe(Pipe::READ);
+		to_cgi_pipe_.ChangeNonBlocking(Pipe::WRITE);
+		from_cgi_pipe_.ChangeNonBlocking(Pipe::READ);
 
-		if (to_cgi_pipe_.ClosePipe(Pipe::READ) < 0
-			|| from_cgi_pipe_.ClosePipe(Pipe::WRITE) < 0)
+		if (to_cgi_pipe_.CloseFd(Pipe::READ) < 0
+			|| from_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
 		{
 			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
 		}
@@ -44,9 +43,9 @@ void	CGI::PostToCgi(void)
 {
 	if (req_.GetMethod() == "POST")
 	{
-		if (to_cgi_pipe_.WriteToPipe(req_.GetBody()) < 0)
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "PostToCGI");
-		to_cgi_pipe_.ClosePipe(Pipe::WRITE);
+		if (to_cgi_pipe_.WriteToPipe(req_.GetBody()) < 0
+			|| to_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "PostToCGI");
 	}
 }
 
@@ -59,18 +58,19 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 
 	read_byte = from_cgi_pipe_.ReadFromPipe(&tmp);
 	if (read_byte == -1)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult1");
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
 	else if (read_byte != 0)
 	{
-		data_ += tmp;
+		data_.append(tmp);
 		return (SEVENT_CGI_READ);
 	}
-	from_cgi_pipe_.ClosePipe(Pipe::READ);
+	if (from_cgi_pipe_.CloseFd(Pipe::READ) < 0)
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
 	ret_pid = waitpid(pid_, &status, 0);
 	if (ret_pid < 0
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult2");
+		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
 	ParseCGI();
 	return (SEVENT_NO);
 }
@@ -80,9 +80,9 @@ void	CGI::ExecveCGIScript(void)
 	CGIEnv	env(uri_, req_);
 	char*	argv[2];
 
-	if (to_cgi_pipe_.ClosePipe(Pipe::WRITE) < 0
+	if (to_cgi_pipe_.CloseFd(Pipe::WRITE) < 0
 		|| to_cgi_pipe_.RedirectToPipe(Pipe::READ, STDIN_FILENO) < 0
-		|| from_cgi_pipe_.ClosePipe(Pipe::READ) < 0
+		|| from_cgi_pipe_.CloseFd(Pipe::READ) < 0
 		|| from_cgi_pipe_.RedirectToPipe(Pipe::WRITE, STDOUT_FILENO) < 0)
 		std::exit(EXIT_FAILURE);
 
@@ -155,7 +155,7 @@ void	CGI::ParseLocation(const std::string& content)
 
 	is_url = content.find("http://") != std::string::npos;
 	is_url |= content.find("https://") != std::string::npos;
-	
+
 	if (is_url)
 	{
 		location_ = Utils::MyTrim(content, " ");
@@ -180,5 +180,5 @@ std::string		CGI::GetContentType(void) const { return (content_type_); }
 std::string		CGI::GetLocation(void) const { return (location_); }
 e_StatusCode	CGI::GetStatusCode(void) const { return (status_code_); }
 std::string		CGI::GetBody(void) const { return (body_); }
-int				CGI::GetToCgiFd(void) const { return (to_cgi_pipe_.GetPipeFd(Pipe::WRITE)); }
-int				CGI::GetFromCgiFd(void) const { return (from_cgi_pipe_.GetPipeFd(Pipe::READ)); }
+int				CGI::GetToCgiWriteFd(void) const { return (to_cgi_pipe_.GetPipeFd(Pipe::WRITE)); }
+int				CGI::GetFromCgiReadFd(void) const { return (from_cgi_pipe_.GetPipeFd(Pipe::READ)); }

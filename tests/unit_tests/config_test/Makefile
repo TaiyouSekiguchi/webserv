@@ -18,7 +18,8 @@ INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils -I$(SRCSDIR)/server
 NAME	=	unit_test
 
 CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
+CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	+=	-fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

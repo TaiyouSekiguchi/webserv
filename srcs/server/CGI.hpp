@@ -30,8 +30,8 @@ class CGI
 		std::string				GetLocation(void) const;
 		e_StatusCode			GetStatusCode(void) const;
 		std::string				GetBody(void) const;
-		int						GetToCgiFd(void) const;
-		int						GetFromCgiFd(void) const;
+		int						GetToCgiWriteFd(void) const;
+		int						GetFromCgiReadFd(void) const;
 
 	private:
 		void					ExecveCGIScript(void);

@@ -23,7 +23,8 @@ INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/io -I $(SRCSDIR)/utils -I $(SRCSDIR
 NAME	=	unit_test
 
 CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
+CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

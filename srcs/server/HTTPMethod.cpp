@@ -25,8 +25,8 @@ const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
 const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
-int		HTTPMethod::GetToCgiPipeFd() const { return (cgi_->GetToCgiFd()); }
-int		HTTPMethod::GetFromCgiPipeFd() const { return (cgi_->GetFromCgiFd()); }
+int		HTTPMethod::GetToCgiPipeFd() const { return (cgi_->GetToCgiWriteFd()); }
+int		HTTPMethod::GetFromCgiPipeFd() const { return (cgi_->GetFromCgiReadFd()); }
 
 void	HTTPMethod::ExecGETMethod()
 {
@@ -219,7 +219,6 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st)
 			const std::string& ip = Utils::ToString(req_.GetListen().second);
 			const std::string  location = "http://" + host + ":" + ip + uri_->GetTargetPath() + "/";
 			return (Redirect(location, SC_MOVED_PERMANENTLY));
-			//throw HTTPError(Redirect(location, SC_MOVED_PERMANENTLY), "ValidateGETMethod");
 		}
 		else if (IsReadableFileWithIndex(access_path, location_conf_->GetIndex()))
 			return (SEVENT_FILE_READ);
@@ -274,7 +273,7 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	return (SEVENT_FILE_WRITE);
 }
 
- bool	HTTPMethod::CheckCGIScript(void)
+bool	HTTPMethod::CheckCGIScript(void)
 {
 	Stat	st(uri_->GetAccessPath());
 
