@@ -4,9 +4,9 @@
 #include "HTTPResponse.hpp"
 #include "utils.hpp"
 
-HTTPResponse::HTTPResponse(const HTTPRequest &req, const HTTPMethod &method)
-	: method_(method), server_conf_(req.GetServerConf()),
-	  headers_(method.GetHeaders()), connection_(headers_["Connection"] == "keep-alive")
+HTTPResponse::HTTPResponse(const HTTPMethod &method)
+	: method_(method), headers_(method.GetHeaders()),
+	  connection_(headers_["Connection"] == "keep-alive")
 {
 	AppendHeaders();
 	res_msg_ = CreateResponse();

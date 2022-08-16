@@ -14,7 +14,7 @@ class HTTPResponse
 	public:
 		static std::map<e_StatusCode, std::string>	kStatusMsg_;
 
-		HTTPResponse(const HTTPRequest &req, const HTTPMethod &method);
+		explicit HTTPResponse(const HTTPMethod &method);
 		~HTTPResponse();
 
 		const std::string&	GetResMsg() const;
@@ -26,7 +26,6 @@ class HTTPResponse
 		static const std::pair<e_StatusCode, std::string>	kPairs_[];
 
 		const HTTPMethod&					method_;
-		const ServerDirective*				server_conf_;
 		std::map<std::string, std::string>	headers_;
 		std::string 						res_msg_;
 		bool								connection_;
