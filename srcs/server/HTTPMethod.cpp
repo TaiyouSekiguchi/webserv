@@ -401,10 +401,13 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 
 void	HTTPMethod::MethodDisplay()
 {
+	std::map<std::string, std::string>::const_iterator	it;
+	std::map<std::string, std::string>::const_iterator	it_end;
+
+	it = headers_.begin();
+	it_end = headers_.end();
+	for (; it != it_end; ++it)
+		std::cout << it->first << ": " << it->second << std::endl;
 	std::cout << "status_code: " << status_code_ << std::endl;
-	std::cout << "Connection: " << headers_["Connection"] << std::endl;
-	std::cout << "Content-Type: " << headers_["Content-Type"] << std::endl;
-	std::cout << "Content-Length: " << headers_["Content-Length"] << std::endl;
-	std::cout << "Location: " << headers_["Location"] << std::endl;
 	std::cout << "[ Body ]\n" << body_ << std::endl;
 }
