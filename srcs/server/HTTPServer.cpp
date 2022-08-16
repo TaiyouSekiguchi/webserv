@@ -80,7 +80,7 @@ e_HTTPServerEventType	HTTPServer::RunReadErrorPage()
 
 e_HTTPServerEventType	HTTPServer::RunCreateResponse()
 {
-	response_ = new HTTPResponse(*request_, *method_);
+	response_ = new HTTPResponse(*method_);
 	// request_->RequestDisplay();
 	// method_->MethodDisplay();
 	// std::cout << response_->GetResMsg() << std::endl;
