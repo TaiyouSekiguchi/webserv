@@ -142,7 +142,7 @@ TEST_F(GETTest, DirRedirectTest)
 {
 	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_MOVED_PERMANENTLY);
-	EXPECT_EQ(method_->GetLocation(), "http://localhost:8080/sub1/");
+	EXPECT_EQ(method_->GetHeaders()["Location"], "http://localhost:8080/sub1/");
 }
 
 TEST_F(GETTest, IndexTest)
