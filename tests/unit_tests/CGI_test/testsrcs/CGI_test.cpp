@@ -214,3 +214,21 @@ TEST_F(CGITest, PUT_BODY_TEST)
 	EXPECT_EQ(first + "=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]" + last, method_->GetBody());
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }
+
+TEST_F(CGITest, NoExistFileTest)
+{
+	RunCommunication("GET /cgi-bin/noexist.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("403 Forbidden", method_->GetBody());
+	EXPECT_EQ(SC_FORBIDDEN, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, NoPermissionFileTest)
+{
+	RunCommunication("GET /cgi-bin/no_permission.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("403 Forbidden", method_->GetBody());
+	EXPECT_EQ(SC_FORBIDDEN, method_->GetStatusCode());
+}

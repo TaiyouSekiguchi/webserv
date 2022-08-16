@@ -50,6 +50,7 @@ class CGI
 		std::string				content_type_;
 		std::string				location_;
 		e_StatusCode			status_code_;
+		bool					status_flag_;
 		std::string				body_;
 };
 

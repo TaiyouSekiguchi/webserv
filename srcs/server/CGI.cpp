@@ -4,6 +4,7 @@ CGI::CGI(const URI& uri, const HTTPRequest& req)
 	: uri_(uri)
 	, req_(req)
 	, status_code_(SC_OK)
+	, status_flag_(false)
 {
 }
 
@@ -151,16 +152,9 @@ void	CGI::ParseContentType(const std::string& content)
 
 void	CGI::ParseLocation(const std::string& content)
 {
-	bool		is_url;
-
-	is_url = content.find("http://") != std::string::npos;
-	is_url |= content.find("https://") != std::string::npos;
-
-	if (is_url)
-	{
-		location_ = Utils::MyTrim(content, " ");
+	location_ = Utils::MyTrim(content, " ");
+	if (status_flag_ == false)
 		status_code_ = SC_FOUND;
-	}
 }
 
 void	CGI::ParseStatusCode(const std::string& content)
@@ -172,7 +166,11 @@ void	CGI::ParseStatusCode(const std::string& content)
 	if (*endptr != '\0' || errno == ERANGE || status_code < 1 || 999 < status_code)
 		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseStatusCode");
 
-	status_code_ = static_cast<e_StatusCode>(status_code);
+	if (status_flag_ == false)
+	{
+		status_code_ = static_cast<e_StatusCode>(status_code);
+		status_flag_ = true;
+	}
 }
 
 std::string		CGI::GetData(void) const { return (data_); }
