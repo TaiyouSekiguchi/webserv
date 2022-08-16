@@ -86,7 +86,7 @@ class GETTest : public ::testing::Test
 					break;
 				case SEVENT_FILE_WRITE:
 				case SEVENT_FILE_DELETE:
-					EV_SET(&kev, hserver_->GetMethodTargetFileFd(), ET_READ, EA_ADD, 0, 0, NULL);					break;
+					EV_SET(&kev, hserver_->GetMethodTargetFileFd(), ET_WRITE, EA_ADD, 0, 0, NULL);					break;
 				default:
 					return;
 			}
