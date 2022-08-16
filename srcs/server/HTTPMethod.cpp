@@ -88,10 +88,19 @@ LocationDirective	HTTPMethod::SelectLocation
 	return (*longest);
 }
 
-e_StatusCode	HTTPMethod::Redirect(const std::string& location, const e_StatusCode status_code)
+e_HTTPServerEventType	HTTPMethod::Redirect(const std::string& return_second, const e_StatusCode status_code)
 {
-	location_ = location;
-	return (status_code);
+	if (status_code == SC_MOVED_PERMANENTLY
+		|| status_code == SC_FOUND
+		|| status_code == SC_SEE_OTHER
+		|| status_code == SC_TEMPORARY_REDIRECT)
+	{
+		location_ = return_second;
+		throw HTTPError(status_code, "Redirect");
+	}
+	body_ = return_second;
+	status_code_ = status_code;
+	return (SEVENT_NO);
 }
 
 e_HTTPServerEventType	HTTPMethod::PublishReadEvent(const e_HTTPServerEventType event_type)
@@ -182,7 +191,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 			const std::string& host = req_.GetHost().first;
 			const std::string& ip = Utils::ToString(req_.GetListen().second);
 			const std::string  location = "http://" + host + ":" + ip + req_.GetTarget() + "/";
-			throw HTTPError(Redirect(location, SC_MOVED_PERMANENTLY), "ValidateGETMethod");
+			return (Redirect(location, SC_MOVED_PERMANENTLY));
 		}
 		else if (IsReadableFileWithIndex(access_path, location.GetIndex()))
 			return (PublishReadEvent(SEVENT_FILE_READ));
@@ -293,7 +302,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != SC_INVALID)
-		throw HTTPError(Redirect(redirect.second, redirect.first), "ValidateHTTPMethod");
+		return (Redirect(redirect.second, redirect.first));
 
 	if (Utils::IsNotFound(location.GetAllowedMethods(), req_.GetMethod()))
 		throw HTTPError(SC_METHOD_NOT_ALLOWED, "ValidateHTTPMethod");

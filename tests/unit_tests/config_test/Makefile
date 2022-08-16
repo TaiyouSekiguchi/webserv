@@ -18,7 +18,7 @@ INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils -I$(SRCSDIR)/server
 NAME	=	unit_test
 
 CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g
+CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main
@@ -47,19 +47,10 @@ fclean		:	clean
 
 re			:	fclean all
 
-print		:	CFLAGS	+= -D PRINT_FLAG
-print		:	re
-
-debug		:	CFLAGS	+=	-g
-debug		:	re
-
-address		:	CFLAGS	+=	-g -fsanitize=address
-address		:	re
-
 ifeq ($(shell uname),Darwin)
 leak		:	CC		=	/usr/local/opt/llvm/bin/clang++
 endif
 leak		:	CFLAGS	+=	-g -fsanitize=leak
 leak		:	re
 
-.PHONY		:	all clean fclean re debug address leak test
+.PHONY		:	all clean fclean re leak test
