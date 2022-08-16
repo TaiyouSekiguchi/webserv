@@ -212,13 +212,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st, const Locati
 
 e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 {
-	if (st.IsDirectory() && *(req_.GetTarget().rbegin()) != '/')
-		throw HTTPError(SC_CONFLICT, "ValidateDELETEMethod");
-
-	if (st.IsDirectory())
-		target_rfile_ = new RegularFile(st.GetPath(), O_DIRECTORY);
-	else
-		target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
+	target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
