@@ -5,10 +5,9 @@
 #include "utils.hpp"
 
 HTTPResponse::HTTPResponse(const HTTPRequest &req, const HTTPMethod &method)
-	: req_(req), method_(method),
-	  server_conf_(req.GetServerConf()), status_code_(method.GetStatusCode())
+	: method_(method), server_conf_(req.GetServerConf()),
+	  headers_(method.GetHeaders()), connection_(headers_["Connection"] == "keep-alive")
 {
-	CheckConnection();
 	AppendHeaders();
 	res_msg_ = CreateResponse();
 }
@@ -28,36 +27,10 @@ e_HTTPServerEventType	HTTPResponse::SendResponse(const ServerSocket& ssocket)
 	return (SEVENT_NO);
 }
 
-void HTTPResponse::CheckConnection()
-{
-	if (status_code_ == SC_BAD_REQUEST || status_code_ == SC_REQUEST_TIMEOUT || status_code_ == SC_LENGTH_REQUIRED
-		|| status_code_ == SC_URI_TOO_LONG || status_code_ == SC_INTERNAL_SERVER_ERROR || status_code_ == SC_NOT_IMPLEMENTED
-		|| status_code_ == SC_SERVISE_UNAVAILABLE || status_code_ == SC_HTTP_VERSION_NOT_SUPPORTED)
-	{
-		connection_ = false;
-		return;
-	}
-	connection_ = req_.GetConnection();
-}
-
 void HTTPResponse::AppendHeaders()
 {
-	AppendHeader("Server", "Webserv");
-	AppendHeader("Date", GetDate());
-	AppendHeader("Connection", connection_ ? "keep-alive" : "close");
-	AppendHeader("Content-type", method_.GetContentType());
-	AppendHeader("Location", method_.GetLocation());
-	AppendHeader("Content-Length",
-		(req_.GetMethod() == "GET" || !IsNormalStatus()) ? Utils::ToString(method_.GetBody().size()) : "");
-}
-
-void HTTPResponse::AppendHeader(const std::string &key, const std::string &value)
-{
-	if (value.empty())
-	{
-		return;
-	}
-	headers_[key] = value + "\r\n";
+	headers_["Server"] = "Webserv";
+	headers_["Date"] = GetDate();
 }
 
 std::string HTTPResponse::GetDate() const
@@ -71,16 +44,12 @@ std::string HTTPResponse::GetDate() const
 	return (str);
 }
 
-bool HTTPResponse::IsNormalStatus() const
-{
-	return (status_code_ < 300);
-}
-
 std::string HTTPResponse::CreateResponse()
 {
-	std::stringstream ss;
+	std::stringstream 	ss;
+	const e_StatusCode	status_code = method_.GetStatusCode();
 
-	ss << "HTTP/1.1 " << status_code_ << " " << kStatusMsg_[status_code_] << "\r\n";
+	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_[status_code] << "\r\n";
 	ss << HeaderField();
 	ss << method_.GetBody();
 	return (ss.str());
@@ -93,7 +62,7 @@ std::string	HTTPResponse::HeaderField() const
 
 	for (; ite != headers_.end(); ite++)
 	{
-		ss << ite->first << ": " << ite->second;
+		ss << ite->first << ": " << ite->second  << "\r\n";
 	}
 	ss << "\r\n";
 	return (ss.str());
