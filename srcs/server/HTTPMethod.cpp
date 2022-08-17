@@ -7,7 +7,6 @@
 HTTPMethod::HTTPMethod(const HTTPRequest& req)
 	: req_(req), target_rfile_(NULL)
 {
-	headers_["Connection"] = req_.GetConnection() ? "keep-alive" : "close";
 }
 
 HTTPMethod::~HTTPMethod()
@@ -297,6 +296,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 {
 	server_conf_ = req_.GetServerConf();
 	const LocationDirective&	location = SelectLocation(server_conf_->GetLocations());
+	headers_["Connection"] = req_.GetConnection() ? "keep-alive" : "close";
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location.GetReturn();
 	if (redirect.first != SC_INVALID)
