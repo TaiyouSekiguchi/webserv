@@ -24,6 +24,7 @@ SRCS	=	Config.cpp \
 			CGIEnv.cpp \
 			Pipe.cpp \
 			utils.cpp
+			HTTPServer.cpp
 
 SRCS	+=	ClientSocket.cpp
 SRCS	+=	Response_test.cpp
@@ -37,8 +38,8 @@ INCLUDE =	-I $(SRCSDIR)/exception \
 			-I $(SRCSDIR)/event \
 			-I $(SRCSDIR)/config \
 			-I $(SRCSDIR)/utils \
-			-I $(SRCSDIR)/cgi \
-			-I $(SRCSDIR)/server
+			-I $(SRCSDIR)/server \
+			-I $(SRCSDIR)/webserv
 
 NAME	=	unit_test
 

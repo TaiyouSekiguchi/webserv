@@ -21,10 +21,9 @@ class HTTPMethod
 		e_HTTPServerEventType	ValidateHTTPMethod();
 		e_HTTPServerEventType	ValidateErrorPage(const e_StatusCode status_code);
 
-		const std::string&	GetContentType() const;
-		const std::string&	GetLocation() const;
-		const std::string&	GetBody() const;
-		const e_StatusCode&	GetStatusCode() const;
+		const e_StatusCode&					GetStatusCode() const;
+		std::map<std::string, std::string>	GetHeaders() const;
+		const std::string&					GetBody() const;
 
 		int					GetTargetFileFd() const;
 		int					GetToCgiPipeFd() const;
@@ -38,7 +37,7 @@ class HTTPMethod
 		void					PostToCgi();
 		e_HTTPServerEventType	ReceiveCgiResult();
 
-		void					MethodDisplay() const;
+		void					MethodDisplay();
 
 	private:
 		const LocationDirective*	SelectLocation(const std::vector<LocationDirective>& locations) const;
@@ -56,6 +55,7 @@ class HTTPMethod
 		e_HTTPServerEventType	ValidateDELETEMethod(const Stat& st);
 		e_HTTPServerEventType	ValidatePOSTMethod(const Stat& st);
 		std::string 			GenerateDefaultHTML() const;
+		bool					IsConnectionCloseStatus(const e_StatusCode status_code) const;
 
 		// CGI
 		bool						CheckCGIScript(void);
@@ -65,13 +65,13 @@ class HTTPMethod
 		const ServerDirective*		server_conf_;
 		const LocationDirective*	location_conf_;
 
-		std::string		content_type_;
-		std::string		location_;
-		std::string		body_;
-		e_StatusCode	status_code_;
-		RegularFile*	target_rfile_;
-		URI*			uri_;
-		CGI*			cgi_;
+		std::map<std::string, std::string>	headers_;
+		std::string							body_;
+		e_StatusCode						status_code_;
+		RegularFile*						target_rfile_;
+		URI*								uri_;
+		CGI*								cgi_;
+
 };
 
 #endif

@@ -44,8 +44,9 @@ INCLUDE =	-I./srcs \
 			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
-			-I$(SRCSDIR)/cgi \
-			-I$(SRCSDIR)/utils
+			-I$(SRCSDIR)/utils \
+			-I$(SRCSDIR)/webserv
+
 NAME	=	unit_test
 
 CC		=	c++

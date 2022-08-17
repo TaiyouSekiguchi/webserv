@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cctype>
 #include <cerrno>
+#include <set>
 #include "ServerSocket.hpp"
 #include "HTTPError.hpp"
 #include "HTTPStatusCode.hpp"
@@ -39,6 +40,7 @@ class HTTPRequest
 		bool									GetConnection(void) const;
 		std::string								GetContentType(void) const;
 		std::string								GetBody(void) const;
+		std::string								GetAccept(void) const;
 
 	private:
 		typedef void (HTTPRequest::*ParseFunc)(const std::string& content);
@@ -70,6 +72,7 @@ class HTTPRequest
 		bool										connection_;
 		std::string									content_type_;
 		std::string									transfer_encoding_;
+		std::string									accept_;
 
 		// body
 		std::string									body_;
@@ -105,6 +108,7 @@ class HTTPRequest
 		bool			ParseChunk(void);
 		void			ParseChunkSize(void);
 		void			ParseChunkData(void);
+		void			ParseAccept(const std::string& content);
 };
 
 #endif

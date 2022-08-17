@@ -43,7 +43,7 @@ e_HTTPServerEventType	HTTPServer::Run()
 	}
 	catch (const HTTPError& e)
 	{
-		e.PutMsg();
+		// e.PutMsg();
 		new_event = method_->ValidateErrorPage(e.GetStatusCode());
 		if (new_event != SEVENT_NO)
 			return (new_event);
@@ -66,7 +66,7 @@ e_HTTPServerEventType	HTTPServer::RunExecHTTPMethod(const e_HTTPServerEventType 
 	}
 	catch (const HTTPError& e)
 	{
-		e.PutMsg();
+		// e.PutMsg();
 		new_event = method_->ValidateErrorPage(e.GetStatusCode());
 		if (new_event != SEVENT_NO)
 			return (new_event);
@@ -121,10 +121,10 @@ e_HTTPServerEventType	HTTPServer::RunReadErrorPage()
 
 e_HTTPServerEventType	HTTPServer::RunCreateResponse()
 {
-	request_->RequestDisplay();
-	method_->MethodDisplay();
-	response_ = new HTTPResponse(*request_, *method_);
-	std::cout << response_->GetResMsg() << std::endl;
+	response_ = new HTTPResponse(*method_);
+	// request_->RequestDisplay();
+	// method_->MethodDisplay();
+	// std::cout << response_->GetResMsg() << std::endl;
 	return (SEVENT_SOCKET_SEND);
 }
 

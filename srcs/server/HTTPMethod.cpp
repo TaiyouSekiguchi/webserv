@@ -19,10 +19,9 @@ HTTPMethod::~HTTPMethod()
 		delete cgi_;
 }
 
-const std::string&	HTTPMethod::GetContentType() const	{ return (content_type_); }
-const std::string&	HTTPMethod::GetLocation()	 const	{ return (location_); }
-const std::string&	HTTPMethod::GetBody()		 const	{ return (body_); }
-const e_StatusCode&	HTTPMethod::GetStatusCode()	 const	{ return (status_code_); }
+const e_StatusCode&					HTTPMethod::GetStatusCode()	const { return (status_code_); }
+std::map<std::string, std::string>	HTTPMethod::GetHeaders()	const { return (headers_); }
+const std::string&					HTTPMethod::GetBody()		const { return (body_); }
 
 int		HTTPMethod::GetTargetFileFd() const { return (target_rfile_->GetFd()); }
 int		HTTPMethod::GetToCgiPipeFd() const { return (cgi_->GetToCgiWriteFd()); }
@@ -39,8 +38,9 @@ void	HTTPMethod::ExecGETMethod()
 	if (ret == -1)
 		throw HTTPError(SC_FORBIDDEN, "ExecGETMethod");
 
-	body_ = body;
 	status_code_ = SC_OK;
+	body_ = body;
+	headers_["Content-Length"] = Utils::ToString(body_.size());
 }
 
 void	HTTPMethod::ExecPOSTMethod()
@@ -55,9 +55,9 @@ void	HTTPMethod::ExecPOSTMethod()
 		throw HTTPError(SC_FORBIDDEN, "ExecPOSTMethod");
 
 	if (*(uri_->GetTargetPath().rbegin()) == '/')
-		location_ = uri_->GetTargetPath() + file_name;
+		headers_["Location"] = uri_->GetTargetPath() + file_name;
 	else
-		location_ = uri_->GetTargetPath() + "/" + file_name;
+		headers_["Location"] = uri_->GetTargetPath() + "/" + file_name;
 
 	status_code_ = SC_CREATED;
 }
@@ -122,11 +122,12 @@ e_HTTPServerEventType	HTTPMethod::Redirect(const std::string& return_second, con
 		|| status_code == SC_SEE_OTHER
 		|| status_code == SC_TEMPORARY_REDIRECT)
 	{
-		location_ = return_second;
+		headers_["Location"] = return_second;
 		throw HTTPError(status_code, "Redirect");
 	}
-	body_ = return_second;
 	status_code_ = status_code;
+	body_ = return_second;
+	headers_["Content-Length"] = Utils::ToString(body_.size());
 	return (SEVENT_NO);
 }
 
@@ -137,6 +138,7 @@ e_HTTPServerEventType	HTTPMethod::PublishReadEvent(const e_HTTPServerEventType e
 		delete target_rfile_;
 		target_rfile_ = NULL;
 		status_code_ = SC_OK;
+		headers_["Content-Length"] = "0";
 		return (SEVENT_NO);
 	}
 	else
@@ -197,8 +199,9 @@ void	HTTPMethod::SetAutoIndexContent(const std::string& access_path)
 	}
 
 	body_stream << "</pre><hr></body>\r\n" << "</html>\r\n";
-	body_ = body_stream.str();
 	status_code_ = SC_OK;
+	body_ = body_stream.str();
+	headers_["Content-Length"] = Utils::ToString(body_.size());
 }
 
 e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st)
@@ -235,13 +238,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateGETMethod(const Stat& st)
 
 e_HTTPServerEventType	HTTPMethod::ValidateDELETEMethod(const Stat& st)
 {
-	if (st.IsDirectory() && *(uri_->GetTargetPath().rbegin()) != '/')
-		throw HTTPError(SC_CONFLICT, "ValidateDELETEMethod");
-
-	if (st.IsDirectory())
-		target_rfile_ = new RegularFile(st.GetPath(), O_DIRECTORY);
-	else
-		target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
+	target_rfile_ = new RegularFile(st.GetPath(), O_WRONLY);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
@@ -326,6 +323,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateHTTPMethod()
 {
 	server_conf_ = req_.GetServerConf();
 	location_conf_ = SelectLocation(server_conf_->GetLocations());
+	headers_["Connection"] = req_.GetConnection() ? "keep-alive" : "close";
 
 	const std::pair<e_StatusCode, std::string>&	redirect = location_conf_->GetReturn();
 	if (redirect.first != SC_INVALID)
@@ -354,9 +352,11 @@ void	HTTPMethod::ReadErrorPage()
 	{
 		status_code_ = SC_FORBIDDEN;
 		body_ = GenerateDefaultHTML();
+		headers_["Content-Length"] = Utils::ToString(body_.size());
 		return;
 	}
 	body_ = body;
+	headers_["Content-Length"] = Utils::ToString(body_.size());
 }
 
 std::string HTTPMethod::GenerateDefaultHTML() const
@@ -374,10 +374,20 @@ std::string HTTPMethod::GenerateDefaultHTML() const
 	return (ss.str());
 }
 
+bool	HTTPMethod::IsConnectionCloseStatus(const e_StatusCode status_code) const
+{
+	return (status_code == SC_BAD_REQUEST || status_code == SC_REQUEST_TIMEOUT
+		|| status_code == SC_LENGTH_REQUIRED || status_code == SC_URI_TOO_LONG
+		|| status_code == SC_INTERNAL_SERVER_ERROR || status_code == SC_NOT_IMPLEMENTED
+		|| status_code == SC_SERVISE_UNAVAILABLE || status_code == SC_HTTP_VERSION_NOT_SUPPORTED);
+}
+
 e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_code)
 {
 	server_conf_ = req_.GetServerConf();
 	status_code_ = status_code;
+	if (IsConnectionCloseStatus(status_code))
+		headers_["Connection"] = "close";
 
 	const std::map<e_StatusCode, std::string>& 			error_pages = server_conf_->GetErrorPages();
 	std::map<e_StatusCode, std::string>::const_iterator	found = error_pages.find(status_code_);
@@ -401,18 +411,24 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 		}
 		else
 		{
-			location_ = error_page_path;
 			status_code_ = SC_FOUND;
+			headers_["Location"] = error_page_path;
 		}
 	}
 	body_ = GenerateDefaultHTML();
+	headers_["Content-Length"] = Utils::ToString(body_.size());
 	return (SEVENT_NO);
 }
 
-void	HTTPMethod::MethodDisplay() const
+void	HTTPMethod::MethodDisplay()
 {
+	std::map<std::string, std::string>::const_iterator	it;
+	std::map<std::string, std::string>::const_iterator	it_end;
+
+	it = headers_.begin();
+	it_end = headers_.end();
+	for (; it != it_end; ++it)
+		std::cout << it->first << ": " << it->second << std::endl;
 	std::cout << "status_code: " << status_code_ << std::endl;
-	std::cout << "content_type: " << content_type_ << std::endl;
-	std::cout << "location: " << location_ << std::endl;
 	std::cout << "[ Body ]\n" << body_ << std::endl;
 }
