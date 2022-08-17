@@ -181,16 +181,15 @@ TEST_F(CGITest, NoExistFileTest)
 
 	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
 	EXPECT_EQ("", method_->GetHeaders()["location"]);
-	EXPECT_EQ(SC_FORBIDDEN, method_->GetStatusCode());
-	EXPECT_EQ("403 Forbidden", method_->GetBody());
+	EXPECT_EQ(SC_NOT_FOUND, method_->GetStatusCode());
+	EXPECT_EQ("<html>\r\n<head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>404 Not Found</h1></center>\r\n<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n", method_->GetBody());
 }
 
-/*
 TEST_F(CGITest, EmptyFileTest)
 {
 	RunCommunication("GET /cgi-bin/empty_file.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["content-type"]);
 	EXPECT_EQ("", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_EQ("502 Bad Gateway", method_->GetBody());
@@ -200,7 +199,7 @@ TEST_F(CGITest, OnlyShebangFileTest)
 {
 	RunCommunication("GET /cgi-bin/only_shebang.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["content-type"]);
 	EXPECT_EQ("", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_EQ("An error occurred while reading CGI reply (no response received)", method_->GetBody());
@@ -210,7 +209,7 @@ TEST_F(CGITest, WrongShebangFileTest)
 {
 	RunCommunication("GET /cgi-bin/wrong_shebang.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["content-type"]);
 	EXPECT_EQ("", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_EQ("502 Bad Gateway", method_->GetBody());
@@ -218,12 +217,22 @@ TEST_F(CGITest, WrongShebangFileTest)
 
 TEST_F(CGITest, BodyStartFileTest)
 {
-	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/body_start.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+	RunCommunication("GET /cgi-bin/body_start.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+	EXPECT_EQ("<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n", method_->GetBody());
 }
 
 TEST_F(CGITest, NoNewLineFileTest)
 {
-	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/no_nl.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+	RunCommunication("GET /cgi-bin/no_nl.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+	EXPECT_EQ("<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n", method_->GetBody());
 }
 
 TEST_F(CGITest, NoHeaderFileTest)
@@ -281,8 +290,7 @@ TEST_F(CGITest, MultipleLocationTest)
 	RunCommunication("GET /cgi-bin/multiple_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
 	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
-	EXPECT_EQ("test test test", method_->GetHeaders()["location"]);
-	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_EQ("An error occurred while parsing CGI reply", method_->GetBody());
 }
@@ -291,44 +299,58 @@ TEST_F(CGITest, StatusLocationTest)
 {
 	RunCommunication("GET /cgi-bin/location_and_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetContentType());
-	EXPECT_EQ("test", method_->GetLocation());
-	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("test", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+	EXPECT_EQ(simple_body, method_->GetBody());
 }
 
 TEST_F(CGITest, SimpleStatusTest)
 {
 	RunCommunication("GET /cgi-bin/simple_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetContentType());
-	EXPECT_EQ("", method_->GetLocation());
-	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+	EXPECT_EQ(simple_body, method_->GetBody());
 }
 
 TEST_F(CGITest, MultipleStatusTest)
 {
 	RunCommunication("GET /cgi-bin/multiple_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetContentType());
-	EXPECT_EQ("", method_->GetLocation());
-	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+	EXPECT_EQ(simple_body, method_->GetBody());
 }
 
 TEST_F(CGITest, EmptyStatusTest)
 {
-	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/empty_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+	RunCommunication("GET /cgi-bin/empty_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+	EXPECT_EQ("<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n", method_->GetBody());
 }
 
 TEST_F(CGITest, SpaceStatusTest)
 {
-	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/space_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+	RunCommunication("GET /cgi-bin/space_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+	EXPECT_EQ("<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n", method_->GetBody());
 }
 
 TEST_F(CGITest, StringStatusTest)
 {
-	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/string_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+	RunCommunication("GET /cgi-bin/string_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+	EXPECT_EQ("<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>Webserv</center>\r\n</body>\r\n</html>\r\n", method_->GetBody());
 }
-*/

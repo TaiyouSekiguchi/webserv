@@ -74,9 +74,21 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 	if (ret_pid < 0
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
-		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
+	{
+		headers_["content-type"] = "text/plain";
+		status_code_ = SC_BAD_GATEWAY;
+		body_ = "502 Bad Gateway";
+		return (SEVENT_NO);
+	}
 
-	ParseCGI();
+	if (data_.empty())
+	{
+		headers_["content-type"] = "text/plain";
+		status_code_ = SC_BAD_GATEWAY;
+		body_ = "An error occurred while reading CGI reply (no response received)";
+	}
+	else
+		ParseCGI();
 
 	return (SEVENT_NO);
 }
@@ -125,7 +137,8 @@ void	CGI::ParseCGI(void)
 			break;
 	}
 
-	if (headers_.empty() || multiple_location_ == true)
+	if ((headers_.empty() && status_flag_ == false)
+		|| multiple_location_ == true)
 	{
 		headers_.clear();
 		status_code_ = SC_BAD_GATEWAY;
@@ -166,7 +179,7 @@ void	CGI::ParseContentType(const std::string& content)
 
 void	CGI::ParseLocation(const std::string& content)
 {
-	if (headers_.count("location") > 1)
+	if (headers_.count("location") > 0)
 		multiple_location_ = true;
 	else
 	{
@@ -198,5 +211,3 @@ e_StatusCode						CGI::GetStatusCode(void) const { return (status_code_); }
 std::string							CGI::GetBody(void) const { return (body_); }
 int									CGI::GetToCgiWriteFd(void) const { return (to_cgi_pipe_.GetPipeFd(Pipe::WRITE)); }
 int									CGI::GetFromCgiReadFd(void) const { return (from_cgi_pipe_.GetPipeFd(Pipe::READ)); }
-//std::string		CGI::GetContentType(void) const { return (content_type_); }
-//std::string		CGI::GetLocation(void) const { return (location_); }
