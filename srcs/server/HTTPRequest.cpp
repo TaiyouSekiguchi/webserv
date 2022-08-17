@@ -210,13 +210,17 @@ void HTTPRequest::ParseAcceptEncoding(const std::string& content)
 	std::vector<std::string>			list;
 	std::vector<std::string>::iterator	it;
 	std::vector<std::string>::iterator	it_end;
+	std::string							encoding;
 
 	list = Utils::MySplit(content, ",");
 	it = list.begin();
 	it_end = list.end();
 	for (; it != it_end; ++it)
-		*it = Utils::MyTrim(*it, " ");
-	accept_encoding_ = list;
+	{
+		encoding = Utils::StringToLower(Utils::MyTrim(*it, " "));
+		if (!encoding.empty() && Utils::IsNotFound(accept_encoding_, encoding))
+			accept_encoding_.push_back(encoding);
+	}
 }
 
 void HTTPRequest::ParseConnection(const std::string& content)

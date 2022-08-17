@@ -248,13 +248,13 @@ TEST_F(RequestTest, InValidVersionTest13)
 
 TEST_F(RequestTest, InValidHostTest1)
 {
-	RunCommunication("GET / HTTP/.1\r\nHost: \r\n\r\n", 8080);
+	RunCommunication("GET / HTTP/1.1\r\nHost: \r\n\r\n", 8080);
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
 TEST_F(RequestTest, InValidHostTest2)
 {
-	RunCommunication("GET / HTTP/.1\r\nHost: :\r\n\r\n", 8080);
+	RunCommunication("GET / HTTP/1.1\r\nHost: :\r\n\r\n", 8080);
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
@@ -399,10 +399,33 @@ TEST_F(RequestTest, InValidContentLengthTest3)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
+TEST_F(RequestTest, InValidContentLengthTest4)
+{
+	RunCommunication("GET / HTTP/1.1\r\nHost: a\r\nContent-Length: 1\r\nContent-Length: 1\r\n\r\n", 8080);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
+}
+
 TEST_F(RequestTest, ValidUserAgentTest)
 {
 	RunCommunication("GET / HTTP/1.1\r\nHost: a\r\nUser-Agent: curl\r\n\r\n", 8080);
 	EXPECT_EQ("curl", req_->GetUserAgent());
+}
+
+TEST_F(RequestTest, ValidAcceptEncodingTest1)
+{
+	RunCommunication("GET / HTTP/1.1\r\nHost: a\r\nAccept-Encoding: gzip, compress\r\n\r\n", 8080);
+	EXPECT_EQ((size_t)2, req_->GetAcceptEncoding().size());
+	EXPECT_EQ("gzip", req_->GetAcceptEncoding()[0]);
+	EXPECT_EQ("compress", req_->GetAcceptEncoding()[1]);
+}
+
+TEST_F(RequestTest, ValidAcceptEncodingTest2)
+{
+	RunCommunication("GET / HTTP/1.1\r\nHost: a\r\n"
+		"Accept-Encoding: gzip, compress\r\nAccept-Encoding: ,GZIP,,,\r\n\r\n", 8080);
+	EXPECT_EQ((size_t)2, req_->GetAcceptEncoding().size());
+	EXPECT_EQ("gzip", req_->GetAcceptEncoding()[0]);
+	EXPECT_EQ("compress", req_->GetAcceptEncoding()[1]);
 }
 
 TEST_F(RequestTest, ValidConnectionTest1)
