@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <sys/event.h>
 #include "ListenSocket.hpp"
 #include "ServerSocket.hpp"
 #include "ClientSocket.hpp"
@@ -7,6 +8,8 @@
 #include "HTTPMethod.hpp"
 #include "HTTPResponse.hpp"
 #include "HTTPStatusCode.hpp"
+#include "HTTPServer.hpp"
+#include "EventFlag.hpp"
 
 class GETTest : public ::testing::Test
 {
@@ -18,6 +21,10 @@ class GETTest : public ::testing::Test
 			csocket_ = new ClientSocket();
 			csocket_->ConnectServer("127.0.0.1", 8080);
 			ssocket_ = new ServerSocket(*lsocket_);
+
+			struct kevent	kev;
+			EV_SET(&kev, ssocket_->GetFd(), ET_READ, EA_ADD, 0, 0, NULL);
+			kevent(kq_, &kev, 1, NULL, 0, NULL);
 		}
 		static void TearDownTestCase()
 		{
@@ -27,88 +34,69 @@ class GETTest : public ::testing::Test
 		}
 		virtual void SetUp()
 		{
-			req_ = new HTTPRequest(*ssocket_);
-			method_ = new HTTPMethod(*req_);
+			hserver_ = new HTTPServer(*ssocket_);
+			req_ = hserver_->GetRequest();
+			method_ = hserver_->GetMethod();
 		}
 		virtual void TearDown()
 		{
-			delete req_;
-			delete method_;
+			delete hserver_;
 		}
 
 		void	RunCommunication(const std::string& msg)
 		{
 			e_HTTPServerEventType	event_type = SEVENT_SOCKET_RECV;
+			e_HTTPServerEventType	next_event_type;
 			csocket_->SendRequest(msg);
 
-			while (event_type != SEVENT_NO)
+			while (event_type != SEVENT_SOCKET_SEND && event_type != SEVENT_END)
 			{
+				WaitEvent();
 				switch (event_type)
 				{
 					case SEVENT_SOCKET_RECV:
-						event_type = Run();
+						next_event_type = hserver_->Run();
 						break;
 					case SEVENT_FILE_READ:
 					case SEVENT_FILE_WRITE:
 					case SEVENT_FILE_DELETE:
-						event_type = RunExecHTTPMethod(event_type);
+						next_event_type = hserver_->RunExecHTTPMethod(event_type);
 						break;
 					case SEVENT_ERRORPAGE_READ:
-						event_type = RunReadErrorPage();
+						next_event_type = hserver_->RunReadErrorPage();
 						break;
-					default: {}
+					default:
+						return;
 				}
+				if (event_type != next_event_type)
+					RegisterEvent(next_event_type);
+				event_type = next_event_type;
 			}
 		}
 
-		e_HTTPServerEventType	Run()
+		void	RegisterEvent(const e_HTTPServerEventType event_type)
 		{
-			e_HTTPServerEventType	new_event;
+			struct kevent	kev;
 
-			try
+			switch (event_type)
 			{
-				new_event = req_->ParseRequest();
-				if (new_event != SEVENT_NO)
-					return (SEVENT_SOCKET_RECV);
-				new_event = method_->ValidateHTTPMethod();
-				if (new_event != SEVENT_NO)
-					return (new_event);
+				case SEVENT_FILE_READ:
+				case SEVENT_ERRORPAGE_READ:
+					EV_SET(&kev, hserver_->GetMethodTargetFileFd(), ET_READ, EA_ADD, 0, 0, NULL);
+					break;
+				case SEVENT_FILE_WRITE:
+				case SEVENT_FILE_DELETE:
+					EV_SET(&kev, hserver_->GetMethodTargetFileFd(), ET_WRITE, EA_ADD, 0, 0, NULL);					break;
+				default:
+					return;
 			}
-			catch (const HTTPError& e)
-			{
-				new_event = method_->ValidateErrorPage(e.GetStatusCode());
-				if (new_event != SEVENT_NO)
-					return (new_event);
-			}
-			return (SEVENT_NO);
+			kevent(kq_, &kev, 1, NULL, 0, NULL);
 		}
 
-		e_HTTPServerEventType	RunExecHTTPMethod(e_HTTPServerEventType event_type)
+		void	WaitEvent()
 		{
-			e_HTTPServerEventType	new_event;
-
-			try
-			{
-				if (event_type == SEVENT_FILE_READ)
-					method_->ExecGETMethod();
-				else if (event_type == SEVENT_FILE_WRITE)
-					method_->ExecPOSTMethod();
-				else if (event_type == SEVENT_FILE_DELETE)
-					method_->ExecDELETEMethod();
-			}
-			catch (const HTTPError& e)
-			{
-				new_event = method_->ValidateErrorPage(e.GetStatusCode());
-				if (new_event != SEVENT_NO)
-					return (new_event);
-			}
-			return (SEVENT_NO);
-		}
-
-		e_HTTPServerEventType	RunReadErrorPage()
-		{
-			method_->ReadErrorPage();
-			return (SEVENT_NO);
+			struct kevent		kev;
+			while (kevent(kq_, NULL, 0, &kev, 1,  NULL) == 0) {}
 		}
 
 		static Config					config_;
@@ -116,7 +104,9 @@ class GETTest : public ::testing::Test
 		static ListenSocket*			lsocket_;
 		static ServerSocket*			ssocket_;
 		static ClientSocket*			csocket_;
+		static int						kq_;
 
+		HTTPServer*				hserver_;
 		HTTPRequest*			req_;
 		HTTPMethod*				method_;
 };
@@ -126,6 +116,7 @@ const ServerDirective&	GETTest::server_conf_ = *(config_.GetServers().begin());
 ListenSocket*			GETTest::lsocket_ = NULL;
 ServerSocket*			GETTest::ssocket_ = NULL;
 ClientSocket*			GETTest::csocket_ = NULL;
+int						GETTest::kq_ = kqueue();
 
 TEST_F(GETTest, BasicTest)
 {
@@ -151,7 +142,7 @@ TEST_F(GETTest, DirRedirectTest)
 {
 	RunCommunication("GET /sub1 HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_MOVED_PERMANENTLY);
-	EXPECT_EQ(method_->GetLocation(), "http://localhost:8080/sub1/");
+	EXPECT_EQ(method_->GetHeaders()["Location"], "http://localhost:8080/sub1/");
 }
 
 TEST_F(GETTest, IndexTest)
