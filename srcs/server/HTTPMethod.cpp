@@ -87,10 +87,11 @@ e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
 	event_type = cgi_->ReceiveCgiResult();
 	if (event_type == SEVENT_NO)
 	{
+		headers_ = cgi_->GetHeaders();
 		body_ = cgi_->GetBody();
-		location_ = cgi_->GetLocation();
-		content_type_ = cgi_->GetContentType();
 		status_code_ = cgi_->GetStatusCode();
+		//location_ = cgi_->GetLocation();
+		//content_type_ = cgi_->GetContentType();
 	}
 	return (event_type);
 }

@@ -23,8 +23,8 @@ SRCS	=	Config.cpp \
 			Dir.cpp \
 			Stat.cpp \
 			CGI.cpp \
-			Pipe.cpp \
 			CGIEnv.cpp \
+			Pipe.cpp \
 			utils.cpp
 
 SRCS	+=	ClientSocket.cpp
@@ -41,9 +41,8 @@ INCLUDE =	-I./srcs \
 			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
-			-I$(SRCSDIR)/cgi \
-			-I$(SRCSDIR)/webserv \
-			-I$(SRCSDIR)/utils
+			-I$(SRCSDIR)/utils \
+			-I$(SRCSDIR)/webserv
 
 NAME	=	unit_test
 
@@ -78,19 +77,10 @@ fclean		:	clean
 
 re			:	fclean all
 
-print		:	CFLAGS	+= -D PRINT_FLAG
-print		:	re
-
-debug		:	CFLAGS	+=	-g
-debug		:	re
-
-address		:	CFLAGS	+=	-g -fsanitize=address
-address		:	re
-
 ifeq ($(shell uname),Darwin)
 leak		:	CC		=	/usr/local/opt/llvm/bin/clang++
 endif
 leak		:	CFLAGS	+=	-g -fsanitize=leak
 leak		:	re
 
-.PHONY		:	all clean fclean re debug address leak test
+.PHONY		:	all clean fclean re leak test

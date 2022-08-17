@@ -3,7 +3,7 @@
 CGI::CGI(const URI& uri, const HTTPRequest& req)
 	: uri_(uri)
 	, req_(req)
-	, multiple_locaiton_(false)
+	, multiple_location_(false)
 	, status_code_(SC_OK)
 	, status_flag_(false)
 {
@@ -58,6 +58,7 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 	pid_t			ret_pid;
 	int				status;
 
+	std::cout << "check1" << std::endl;
 	read_byte = from_cgi_pipe_.ReadFromPipe(&tmp);
 	if (read_byte == -1)
 		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
@@ -70,13 +71,16 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 	if (from_cgi_pipe_.CloseFd(Pipe::READ) < 0)
 		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
 
+	std::cout << "check2" << std::endl;
 	ret_pid = waitpid(pid_, &status, 0);
 	if (ret_pid < 0
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
 		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
 
+	std::cout << "check3" << std::endl;
 	ParseCGI();
+	std::cout << "check4" << std::endl;
 
 	return (SEVENT_NO);
 }
