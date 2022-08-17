@@ -173,7 +173,12 @@ void HTTPRequest::ParseHost(const std::string& content)
 {
 	std::vector<std::string>	list;
 
-	list = Utils::MySplit(content, ":");
+	if (host_.first != "")
+		throw HTTPError(SC_BAD_REQUEST, "ReceiveHeaders");
+
+	list = Utils::MySplit(Utils::MyTrim(content), ":");
+	if (list.empty())
+		throw HTTPError(SC_BAD_REQUEST, "ParseHost");
 
 	host_.first = Utils::MyTrim(list.at(0), " ");
 	if (list.size() >= 2)
@@ -188,6 +193,8 @@ void HTTPRequest::ParseContentLength(const std::string& content)
 	char			*endptr;
 
 	tmp = Utils::MyTrim(content, " ");
+	if (tmp.empty())
+		throw HTTPError(SC_BAD_REQUEST, "ParseContentLength");
 	content_length_ = std::strtoul(tmp.c_str(), &endptr, 10);
 	if (errno == ERANGE || *endptr != '\0')
 		throw HTTPError(SC_BAD_REQUEST, "ParseContentLength");
@@ -281,18 +288,20 @@ void HTTPRequest::ParseAccept(const std::string& content)
 
 void HTTPRequest::ParseAuthorization(const std::string& content)
 {
-	std::vector<std::string>	list;
+	std::string tmp;
 
-	list = Utils::MySplit(content, " ");
-	authorization_.first = Utils::MyTrim(list.at(0), " ");
-	if (list.size() >= 2)
-		authorization_.second = Utils::MyTrim(list.at(1), " ");
+	tmp = Utils::MyTrim(content, " ");
+	if (tmp.empty())
+		return;
+	std::string::size_type end = tmp.find(" ");
+	authorization_.first = tmp.substr(0, end);
+	if (end != std::string::npos)
+		authorization_.second = tmp.substr(end + 1);
 }
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)
 {
 	const std::pair<std::string, ParseFunc> p[] = {
-		std::make_pair("host", &HTTPRequest::ParseHost),
 		std::make_pair("content-length", &HTTPRequest::ParseContentLength),
 		std::make_pair("user-agent", &HTTPRequest::ParseUserAgent),
 		std::make_pair("accept-encoding", &HTTPRequest::ParseAcceptEncoding),
@@ -302,7 +311,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 		std::make_pair("accept", &HTTPRequest::ParseAccept),
 		std::make_pair("authorization", &HTTPRequest::ParseAuthorization)
 	};
-	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[9]);
+	const std::map<std::string, ParseFunc>				parse_funcs(p, &p[8]);
 	std::map<std::string, ParseFunc>::const_iterator	found;
 
 	found = parse_funcs.find(field);
@@ -313,8 +322,7 @@ void	HTTPRequest::ParseHeader(const std::string& field, const std::string& conte
 
 static bool	IsOnlyOnceHeader(const std::string& field)
 {
-	if (field == "host"
-		|| field == "content-length"
+	if (field == "content-length"
 		|| field == "transfer-encoding"
 		|| field == "authorization")
 		return (true);
@@ -332,6 +340,9 @@ static bool	IsAppendHeader(const std::string& field)
 
 void	HTTPRequest::RegisterHeaders(const std::string& field, const std::string& content)
 {
+	if (field == "host")
+		return (ParseHost(content));
+
 	if (headers_.count(field) == 0)
 		headers_[field] = content;
 	else
@@ -491,10 +502,13 @@ bool	HTTPRequest::ReceiveBody(void)
 		}
 	}
 	body_ = raw_body_;
-	if (body_.size() != content_length_)
+
+	if (body_.size() < content_length_)
 		return (false);
-	else
+	else if (body_.size() == content_length_)
 		return (true);
+	else
+		throw HTTPError(SC_BAD_REQUEST, "ReceiveBody");
 }
 
 void	HTTPRequest::FindServerConf(void)
