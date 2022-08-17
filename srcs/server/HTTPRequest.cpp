@@ -298,9 +298,13 @@ void HTTPRequest::ParseAuthorization(const std::string& content)
 	if (tmp.empty())
 		return;
 	std::string::size_type end = tmp.find(" ");
-	authorization_.first = tmp.substr(0, end);
-	if (end != std::string::npos)
+	if (end == std::string::npos)
+		authorization_.first = tmp;
+	else
+	{
+		authorization_.first = tmp.substr(0, end);
 		authorization_.second = tmp.substr(end + 1);
+	}
 }
 
 void	HTTPRequest::ParseHeader(const std::string& field, const std::string& content)

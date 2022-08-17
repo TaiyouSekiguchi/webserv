@@ -258,6 +258,12 @@ TEST_F(RequestTest, InValidHostTest2)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
+TEST_F(RequestTest, InValidHostTest3)
+{
+	RunCommunication("GET / HTTP/1.1\r\n\r\n", 8080);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
+}
+
 TEST_F(RequestTest, ValidBodyTest)
 {
 	RunCommunication("GET / HTTP/1.1\r\nHost: a\r\nContent-Length: 5\r\n\r\naaaaa", 8080);
