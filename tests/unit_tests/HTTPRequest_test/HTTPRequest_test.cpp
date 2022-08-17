@@ -422,10 +422,11 @@ TEST_F(RequestTest, ValidAcceptEncodingTest1)
 TEST_F(RequestTest, ValidAcceptEncodingTest2)
 {
 	RunCommunication("GET / HTTP/1.1\r\nHost: a\r\n"
-		"Accept-Encoding: gzip, compress\r\nAccept-Encoding: ,GZIP,,,\r\n\r\n", 8080);
-	EXPECT_EQ((size_t)2, req_->GetAcceptEncoding().size());
+		"Accept-Encoding: gzip, compress\r\nAccept-Encoding: ,GZIP,,br,\r\n\r\n", 8080);
+	EXPECT_EQ((size_t)3, req_->GetAcceptEncoding().size());
 	EXPECT_EQ("gzip", req_->GetAcceptEncoding()[0]);
 	EXPECT_EQ("compress", req_->GetAcceptEncoding()[1]);
+	EXPECT_EQ("br", req_->GetAcceptEncoding()[2]);
 }
 
 TEST_F(RequestTest, ValidConnectionTest1)
