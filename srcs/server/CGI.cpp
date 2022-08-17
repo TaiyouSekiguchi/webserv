@@ -3,6 +3,7 @@
 CGI::CGI(const URI& uri, const HTTPRequest& req)
 	: uri_(uri)
 	, req_(req)
+	, multiple_locaiton_(false)
 	, status_code_(SC_OK)
 	, status_flag_(false)
 {
@@ -15,10 +16,10 @@ CGI::~CGI(void)
 e_HTTPServerEventType	CGI::ExecCGI(void)
 {
 	if (to_cgi_pipe_.Fail() || from_cgi_pipe_.Fail())
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
+		throw HTTPError(SC_BAD_GATEWAY, "ExecCGI");
 
 	if ((pid_ = fork()) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
+		throw HTTPError(SC_BAD_GATEWAY, "ExecCGI");
 
 	if (pid_ == 0)
 		ExecveCGIScript();
@@ -30,7 +31,7 @@ e_HTTPServerEventType	CGI::ExecCGI(void)
 		if (to_cgi_pipe_.CloseFd(Pipe::READ) < 0
 			|| from_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
 		{
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ExecCGI");
+			throw HTTPError(SC_BAD_GATEWAY, "ExecCGI");
 		}
 	}
 
@@ -46,7 +47,7 @@ void	CGI::PostToCgi(void)
 	{
 		if (to_cgi_pipe_.WriteToPipe(req_.GetBody()) < 0
 			|| to_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "PostToCGI");
+		throw HTTPError(SC_BAD_GATEWAY, "PostToCGI");
 	}
 }
 
@@ -59,20 +60,24 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 
 	read_byte = from_cgi_pipe_.ReadFromPipe(&tmp);
 	if (read_byte == -1)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
+		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
 	else if (read_byte != 0)
 	{
 		data_.append(tmp);
 		return (SEVENT_CGI_READ);
 	}
+
 	if (from_cgi_pipe_.CloseFd(Pipe::READ) < 0)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
+		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
+
 	ret_pid = waitpid(pid_, &status, 0);
 	if (ret_pid < 0
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ReceiveCgiResult");
+		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
+
 	ParseCGI();
+
 	return (SEVENT_NO);
 }
 
@@ -109,16 +114,25 @@ void	CGI::ParseCGI(void)
 	{
 		pos = data_.find("\n", offset);
 		if (pos == std::string::npos)
-			throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseCGI");
+			throw HTTPError(SC_BAD_GATEWAY, "ParseCGI");
 
 		line = data_.substr(offset, pos - offset);
 		offset = pos + 1;
 		if (line == "")
 			break;
 		ParseHeader(line);
+		if (multiple_location_ == true)
+			break;
 	}
 
-	body_ = data_.substr(offset);
+	if (headers_.empty() || multiple_location_ == true)
+	{
+		headers_.clear();
+		status_code_ = SC_BAD_GATEWAY;
+		body_ = std::string("An error occurred while parsing CGI reply");
+	}
+	else
+		body_ = data_.substr(offset);
 }
 
 void	CGI::ParseHeader(const std::string& line)
@@ -129,7 +143,7 @@ void	CGI::ParseHeader(const std::string& line)
 
 	pos = line.find(":");
 	if (pos == std::string::npos)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseHeader");
+		return ;
 
 	field = line.substr(0, pos);
 	content = line.substr(pos + 1);
@@ -147,14 +161,19 @@ void	CGI::ParseHeader(const std::string& line)
 
 void	CGI::ParseContentType(const std::string& content)
 {
-	content_type_ = Utils::MyTrim(content, " ");
+	headers_["content-type"] = Utils::MyTrim(content, " ");
 }
 
 void	CGI::ParseLocation(const std::string& content)
 {
-	location_ = Utils::MyTrim(content, " ");
-	if (status_flag_ == false)
-		status_code_ = SC_FOUND;
+	if (headers_.count("location") > 1)
+		multiple_location_ = true;
+	else
+	{
+		headers_["location"] = Utils::MyTrim(content, " ");
+		if (status_flag_ == false)
+			status_code_ = SC_FOUND;
+	}
 }
 
 void	CGI::ParseStatusCode(const std::string& content)
@@ -164,7 +183,7 @@ void	CGI::ParseStatusCode(const std::string& content)
 
 	status_code =  std::strtol(content.c_str(), &endptr, 10);
 	if (*endptr != '\0' || errno == ERANGE || status_code < 1 || 999 < status_code)
-		throw HTTPError(SC_INTERNAL_SERVER_ERROR, "ParseStatusCode");
+		throw HTTPError(SC_BAD_GATEWAY, "ParseStatusCode");
 
 	if (status_flag_ == false)
 	{
@@ -173,10 +192,11 @@ void	CGI::ParseStatusCode(const std::string& content)
 	}
 }
 
-std::string		CGI::GetData(void) const { return (data_); }
-std::string		CGI::GetContentType(void) const { return (content_type_); }
-std::string		CGI::GetLocation(void) const { return (location_); }
-e_StatusCode	CGI::GetStatusCode(void) const { return (status_code_); }
-std::string		CGI::GetBody(void) const { return (body_); }
-int				CGI::GetToCgiWriteFd(void) const { return (to_cgi_pipe_.GetPipeFd(Pipe::WRITE)); }
-int				CGI::GetFromCgiReadFd(void) const { return (from_cgi_pipe_.GetPipeFd(Pipe::READ)); }
+std::string							CGI::GetData(void) const { return (data_); }
+std::map<std::string, std::string>	CGI::GetHeaders(void) const { return (headers_); }
+e_StatusCode						CGI::GetStatusCode(void) const { return (status_code_); }
+std::string							CGI::GetBody(void) const { return (body_); }
+int									CGI::GetToCgiWriteFd(void) const { return (to_cgi_pipe_.GetPipeFd(Pipe::WRITE)); }
+int									CGI::GetFromCgiReadFd(void) const { return (from_cgi_pipe_.GetPipeFd(Pipe::READ)); }
+//std::string		CGI::GetContentType(void) const { return (content_type_); }
+//std::string		CGI::GetLocation(void) const { return (location_); }

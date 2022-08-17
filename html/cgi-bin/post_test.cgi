@@ -25,7 +25,7 @@ Content-Type: text/html
 EOF
 
 print "=================================\n";
-print "フォーム変数\n";
+print "Form Variable\n";
 print "=================================\n";
 if ($ENV{'REQUEST_METHOD'} eq "POST") {
 	# POSTであれば標準入力から読込みます

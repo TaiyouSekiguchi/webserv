@@ -26,8 +26,9 @@ class CGI
 		e_HTTPServerEventType	ReceiveCgiResult(void);
 
 		std::string				GetData(void) const;
-		std::string				GetContentType(void) const;
-		std::string				GetLocation(void) const;
+		std::map<std::string, std::string>	GetHeaders(void) const;
+		//std::string				GetContentType(void) const;
+		//std::string				GetLocation(void) const;
 		e_StatusCode			GetStatusCode(void) const;
 		std::string				GetBody(void) const;
 		int						GetToCgiWriteFd(void) const;
@@ -47,10 +48,14 @@ class CGI
 		Pipe					from_cgi_pipe_;
 		pid_t					pid_;
 		std::string				data_;
-		std::string				content_type_;
-		std::string				location_;
-		e_StatusCode			status_code_;
-		bool					status_flag_;
+
+		std::map<std::string, std::string>		headers_;
+		bool									multiple_location_;
+		e_StatusCode							status_code_;
+		bool									status_flag_;
+		//std::string				content_type_;
+		//std::string				location_;
+
 		std::string				body_;
 };
 

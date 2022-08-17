@@ -178,17 +178,18 @@ ClientSocket*			CGITest::csocket_ = NULL;
 
 const std::string first = "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n";
 const std::string last = "\n</pre>\n</body>\n</html>\n";
+const std::string simple_body = "<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>";
 
-TEST_F(CGITest, SimpleGet)
+TEST_F(CGITest, SimpleGetTest)
 {
 	RunCommunication("GET /cgi-bin/test.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
 	EXPECT_EQ("text/html", method_->GetContentType());
-	EXPECT_EQ("<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>", method_->GetBody());
+	EXPECT_EQ(simple_body, method_->GetBody());
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }
 
-TEST_F(CGITest, COMMAND_ARG)
+TEST_F(CGITest, CommandArgTest)
 {
 	RunCommunication("GET /cgi-bin/command_arg_test.cgi?aaa+bbb+ccc HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
@@ -197,7 +198,7 @@ TEST_F(CGITest, COMMAND_ARG)
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }
 
-TEST_F(CGITest, ENV_TEST)
+TEST_F(CGITest, EnvironmentVariableTest)
 {
 	RunCommunication("GET /cgi-bin/env_test.cgi?first=aaa&last=bbb HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: Debian\r\n\r\n");
 
@@ -206,12 +207,12 @@ TEST_F(CGITest, ENV_TEST)
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }
 
-TEST_F(CGITest, PUT_BODY_TEST)
+TEST_F(CGITest, PostTest)
 {
 	RunCommunication("POST /cgi-bin/post_test.cgi HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 10\r\n\r\nVALUE=abcd");
 
 	EXPECT_EQ("text/html", method_->GetContentType());
-	EXPECT_EQ(first + "=================================\n\xE3\x83\x95\xE3\x82\xA9\xE3\x83\xBC\xE3\x83\xA0\xE5\xA4\x89\xE6\x95\xB0\n=================================\nVALUE = [ abcd ]" + last, method_->GetBody());
+	EXPECT_EQ(first + "=================================\nForm Variable\n=================================\nVALUE = [ abcd ]" + last, method_->GetBody());
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 }
 
@@ -220,15 +221,153 @@ TEST_F(CGITest, NoExistFileTest)
 	RunCommunication("GET /cgi-bin/noexist.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
 	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
 	EXPECT_EQ("403 Forbidden", method_->GetBody());
 	EXPECT_EQ(SC_FORBIDDEN, method_->GetStatusCode());
 }
 
-TEST_F(CGITest, NoPermissionFileTest)
+TEST_F(CGITest, EmptyFileTest)
 {
-	RunCommunication("GET /cgi-bin/no_permission.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("GET /cgi-bin/empty_file.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
 	EXPECT_EQ("", method_->GetContentType());
-	EXPECT_EQ("403 Forbidden", method_->GetBody());
-	EXPECT_EQ(SC_FORBIDDEN, method_->GetStatusCode());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ("502 Bad Gateway", method_->GetBody());
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, OnlyShebangFileTest)
+{
+	RunCommunication("GET /cgi-bin/only_shebang.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ("An error occurred while reading CGI reply (no response received)", method_->GetBody());
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, WrongShebangFileTest)
+{
+	RunCommunication("GET /cgi-bin/wrong_shebang.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ("502 Bad Gateway", method_->GetBody());
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, BodyStartFileTest)
+{
+	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/body_start.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+}
+
+TEST_F(CGITest, NoNewLineFileTest)
+{
+	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/no_nl.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+}
+
+TEST_F(CGITest, NoHeaderFileTest)
+{
+	RunCommunication("GET /cgi-bin/no_header.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ("An error occurred while parsing CGI reply", method_->GetBody());
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, OnlyNewLineFileTest)
+{
+	RunCommunication("GET /cgi-bin/only_nl.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ("An error occurred while parsing CGI reply", method_->GetBody());
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, MultipleContentTypeTest)
+{
+	RunCommunication("GET /cgi-bin/multiple_content_type.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("text/html", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, SimpleLocationTest)
+{
+	RunCommunication("GET /cgi-bin/simple_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("test", method_->GetLocation());
+	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ(SC_FOUND, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, SpaceSeparatedLocationTest)
+{
+	RunCommunication("GET /cgi-bin/space_separated_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("test test test", method_->GetLocation());
+	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ(SC_FOUND, method_->GetStatusCode());
+}
+
+/*
+TEST_F(CGITest, MultipleLocationTest)
+{
+	RunCommunication("GET /cgi-bin/multiple_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("An error occurred while parsing CGI reply", method_->GetBody());
+	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
+}
+*/
+
+TEST_F(CGITest, StatusLocationTest)
+{
+	RunCommunication("GET /cgi-bin/location_and_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("test", method_->GetLocation());
+	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, SimpleStatusTest)
+{
+	RunCommunication("GET /cgi-bin/simple_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, MultipleStatusTest)
+{
+	RunCommunication("GET /cgi-bin/multiple_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ("", method_->GetContentType());
+	EXPECT_EQ("", method_->GetLocation());
+	EXPECT_EQ(simple_body, method_->GetBody());
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+}
+
+TEST_F(CGITest, EmptyStatusTest)
+{
+	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/empty_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+}
+
+TEST_F(CGITest, SpaceStatusTest)
+{
+	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/space_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
+}
+
+TEST_F(CGITest, StringStatusTest)
+{
+	EXPECT_ANY_THROW(RunCommunication("GET /cgi-bin/string_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n"));
 }
