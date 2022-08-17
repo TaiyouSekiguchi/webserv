@@ -118,6 +118,7 @@ class CGITest : public ::testing::Test
 			return (SEVENT_NO);
 		}
 
+		/*
 		e_HTTPServerEventType	RunPostToCgi()
 		{
 			e_HTTPServerEventType	new_event;
@@ -156,6 +157,7 @@ class CGITest : public ::testing::Test
 			}
 			return (SEVENT_NO);
 		}
+		*/
 
 		e_HTTPServerEventType	RunReadErrorPage()
 		{
