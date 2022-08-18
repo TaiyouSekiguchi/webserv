@@ -110,10 +110,7 @@ int		CGI::ExecveCGIScript(void)
 	argv[1] = NULL;
 
 	if (execve(argv[0], argv, env.GetEnv()) < 0)
-	{
-		std::cerr << "execve failed." << std::endl;
 		return (EXIT_FAILURE);
-	}
 	return (EXIT_SUCCESS);
 }
 
@@ -142,7 +139,7 @@ void	CGI::ParseCGI(void)
 	{
 		headers_["Content-Type"] = "text/plain";
 		status_code_ = SC_BAD_GATEWAY;
-		body_ = std::string("An error occurred while parsing CGI reply");
+		body_ = "An error occurred while parsing CGI reply";
 	}
 	else
 		body_ = data_.substr(offset);
@@ -156,7 +153,7 @@ void	CGI::ParseHeader(const std::string& line)
 
 	pos = line.find(":");
 	if (pos == std::string::npos)
-		return ;
+		return;
 
 	field = line.substr(0, pos);
 	content = line.substr(pos + 1);

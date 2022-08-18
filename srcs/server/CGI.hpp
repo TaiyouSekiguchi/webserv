@@ -5,6 +5,7 @@
 # include <sys/types.h>  // waitpid()
 
 # include <string>
+# include <map>
 # include <cstdlib>  // exit()
 # include <cerrno>  // errno
 

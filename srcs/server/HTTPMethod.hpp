@@ -71,7 +71,6 @@ class HTTPMethod
 		RegularFile*						target_rfile_;
 		URI*								uri_;
 		CGI*								cgi_;
-
 };
 
 #endif
