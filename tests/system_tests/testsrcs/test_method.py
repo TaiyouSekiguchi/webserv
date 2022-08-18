@@ -58,7 +58,7 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "OK")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "386")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "443")
 		body = res.read()
 		with self.subTest(): self.assertIn(b"noindex", body)
 		with self.subTest(): self.assertIn(b"hoge", body)
@@ -96,7 +96,7 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "148")
 		with self.subTest(): self.assertIn(b"403 Forbidden", res.read())
 
-	def test_return(self):
+	def test_return_url(self):
 		self.conn.request("GET", "/sub2/", None, {"Host": "webserv2"})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 301)
@@ -106,6 +106,17 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.getheader("Location"), "http://localhost:8080")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "164")
 		with self.subTest(): self.assertIn(b"301 Moved Permanently", res.read())
+
+	def test_return_body(self):
+		self.conn.request("GET", "/hoge/", None, {"Host": "webserv2"})
+		res = self.conn.getresponse()
+		with self.subTest(): self.assertEqual(res.status, 403)
+		with self.subTest(): self.assertEqual(res.reason, "Forbidden")
+		with self.subTest(): self.assertEqual(res.version, 11)
+		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
+		with self.subTest(): self.assertEqual(res.getheader("Location"), None)
+		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "21")
+		with self.subTest(): self.assertIn(b"http://localhost:8080", res.read())
 
 	def test_not_allowed_method(self):
 		self.conn.request("DELETE", "/index.html", None, {})
@@ -139,7 +150,7 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertIn(b"403 Forbidden", res.read())
 
 	def test_post(self):
-		self.conn.request("POST", "/upload", None, {})
+		self.conn.request("POST", "/upload", "Hello World", {"Content-Length": 11})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 201)
 		with self.subTest(): self.assertEqual(res.reason, "Created")
@@ -148,7 +159,7 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertIn("/upload/16", res.getheader("Location"))
 
 	def test_post_file(self):
-		self.conn.request("POST", "/upload/index.html", None, {})
+		self.conn.request("POST", "/upload/index.html", "Hello World", {"Content-Length": 11})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 409)
 		with self.subTest(): self.assertEqual(res.reason, "Conflict")
@@ -157,24 +168,30 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "146")
 		with self.subTest(): self.assertIn(b"409 Conflict", res.read())
 
-	def test_return_url(self):
-		self.conn.request("GET", "/sub2/", None, {"Host": "webserv2"})
+	def test_post_chunk(self):
+		self.conn.request("POST", "/upload", "1\r\na\r\n2\r\nbb\r\n3\r\nccc\r\n0\r\n\r\n", {"Transfer-Encoding": "chunked"})
 		res = self.conn.getresponse()
-		with self.subTest(): self.assertEqual(res.status, 301)
-		with self.subTest(): self.assertEqual(res.reason, "Moved Permanently")
+		with self.subTest(): self.assertEqual(res.status, 201)
+		with self.subTest(): self.assertEqual(res.reason, "Created")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Location"), "http://localhost:8080")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "164")
-		with self.subTest(): self.assertIn(b"301 Moved Permanently", res.read())
+		with self.subTest(): self.assertIn("/upload/16", res.getheader("Location"))
 
-	def test_return_body(self):
-		self.conn.request("GET", "/hoge/", None, {"Host": "webserv2"})
+	def test_post_empty_chunk(self):
+		self.conn.request("POST", "/upload", "0\r\n\r\n", {"Transfer-Encoding": "chunked"})
 		res = self.conn.getresponse()
-		with self.subTest(): self.assertEqual(res.status, 403)
-		with self.subTest(): self.assertEqual(res.reason, "Forbidden")
+		with self.subTest(): self.assertEqual(res.status, 201)
+		with self.subTest(): self.assertEqual(res.reason, "Created")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Location"), None)
-		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "21")
-		with self.subTest(): self.assertIn(b"http://localhost:8080", res.read())
+		with self.subTest(): self.assertIn("/upload/16", res.getheader("Location"))
+
+	# def test_post_invalid_chunk(self):
+	# 	self.conn.request("POST", "/upload", "Hello", {"Transfer-Encoding": "chunked"})
+	# 	res = self.conn.getresponse()
+	# 	with self.subTest(): self.assertEqual(res.status, 400)
+	# 	with self.subTest(): self.assertEqual(res.reason, "Bad Request")
+	# 	with self.subTest(): self.assertEqual(res.version, 11)
+	# 	with self.subTest(): self.assertEqual(res.getheader("Connection"), "close")
+	# 	with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "152")
+	# 	with self.subTest(): self.assertIn(b"400 Bad Request", res.read())
