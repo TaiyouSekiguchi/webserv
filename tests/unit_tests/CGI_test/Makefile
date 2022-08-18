@@ -44,7 +44,8 @@ INCLUDE =	-I./srcs \
 
 NAME	=	unit_test
 
-CC		=	c++
+#CC		=	c++
+CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
 CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP

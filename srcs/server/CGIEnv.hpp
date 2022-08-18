@@ -12,7 +12,7 @@ class CGIEnv
 		CGIEnv(const URI& uri, const HTTPRequest& req);
 		~CGIEnv(void);
 
-		char**	GetEnv(void) const;
+		char**	GetEnv(void);
 
 	private:
 		void	SetEnv(void);
@@ -22,6 +22,7 @@ class CGIEnv
 		const HTTPRequest&			req_;
 		const ServerDirective*		server_conf_;
 		std::vector<std::string>	env_;
+		char**						exec_env_;
 };
 
 #endif

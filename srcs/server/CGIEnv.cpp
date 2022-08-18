@@ -4,12 +4,15 @@ CGIEnv::CGIEnv(const URI& uri, const HTTPRequest& req)
 	: uri_(uri)
 	, req_(req)
 	, server_conf_(req.GetServerConf())
+	, exec_env_(NULL)
 {
 	SetEnv();
 }
 
 CGIEnv::~CGIEnv(void)
 {
+	if (exec_env_ != NULL)
+		delete [] exec_env_;
 }
 
 void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
@@ -44,16 +47,15 @@ void	CGIEnv::SetEnv(void)
 	AddEnv("SERVER_SOFTWARE", "42Webserv");
 }
 
-char**	CGIEnv::GetEnv(void) const
+char**	CGIEnv::GetEnv(void)
 {
-	char**		exec_env;
 	size_t		size;
 
 	size = env_.size();
-	exec_env = new char*[size + 1];
+	exec_env_ = new char*[size + 1];
 	for (size_t i = 0; i < size; i++)
-		exec_env[i] = const_cast<char *>(env_[i].c_str());
-	exec_env[size] = NULL;
+		exec_env_[i] = const_cast<char *>(env_[i].c_str());
+	exec_env_[size] = NULL;
 
-	return (exec_env);
+	return (exec_env_);
 }
