@@ -10,7 +10,7 @@ CGI::CGI(const URI& uri, const HTTPRequest& req)
 
 CGI::~CGI(void)
 {
-	if (pid_ != -1)
+	if (pid_ != 0 && pid_ != -1)
 		waitpid(pid_, NULL, 0);
 }
 
