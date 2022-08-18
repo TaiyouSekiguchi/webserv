@@ -174,7 +174,8 @@ void	CGI::ParseHeader(const std::string& line)
 
 void	CGI::ParseContentType(const std::string& content)
 {
-	headers_["content-type"] = Utils::MyTrim(content, " ");
+	if (content != "")
+		headers_["content-type"] = Utils::MyTrim(content, " ");
 }
 
 void	CGI::ParseLocation(const std::string& content)

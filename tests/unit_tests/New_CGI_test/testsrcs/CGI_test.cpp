@@ -265,6 +265,16 @@ TEST_F(CGITest, MultipleContentTypeTest)
 	EXPECT_EQ(simple_body, method_->GetBody());
 }
 
+TEST_F(CGITest, EmptyContentTypeTest)
+{
+	RunCommunication("GET /cgi-bin/empty_content_type.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ(0, method_->GetHeaders().count("content-type"));
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
+	EXPECT_EQ(simple_body, method_->GetBody());
+}
+
 TEST_F(CGITest, SimpleLocationTest)
 {
 	RunCommunication("GET /cgi-bin/simple_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
@@ -272,6 +282,17 @@ TEST_F(CGITest, SimpleLocationTest)
 	EXPECT_EQ("", method_->GetHeaders()["content-type"]);
 	EXPECT_EQ("test", method_->GetHeaders()["location"]);
 	EXPECT_EQ(SC_FOUND, method_->GetStatusCode());
+	EXPECT_EQ(simple_body, method_->GetBody());
+}
+
+TEST_F(CGITest, EmptyLocationTest)
+{
+	RunCommunication("GET /cgi-bin/empty_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+
+	EXPECT_EQ(0, method_->GetHeaders().count("content-type"));
+	EXPECT_EQ(1, method_->GetHeaders().count("location"));
+	EXPECT_EQ("", method_->GetHeaders()["location"]);
+	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 	EXPECT_EQ(simple_body, method_->GetBody());
 }
 
