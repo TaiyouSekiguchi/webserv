@@ -390,6 +390,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 	}
 	body_ = GenerateDefaultHTML();
 	headers_["Content-Length"] = Utils::ToString(body_.size());
+	headers_["Content-Type"] = "text/plain";
 	return (SEVENT_NO);
 }
 
