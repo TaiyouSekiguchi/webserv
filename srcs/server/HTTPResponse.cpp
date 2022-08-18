@@ -49,7 +49,13 @@ std::string HTTPResponse::CreateResponse()
 	std::stringstream 	ss;
 	const e_StatusCode	status_code = method_.GetStatusCode();
 
-	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_[status_code] << "\r\n";
+	std::string			status_msg;
+	if (status_code == SC_FOUND)
+		status_msg = "Moved Temporarily";
+	else
+		status_msg = kStatusMsg_[status_code];
+
+	ss << "HTTP/1.1 " << status_code << " " << status_msg << "\r\n";
 	ss << HeaderField();
 	ss << method_.GetBody();
 	return (ss.str());
