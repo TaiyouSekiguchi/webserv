@@ -22,15 +22,15 @@ void	CGIEnv::AddEnv(const std::string& key, const std::string& value)
 
 void	CGIEnv::SetEnv(void)
 {
-	AddEnv("AUTH_TYPE", "TEST");
+	AddEnv("AUTH_TYPE", "");
 	if (req_.GetContentLength() == 0)
 		AddEnv("CONTENT_LENGTH", "");
 	else
 		AddEnv("CONTENT_LENGTH", Utils::ToString(req_.GetContentLength()));
 	AddEnv("CONTENT_TYPE", req_.GetContentType());
 	AddEnv("GATEWAY_INTERFACE", "CGI/1.1");
-	AddEnv("HTTP_ACCEPT", "TEST");
-	AddEnv("HTTP_REFERER", "TEST");
+	AddEnv("HTTP_ACCEPT", "");
+	AddEnv("HTTP_REFERER", "");
 	AddEnv("HTTP_USER_AGENT", req_.GetUserAgent());
 	AddEnv("PATH_INFO", uri_.GetTargetPath());
 	AddEnv("PATH_TRANSLATED", uri_.GetAccessPath());

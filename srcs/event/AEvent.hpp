@@ -1,8 +1,6 @@
 #ifndef AEVENT_HPP
 # define AEVENT_HPP
 
-# include <sys/event.h>
-
 class AEvent
 {
 	public:

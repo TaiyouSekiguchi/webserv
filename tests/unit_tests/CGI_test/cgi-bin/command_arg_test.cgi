@@ -27,9 +27,9 @@ EOF
 #
 # コマンド引数を書き出します
 #
-print "=================================\n";
+print "===\n";
 print "Command Arguments\n";
-print "=================================\n";
+print "===\n";
 
 $query_string = $ENV{'QUERY_STRING'};
 @a = split(/\+/, $query_string);

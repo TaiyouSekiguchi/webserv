@@ -68,10 +68,10 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
 
 	ret_pid = waitpid(pid_, &status, 0);
+	if (ret_pid < 0)
+		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
 	pid_ = -1;
-	if (ret_pid < 0
-		|| !WIFEXITED(status)
-		|| WEXITSTATUS(status) == EXIT_FAILURE)
+	if (!WIFEXITED(status) || WEXITSTATUS(status) == EXIT_FAILURE)
 	{
 		headers_["Content-Type"] = "text/plain";
 		status_code_ = SC_BAD_GATEWAY;
@@ -79,18 +79,9 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 		return (SEVENT_NO);
 	}
 
-	if (data_.empty())
-	{
-		headers_["Content-Type"] = "text/plain";
-		status_code_ = SC_BAD_GATEWAY;
-		body_ = "An error occurred while reading CGI reply (no response received)";
-	}
-	else
-	{
-		ParseCGI();
-		if (status_code_ == SC_INVALID)
-			status_code_ = SC_OK;
-	}
+	ParseCGI();
+	if (status_code_ == SC_INVALID)
+		status_code_ = (headers_.count("Location") > 0) ? SC_FOUND : SC_OK;
 
 	return (SEVENT_NO);
 }
@@ -121,6 +112,17 @@ void	CGI::ParseCGI(void)
 	std::string				ret;
 	std::string				line;
 
+	if (data_.empty() || data_[0] == '\n')
+	{
+		headers_["Content-Type"] = "text/plain";
+		status_code_ = SC_BAD_GATEWAY;
+		if (data_.empty())
+			body_ = "An error occurred while reading CGI reply (no response received)";
+		else
+			body_ = "An error occurred while parsing CGI reply";
+		return;
+	}
+
 	offset = 0;
 	while (1)
 	{
@@ -135,14 +137,7 @@ void	CGI::ParseCGI(void)
 		ParseHeader(line);
 	}
 
-	if (headers_.empty() && status_code_ == SC_INVALID)
-	{
-		headers_["Content-Type"] = "text/plain";
-		status_code_ = SC_BAD_GATEWAY;
-		body_ = "An error occurred while parsing CGI reply";
-	}
-	else
-		body_ = data_.substr(offset);
+	body_ = data_.substr(offset);
 }
 
 void	CGI::ParseHeader(const std::string& line)
@@ -165,8 +160,6 @@ void	CGI::ParseHeader(const std::string& line)
 		ParseLocation(content);
 	else if (field == "status")
 		ParseStatusCode(content);
-
-	return;
 }
 
 void	CGI::ParseContentType(const std::string& content)
@@ -183,11 +176,7 @@ void	CGI::ParseLocation(const std::string& content)
 	if (headers_.count("Location") > 0)
 		throw HTTPError(SC_BAD_GATEWAY, "ParseLocation");
 	else
-	{
 		headers_["Location"] = Utils::MyTrim(content, " ");
-		if (status_code_ == SC_INVALID)
-			status_code_ = SC_FOUND;
-	}
 }
 
 void	CGI::ParseStatusCode(const std::string& content)
@@ -201,8 +190,7 @@ void	CGI::ParseStatusCode(const std::string& content)
 	if (*endptr != '\0' || errno == ERANGE || status_code < 1 || 999 < status_code)
 		throw HTTPError(SC_BAD_GATEWAY, "ParseStatusCode");
 
-	if (status_code_ == SC_INVALID
-		|| (headers_.count("Location") > 0 && status_code_ == SC_FOUND))
+	if (status_code_ == SC_INVALID)
 		status_code_ = static_cast<e_StatusCode>(status_code);
 }
 

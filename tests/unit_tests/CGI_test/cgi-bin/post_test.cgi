@@ -24,9 +24,9 @@ Content-Type: text/html
 <pre>
 EOF
 
-print "=================================\n";
+print "===\n";
 print "Form Variable\n";
-print "=================================\n";
+print "===\n";
 if ($ENV{'REQUEST_METHOD'} eq "POST") {
 	# POSTであれば標準入力から読込みます
 	read(STDIN, $query_string, $ENV{'CONTENT_LENGTH'});

@@ -24,9 +24,9 @@ Content-Type: text/html
 <pre>
 EOF
 
-print "=================================\n";
+print "===\n";
 print "Environment Variable\n";
-print "=================================\n";
+print "===\n";
 print "AUTH_TYPE = [ " . html($ENV{'AUTH_TYPE'}) . " ]\n";
 print "CONTENT_LENGTH = [ " . html($ENV{'CONTENT_LENGTH'}) . " ]\n";
 print "CONTENT_TYPE = [ " . html($ENV{'CONTENT_TYPE'}) . " ]\n";
