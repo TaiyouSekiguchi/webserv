@@ -40,7 +40,6 @@ DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 INCLUDE =	-I srcs/server \
 			-I srcs/utils \
 			-I srcs/io \
-			-I srcs/exception \
 			-I srcs/cgi \
 			-I srcs/config \
 			-I srcs/webserv \

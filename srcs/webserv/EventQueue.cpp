@@ -37,7 +37,5 @@ AEvent*		EventQueue::WaitIoEvent() const
 		else if (n != 0)
 			break;
 	}
-	AEvent* event = static_cast<AEvent*>(kev.udata);
-	event->SetFlags(kev.flags);
-	return (event);
+	return (static_cast<AEvent*>(kev.udata));
 }

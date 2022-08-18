@@ -89,9 +89,8 @@ e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
 	{
 		headers_ = cgi_->GetHeaders();
 		body_ = cgi_->GetBody();
+		headers_["Content-Length"] = Utils::ToString(body_.size());
 		status_code_ = cgi_->GetStatusCode();
-		//location_ = cgi_->GetLocation();
-		//content_type_ = cgi_->GetContentType();
 	}
 	return (event_type);
 }

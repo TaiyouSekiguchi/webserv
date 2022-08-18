@@ -3,7 +3,6 @@ vpath	%.cpp	srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
 				$(SRCSDIR)/event \
-				$(SRCSDIR)/exception \
 				$(SRCSDIR)/io:\
 				$(SRCSDIR)/server \
 				$(SRCSDIR)/webserv:\
@@ -44,7 +43,6 @@ INCLUDE =	-I./srcs \
 			-I./testsrcs \
 			-I$(SRCSDIR)/config \
 			-I$(SRCSDIR)/event \
-			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
 			-I$(SRCSDIR)/utils \
@@ -54,7 +52,7 @@ NAME	=	unit_test
 
 CC		=	c++
 CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	+=	-g -fsanitize=address
+#CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

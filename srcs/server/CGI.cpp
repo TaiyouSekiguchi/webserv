@@ -3,14 +3,15 @@
 CGI::CGI(const URI& uri, const HTTPRequest& req)
 	: uri_(uri)
 	, req_(req)
-	, multiple_location_(false)
-	, status_code_(SC_OK)
-	, status_flag_(false)
+	, pid_(-1)
+	, status_code_(SC_INVALID)
 {
 }
 
 CGI::~CGI(void)
 {
+	if (pid_ != -1)
+		waitpid(pid_, NULL, 0);
 }
 
 e_HTTPServerEventType	CGI::ExecCGI(void)
@@ -22,18 +23,14 @@ e_HTTPServerEventType	CGI::ExecCGI(void)
 		throw HTTPError(SC_BAD_GATEWAY, "ExecCGI");
 
 	if (pid_ == 0)
-		ExecveCGIScript();
-	else
-	{
-		to_cgi_pipe_.ChangeNonBlocking(Pipe::WRITE);
-		from_cgi_pipe_.ChangeNonBlocking(Pipe::READ);
+		std::exit(ExecveCGIScript());
 
-		if (to_cgi_pipe_.CloseFd(Pipe::READ) < 0
-			|| from_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
-		{
-			throw HTTPError(SC_BAD_GATEWAY, "ExecCGI");
-		}
-	}
+	to_cgi_pipe_.ChangeNonBlocking(Pipe::WRITE);
+	from_cgi_pipe_.ChangeNonBlocking(Pipe::READ);
+
+	if (to_cgi_pipe_.CloseFd(Pipe::READ) < 0
+		|| from_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
+		throw HTTPError(SC_BAD_GATEWAY, "ExecCGI");
 
 	if (req_.GetMethod() == "POST")
 		return (SEVENT_CGI_WRITE);
@@ -47,7 +44,7 @@ void	CGI::PostToCgi(void)
 	{
 		if (to_cgi_pipe_.WriteToPipe(req_.GetBody()) < 0
 			|| to_cgi_pipe_.CloseFd(Pipe::WRITE) < 0)
-		throw HTTPError(SC_BAD_GATEWAY, "PostToCGI");
+			throw HTTPError(SC_BAD_GATEWAY, "PostToCGI");
 	}
 }
 
@@ -71,11 +68,12 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 		throw HTTPError(SC_BAD_GATEWAY, "ReceiveCgiResult");
 
 	ret_pid = waitpid(pid_, &status, 0);
+	pid_ = -1;
 	if (ret_pid < 0
 		|| !WIFEXITED(status)
 		|| WEXITSTATUS(status) == EXIT_FAILURE)
 	{
-		headers_["content-type"] = "text/plain";
+		headers_["Content-Type"] = "text/plain";
 		status_code_ = SC_BAD_GATEWAY;
 		body_ = "502 Bad Gateway";
 		return (SEVENT_NO);
@@ -83,17 +81,21 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 
 	if (data_.empty())
 	{
-		headers_["content-type"] = "text/plain";
+		headers_["Content-Type"] = "text/plain";
 		status_code_ = SC_BAD_GATEWAY;
 		body_ = "An error occurred while reading CGI reply (no response received)";
 	}
 	else
+	{
 		ParseCGI();
+		if (status_code_ == SC_INVALID)
+			status_code_ = SC_OK;
+	}
 
 	return (SEVENT_NO);
 }
 
-void	CGI::ExecveCGIScript(void)
+int		CGI::ExecveCGIScript(void)
 {
 	CGIEnv	env(uri_, req_);
 	char*	argv[2];
@@ -102,7 +104,7 @@ void	CGI::ExecveCGIScript(void)
 		|| to_cgi_pipe_.RedirectToPipe(Pipe::READ, STDIN_FILENO) < 0
 		|| from_cgi_pipe_.CloseFd(Pipe::READ) < 0
 		|| from_cgi_pipe_.RedirectToPipe(Pipe::WRITE, STDOUT_FILENO) < 0)
-		std::exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 
 	argv[0] = const_cast<char *>(uri_.GetAccessPath().c_str());
 	argv[1] = NULL;
@@ -110,8 +112,9 @@ void	CGI::ExecveCGIScript(void)
 	if (execve(argv[0], argv, env.GetEnv()) < 0)
 	{
 		std::cerr << "execve failed." << std::endl;
-		std::exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
+	return (EXIT_SUCCESS);
 }
 
 void	CGI::ParseCGI(void)
@@ -133,14 +136,11 @@ void	CGI::ParseCGI(void)
 		if (line == "")
 			break;
 		ParseHeader(line);
-		if (multiple_location_ == true)
-			break;
 	}
 
-	if ((headers_.empty() && status_flag_ == false)
-		|| multiple_location_ == true)
+	if (headers_.empty() && status_code_ == SC_INVALID)
 	{
-		headers_.clear();
+		headers_["Content-Type"] = "text/plain";
 		status_code_ = SC_BAD_GATEWAY;
 		body_ = std::string("An error occurred while parsing CGI reply");
 	}
@@ -174,36 +174,39 @@ void	CGI::ParseHeader(const std::string& line)
 
 void	CGI::ParseContentType(const std::string& content)
 {
-	if (content != "")
-		headers_["content-type"] = Utils::MyTrim(content, " ");
+	std::string		tmp;
+
+	tmp = Utils::MyTrim(content, " ");
+	if (tmp != "")
+		headers_["Content-Type"] = tmp;
 }
 
 void	CGI::ParseLocation(const std::string& content)
 {
-	if (headers_.count("location") > 0)
-		multiple_location_ = true;
+	if (headers_.count("Location") > 0)
+		throw HTTPError(SC_BAD_GATEWAY, "ParseLocation");
 	else
 	{
-		headers_["location"] = Utils::MyTrim(content, " ");
-		if (status_flag_ == false)
+		headers_["Location"] = Utils::MyTrim(content, " ");
+		if (status_code_ == SC_INVALID)
 			status_code_ = SC_FOUND;
 	}
 }
 
 void	CGI::ParseStatusCode(const std::string& content)
 {
-	long	status_code;
-	char*	endptr;
+	std::string		tmp;
+	long			status_code;
+	char*			endptr;
 
-	status_code =  std::strtol(content.c_str(), &endptr, 10);
+	tmp = Utils::MyTrim(content, " ");
+	status_code =  std::strtol(tmp.c_str(), &endptr, 10);
 	if (*endptr != '\0' || errno == ERANGE || status_code < 1 || 999 < status_code)
 		throw HTTPError(SC_BAD_GATEWAY, "ParseStatusCode");
 
-	if (status_flag_ == false)
-	{
+	if (status_code_ == SC_INVALID
+		|| (headers_.count("Location") > 0 && status_code_ == SC_FOUND))
 		status_code_ = static_cast<e_StatusCode>(status_code);
-		status_flag_ = true;
-	}
 }
 
 std::string							CGI::GetData(void) const { return (data_); }

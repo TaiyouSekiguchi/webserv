@@ -35,7 +35,7 @@ class CGI
 		int						GetFromCgiReadFd(void) const;
 
 	private:
-		void					ExecveCGIScript(void);
+		int						ExecveCGIScript(void);
 		void					ParseCGI(void);
 		void					ParseHeader(const std::string& line);
 		void					ParseContentType(const std::string& content);
@@ -50,9 +50,7 @@ class CGI
 		std::string				data_;
 
 		std::map<std::string, std::string>		headers_;
-		bool									multiple_location_;
 		e_StatusCode							status_code_;
-		bool									status_flag_;
 
 		std::string				body_;
 };

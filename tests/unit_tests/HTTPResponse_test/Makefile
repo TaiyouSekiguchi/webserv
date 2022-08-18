@@ -23,7 +23,7 @@ SRCS	=	Config.cpp \
 			CGI.cpp \
 			CGIEnv.cpp \
 			Pipe.cpp \
-			utils.cpp
+			utils.cpp \
 			HTTPServer.cpp
 
 SRCS	+=	ClientSocket.cpp
@@ -33,8 +33,7 @@ OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/exception \
-			-I $(SRCSDIR)/io \
+INCLUDE =	-I $(SRCSDIR)/io \
 			-I $(SRCSDIR)/event \
 			-I $(SRCSDIR)/config \
 			-I $(SRCSDIR)/utils \
@@ -45,7 +44,7 @@ NAME	=	unit_test
 
 CC		=	c++
 CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	+=	-g -fsanitize=address
+#CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main
