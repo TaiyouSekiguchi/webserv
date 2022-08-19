@@ -85,7 +85,7 @@ e_HTTPServerEventType	HTTPServer::RunPostToCgi()
 	}
 	catch (const HTTPError& e)
 	{
-		e.PutMsg();
+		// e.PutMsg();
 		new_event = method_->ValidateErrorPage(e.GetStatusCode());
 		if (new_event != SEVENT_NO)
 			return (new_event);
@@ -105,7 +105,7 @@ e_HTTPServerEventType	HTTPServer::RunReceiveCgiResult()
 	}
 	catch (const HTTPError& e)
 	{
-		e.PutMsg();
+		// e.PutMsg();
 		new_event = method_->ValidateErrorPage(e.GetStatusCode());
 		if (new_event != SEVENT_NO)
 			return (new_event);

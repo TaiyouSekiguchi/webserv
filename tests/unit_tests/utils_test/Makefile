@@ -4,16 +4,16 @@ vpath	%.cpp testsrcs:$(SRCSDIR):$(SRCSDIR)/server:$(SRCSDIR)/socket:$(SRCSDIR)/u
 SRCS	=	utils.cpp \
 			MyTrim_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
 INCLUDE =	-I $(SRCSDIR)/server -I $(SRCSDIR)/socket -I $(SRCSDIR)/utils -I $(SRCDIR)/cgi
 NAME	=	unit_test
 
-CC		=	c++
+CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
-#CFLAGS	+=	-g -fsanitize=address
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

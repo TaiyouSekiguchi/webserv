@@ -1,10 +1,11 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	srcs:\
+vpath	%.cpp	../srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
 				$(SRCSDIR)/io:\
-				$(SRCSDIR)/server \
+				$(SRCSDIR)/server: \
 				$(SRCSDIR)/utils
+
 SRCS	=	Config.cpp \
 			Tokens.cpp \
 			ServerDirective.cpp \
@@ -29,11 +30,11 @@ SRCS	=	Config.cpp \
 SRCS	+=	ClientSocket.cpp
 SRCS	+=	CGI_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I./srcs \
+INCLUDE =	-I../srcs \
 			-I./testsrcs \
 			-I$(SRCSDIR)/config \
 			-I$(SRCSDIR)/event \
@@ -44,7 +45,6 @@ INCLUDE =	-I./srcs \
 
 NAME	=	unit_test
 
-#CC		=	c++
 CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
 CFLAGS	+=	-g -fsanitize=address

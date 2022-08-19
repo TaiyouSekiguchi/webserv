@@ -46,10 +46,8 @@ INCLUDE =	-I srcs/server \
 			-I srcs/event
 NAME	=	webserv
 
-#CC		=	c++
-CC		=	clang++
+CC		=	c++
 CFLAGS	=	-Wall -Wextra -Werror
-CFLAGS	=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++98
 RM		=	rm -rf

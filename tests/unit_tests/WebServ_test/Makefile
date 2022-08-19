@@ -1,12 +1,13 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	srcs:\
+vpath	%.cpp	../srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
-				$(SRCSDIR)/event \
+				$(SRCSDIR)/event: \
 				$(SRCSDIR)/io:\
-				$(SRCSDIR)/server \
-				$(SRCSDIR)/webserv:\
+				$(SRCSDIR)/server: \
+				$(SRCSDIR)/webserv: \
 				$(SRCSDIR)/utils
+
 SRCS	=	Config.cpp \
 			Tokens.cpp \
 			ServerDirective.cpp \
@@ -35,11 +36,11 @@ SRCS	=	Config.cpp \
 
 SRCS	+=	virtual_server_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I./srcs \
+INCLUDE =	-I../srcs \
 			-I./testsrcs \
 			-I$(SRCSDIR)/config \
 			-I$(SRCSDIR)/event \
@@ -50,9 +51,9 @@ INCLUDE =	-I./srcs \
 			-I$(SRCSDIR)/webserv
 NAME	=	unit_test
 
-CC		=	c++
+CC		=	clang++
 CFLAGS	=	-Wall -Wextra -Werror
-#CFLAGS	+=	-g -fsanitize=address
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main
