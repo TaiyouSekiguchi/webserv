@@ -1,0 +1,579 @@
+Running main() from /Users/sunsun/Sunny/Github/googletest/googletest/src/gtest_main.cc
+[==========] Running 25 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 25 tests from CGITest
+[ RUN      ] CGITest.SimpleGetTest
+[       OK ] CGITest.SimpleGetTest (67 ms)
+[ RUN      ] CGITest.CommandArgTest
+[       OK ] CGITest.CommandArgTest (63 ms)
+[ RUN      ] CGITest.EnvironmentVariableTest
+[       OK ] CGITest.EnvironmentVariableTest (62 ms)
+[ RUN      ] CGITest.PostTest
+[       OK ] CGITest.PostTest (63 ms)
+[ RUN      ] CGITest.NoExistFileTest
+[       OK ] CGITest.NoExistFileTest (0 ms)
+[ RUN      ] CGITest.EmptyFileTest
+
+=================================================================
+==34233==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 256 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22baa99d  (libsystem_notify.dylib:x86_64+0xa99d) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22baa90b  (libsystem_notify.dylib:x86_64+0xa90b) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba7b74  (libsystem_notify.dylib:x86_64+0x7b74) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #5 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #6 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #8 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #9 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #10 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #11 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #12 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #13 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #14 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #15 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #16 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #17 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #18 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #19 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #20 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #21 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Direct leak of 256 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22baaa74  (libsystem_notify.dylib:x86_64+0xaa74) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba4bae  (libsystem_notify.dylib:x86_64+0x4bae) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba8979  (libsystem_notify.dylib:x86_64+0x8979) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #5 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #8 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #9 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #10 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #11 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #12 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #13 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #14 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #15 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #16 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #17 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #18 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #19 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #20 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Indirect leak of 112 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba894d  (libsystem_notify.dylib:x86_64+0x894d) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff2026054c in notify_register_tz+0xfd (libsystem_c.dylib:x86_64+0x5154c) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #4 0x7fff2025ff2d in tzsetwall_basic+0x161 (libsystem_c.dylib:x86_64+0x50f2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff20263004 in strftime_l+0x44 (libsystem_c.dylib:x86_64+0x54004) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff2025fc2d in asctime_r+0x81 (libsystem_c.dylib:x86_64+0x50c2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x1070a6938 in wrap_asctime_r+0x48 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x21938) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #8 0x106e65900 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #9 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #10 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #11 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #12 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #13 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #14 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #15 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #16 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #17 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #18 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+Indirect leak of 112 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba894d  (libsystem_notify.dylib:x86_64+0x894d) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #4 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #6 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #7 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #8 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #9 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #10 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #11 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #12 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #13 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #14 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #15 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #16 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #17 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #18 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf000 in wrap_malloc+0xa0 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a000) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba7b1a  (libsystem_notify.dylib:x86_64+0x7b1a) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #7 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #8 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #9 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #10 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #11 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #12 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #13 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #14 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #15 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #16 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #17 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #18 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #19 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba7ae5  (libsystem_notify.dylib:x86_64+0x7ae5) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff2026054c in notify_register_tz+0xfd (libsystem_c.dylib:x86_64+0x5154c) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff2025ff2d in tzsetwall_basic+0x161 (libsystem_c.dylib:x86_64+0x50f2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff20263004 in strftime_l+0x44 (libsystem_c.dylib:x86_64+0x54004) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x7fff2025fc2d in asctime_r+0x81 (libsystem_c.dylib:x86_64+0x50c2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #8 0x1070a6938 in wrap_asctime_r+0x48 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x21938) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #9 0x106e65900 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #10 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #11 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #12 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #13 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #14 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #15 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #16 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #17 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #18 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba7ae5  (libsystem_notify.dylib:x86_64+0x7ae5) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #7 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #8 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #9 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #10 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #11 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #12 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #13 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #14 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #15 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #16 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #17 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #18 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #19 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Indirect leak of 30 byte(s) in 1 object(s) allocated from:
+    #0 0x1070c9eb3 in wrap_strdup+0x203 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x44eb3) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba468f in notify_monitor_file+0x1bf (libsystem_notify.dylib:x86_64+0x468f) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff20260526 in notify_register_tz+0xd7 (libsystem_c.dylib:x86_64+0x51526) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #3 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #4 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #5 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #6 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #7 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #8 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #9 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #10 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #11 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #12 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #13 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #14 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #15 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #16 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #17 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #18 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+SUMMARY: AddressSanitizer: 934 byte(s) leaked in 8 allocation(s).
+[       OK ] CGITest.EmptyFileTest (584 ms)
+[ RUN      ] CGITest.OnlyShebangFileTest
+[       OK ] CGITest.OnlyShebangFileTest (59 ms)
+[ RUN      ] CGITest.WrongShebangFileTest
+
+=================================================================
+==34237==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 256 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22baa99d  (libsystem_notify.dylib:x86_64+0xa99d) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22baa90b  (libsystem_notify.dylib:x86_64+0xa90b) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba7b74  (libsystem_notify.dylib:x86_64+0x7b74) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #5 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #6 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #8 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #9 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #10 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #11 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #12 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #13 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #14 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #15 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #16 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #17 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #18 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #19 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #20 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #21 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Direct leak of 256 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22baaa74  (libsystem_notify.dylib:x86_64+0xaa74) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba4bae  (libsystem_notify.dylib:x86_64+0x4bae) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba8979  (libsystem_notify.dylib:x86_64+0x8979) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #5 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #8 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #9 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #10 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #11 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #12 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #13 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #14 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #15 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #16 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #17 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #18 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #19 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #20 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Indirect leak of 112 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba894d  (libsystem_notify.dylib:x86_64+0x894d) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff2026054c in notify_register_tz+0xfd (libsystem_c.dylib:x86_64+0x5154c) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #4 0x7fff2025ff2d in tzsetwall_basic+0x161 (libsystem_c.dylib:x86_64+0x50f2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff20263004 in strftime_l+0x44 (libsystem_c.dylib:x86_64+0x54004) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff2025fc2d in asctime_r+0x81 (libsystem_c.dylib:x86_64+0x50c2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x1070a6938 in wrap_asctime_r+0x48 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x21938) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #8 0x106e65900 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #9 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #10 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #11 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #12 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #13 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #14 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #15 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #16 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #17 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #18 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+Indirect leak of 112 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba894d  (libsystem_notify.dylib:x86_64+0x894d) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #4 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #6 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #7 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #8 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #9 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #10 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #11 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #12 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #13 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #14 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #15 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #16 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #17 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #18 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf000 in wrap_malloc+0xa0 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a000) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba7b1a  (libsystem_notify.dylib:x86_64+0x7b1a) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #7 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #8 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #9 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #10 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #11 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #12 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #13 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #14 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #15 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #16 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #17 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #18 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #19 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba7ae5  (libsystem_notify.dylib:x86_64+0x7ae5) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff2026054c in notify_register_tz+0xfd (libsystem_c.dylib:x86_64+0x5154c) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff2025ff2d in tzsetwall_basic+0x161 (libsystem_c.dylib:x86_64+0x50f2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff20263004 in strftime_l+0x44 (libsystem_c.dylib:x86_64+0x54004) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #7 0x7fff2025fc2d in asctime_r+0x81 (libsystem_c.dylib:x86_64+0x50c2d) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #8 0x1070a6938 in wrap_asctime_r+0x48 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x21938) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #9 0x106e65900 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #10 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #11 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #12 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #13 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #14 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #15 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #16 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #17 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #18 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x1070cf3d5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x4a3d5) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba7ae5  (libsystem_notify.dylib:x86_64+0x7ae5) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff22ba8920  (libsystem_notify.dylib:x86_64+0x8920) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #3 0x7fff22ba1592 in notify_register_check+0x5d5 (libsystem_notify.dylib:x86_64+0x1592) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #4 0x7fff20260515 in notify_register_tz+0xc6 (libsystem_c.dylib:x86_64+0x51515) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #5 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #6 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #7 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #8 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #9 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #10 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #11 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #12 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #13 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #14 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #15 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #16 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #17 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #18 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #19 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #29 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+
+Indirect leak of 30 byte(s) in 1 object(s) allocated from:
+    #0 0x1070c9eb3 in wrap_strdup+0x203 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x44eb3) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #1 0x7fff22ba468f in notify_monitor_file+0x1bf (libsystem_notify.dylib:x86_64+0x468f) (BuildId: 608b5a07d31a3bec86bfc2e498c085af32000000200000000100000000060b00)
+    #2 0x7fff20260526 in notify_register_tz+0xd7 (libsystem_c.dylib:x86_64+0x51526) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #3 0x7fff202629a7 in gmt_init+0x61 (libsystem_c.dylib:x86_64+0x539a7) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #4 0x7fff203371e0 in __pthread_once_handler+0x40 (libsystem_pthread.dylib:x86_64+0x31e0) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #5 0x7fff2037d5c5 in _os_once_callout+0x11 (libsystem_platform.dylib:x86_64+0x15c5) (BuildId: a85d12b6621334ee84d88e993c19e330240000001000000000060b0001060b00)
+    #6 0x7fff2033718e in pthread_once+0x49 (libsystem_pthread.dylib:x86_64+0x318e) (BuildId: 49670aec4d5d3383906c23f568351fcb240000001000000000060b0001060b00)
+    #7 0x7fff20261683 in gmtsub+0x31 (libsystem_c.dylib:x86_64+0x52683) (BuildId: 8447a4b807513ef1aa9b042e40efa07d32000000200000000100000000060b00)
+    #8 0x1070a5cd0 in wrap_gmtime_r+0x50 (libclang_rt.asan_osx_dynamic.dylib:x86_64+0x20cd0) (BuildId: eb137767d72432a1a6e32c107b9c74d42400000010000000000a0a0000010c00)
+    #9 0x106e658f4 in HTTPResponse::GetDate() const HTTPResponse.cpp:42
+    #10 0x106e64d26 in HTTPResponse::AppendHeaders() HTTPResponse.cpp:33
+    #11 0x106e64969 in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:11
+    #12 0x106e6565c in HTTPResponse::HTTPResponse(HTTPMethod const&) HTTPResponse.cpp:10
+    #13 0x106e705a9 in HTTPServer::RunCreateResponse() HTTPServer.cpp:124
+    #14 0x106e70c05 in HTTPServer::RunReceiveCgiResult() HTTPServer.cpp:113
+    #15 0x106e7d344 in CGITest::RunCommunication(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) CGI_test.cpp:69
+    #16 0x106e7c5db in CGITest_SimpleGetTest_Test::TestBody() CGI_test.cpp:143
+    #17 0x106ddc0ba in void testing::internal::HandleSehExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x7a (unit_test:x86_64+0x1000550ba) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #18 0x106da21b9 in void testing::internal::HandleExceptionsInMethodIfSupported<testing::Test, void>(testing::Test*, void (testing::Test::*)(), char const*)+0x69 (unit_test:x86_64+0x10001b1b9) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #19 0x106da2102 in testing::Test::Run()+0xc2 (unit_test:x86_64+0x10001b102) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #20 0x106da3161 in testing::TestInfo::Run()+0x121 (unit_test:x86_64+0x10001c161) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #21 0x106da423c in testing::TestSuite::Run()+0x13c (unit_test:x86_64+0x10001d23c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #22 0x106db389f in testing::internal::UnitTestImpl::RunAllTests()+0x3ef (unit_test:x86_64+0x10002c89f) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #23 0x106de0d8a in bool testing::internal::HandleSehExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x7a (unit_test:x86_64+0x100059d8a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #24 0x106db3249 in bool testing::internal::HandleExceptionsInMethodIfSupported<testing::internal::UnitTestImpl, bool>(testing::internal::UnitTestImpl*, bool (testing::internal::UnitTestImpl::*)(), char const*)+0x69 (unit_test:x86_64+0x10002c249) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #25 0x106db312a in testing::UnitTest::Run()+0xca (unit_test:x86_64+0x10002c12a) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #26 0x106de6e60 in RUN_ALL_TESTS()+0x10 (unit_test:x86_64+0x10005fe60) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #27 0x106de6e3c in main+0x3c (unit_test:x86_64+0x10005fe3c) (BuildId: 905e032fd03d32bd8a9a911982942dcf32000000200000000100000000000b00)
+    #28 0x7fff20355f3c in start+0x0 (libdyld.dylib:x86_64+0x15f3c) (BuildId: 5fbd0e1aacce36dbb11c622f26c8513232000000200000000100000000060b00)
+
+SUMMARY: AddressSanitizer: 934 byte(s) leaked in 8 allocation(s).
+[       OK ] CGITest.WrongShebangFileTest (606 ms)
+[ RUN      ] CGITest.BodyStartFileTest
+ParseCGI throw exception.
+[       OK ] CGITest.BodyStartFileTest (60 ms)
+[ RUN      ] CGITest.NoNewLineFileTest
+ParseCGI throw exception.
+[       OK ] CGITest.NoNewLineFileTest (59 ms)
+[ RUN      ] CGITest.NoHeaderFileTest
+[       OK ] CGITest.NoHeaderFileTest (59 ms)
+[ RUN      ] CGITest.OnlyNewLineFileTest
+[       OK ] CGITest.OnlyNewLineFileTest (60 ms)
+[ RUN      ] CGITest.MultipleContentTypeTest
+[       OK ] CGITest.MultipleContentTypeTest (61 ms)
+[ RUN      ] CGITest.EmptyContentTypeTest
+[       OK ] CGITest.EmptyContentTypeTest (59 ms)
+[ RUN      ] CGITest.SimpleLocationTest
+[       OK ] CGITest.SimpleLocationTest (59 ms)
+[ RUN      ] CGITest.EmptyLocationTest
+[       OK ] CGITest.EmptyLocationTest (60 ms)
+[ RUN      ] CGITest.SpaceSeparatedLocationTest
+[       OK ] CGITest.SpaceSeparatedLocationTest (59 ms)
+[ RUN      ] CGITest.MultipleLocationTest
+ParseLocation throw exception.
+[       OK ] CGITest.MultipleLocationTest (60 ms)
+[ RUN      ] CGITest.StatusLocationTest
+[       OK ] CGITest.StatusLocationTest (60 ms)
+[ RUN      ] CGITest.SimpleStatusTest
+[       OK ] CGITest.SimpleStatusTest (60 ms)
+[ RUN      ] CGITest.MultipleStatusTest
+[       OK ] CGITest.MultipleStatusTest (61 ms)
+[ RUN      ] CGITest.EmptyStatusTest
+ParseStatusCode throw exception.
+[       OK ] CGITest.EmptyStatusTest (61 ms)
+[ RUN      ] CGITest.SpaceStatusTest
+ParseStatusCode throw exception.
+[       OK ] CGITest.SpaceStatusTest (61 ms)
+[ RUN      ] CGITest.StringStatusTest
+ParseStatusCode throw exception.
+[       OK ] CGITest.StringStatusTest (61 ms)
+[ RUN      ] CGITest.TrimStatusTest
+[       OK ] CGITest.TrimStatusTest (60 ms)
+[----------] 25 tests from CGITest (2537 ms total)
+
+[----------] Global test environment tear-down
+[==========] 25 tests from 1 test suite ran. (2538 ms total)
+[  PASSED  ] 25 tests.
