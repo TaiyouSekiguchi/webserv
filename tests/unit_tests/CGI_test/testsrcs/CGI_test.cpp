@@ -132,9 +132,11 @@ ServerSocket*			CGITest::ssocket_ = NULL;
 ClientSocket*			CGITest::csocket_ = NULL;
 int						CGITest::kq_ = kqueue();
 
-const std::string first = "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n<body>\n<h1>CGI TEST</h1>\n<pre>\n";
-const std::string last = "\n</pre>\n</body>\n</html>\n";
-const std::string simple_body = "<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>";
+const char first[] = "<!doctype html>\n<html>\n<head>\n"
+						"<meta charset=\"utf-8\">\n<title>CGI TEST</title>\n</head>\n"
+						"<body>\n<h1>CGI TEST</h1>\n<pre>\n";
+const char last[] = "\n</pre>\n</body>\n</html>\n";
+const char simple_body[] = "<html>\n<body>\n<div>Welcome CGI test page!! ;)\n</div>\n</body>\n</html>";
 
 TEST_F(CGITest, SimpleGetTest)
 {
@@ -153,17 +155,28 @@ TEST_F(CGITest, CommandArgTest)
 	EXPECT_EQ("text/html", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
-	EXPECT_EQ(first + "===\nCommand Arguments\n===\naaa\nbbb\nccc\n" + last, method_->GetBody());
+	EXPECT_EQ(std::string(first) + "===\nCommand Arguments\n===\naaa\nbbb\nccc\n" + std::string(last), method_->GetBody());
 }
 
 TEST_F(CGITest, EnvironmentVariableTest)
 {
-	RunCommunication("GET /env_test.cgi?first=aaa&last=bbb HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: Debian\r\n\r\n");
+	RunCommunication("GET /env_test.cgi?first=aaa&last=bbb HTTP/1.1\r\n"
+						"Host: localhost:8080\r\nAuthorization: Basic dGFuYWthOmhpbWl0c3U=\r\n"
+						"Accept: image/gif, image/jpeg\r\nUser-Agent: Debian\r\n\r\n");
 
 	EXPECT_EQ("text/html", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
-	EXPECT_EQ(first + "===\nEnvironment Variable\n===\nAUTH_TYPE = [  ]\nCONTENT_LENGTH = [  ]\nCONTENT_TYPE = [  ]\nGATEWAY_INTERFACE = [ CGI/1.1 ]\nHTTP_ACCEPT = [  ]\nHTTP_FORWARDED = [  ]\nHTTP_REFERER = [  ]\nHTTP_USER_AGENT = [ Debian ]\nHTTP_X_FORWARDED_FOR = [  ]\nPATH_INFO = [ /env_test.cgi ]\nPATH_TRANSLATED = [ cgi-bin/env_test.cgi ]\nQUERY_STRING = [ first=aaa&amp;last=bbb ]\nREMOTE_ADDR = [  ]\nREMOTE_HOST = [  ]\nREMOTE_IDENT = [  ]\nREMOTE_USER = [  ]\nREQUEST_METHOD = [ GET ]\nSCRIPT_NAME = [ /env_test.cgi ]\nSERVER_NAME = [  ]\nSERVER_PORT = [ 8080 ]\nSERVER_PROTOCOL = [ HTTP/1.1 ]\nSERVER_SOFTWARE = [ 42Webserv ]\n" + last, method_->GetBody());
+	EXPECT_EQ(std::string(first) + "===\nEnvironment Variable\n===\nAUTH_TYPE = [ Basic ]\n"
+				"CONTENT_LENGTH = [  ]\nCONTENT_TYPE = [  ]\nGATEWAY_INTERFACE = [ CGI/1.1 ]\n"
+				"HTTP_ACCEPT = [ image/gif,image/jpeg ]\nHTTP_FORWARDED = [  ]\nHTTP_REFERER = [  ]\n"
+				"HTTP_USER_AGENT = [ Debian ]\nHTTP_X_FORWARDED_FOR = [  ]\n"
+				"PATH_INFO = [ /env_test.cgi ]\nPATH_TRANSLATED = [ cgi-bin/env_test.cgi ]\n"
+				"QUERY_STRING = [ first=aaa&amp;last=bbb ]\nREMOTE_ADDR = [  ]\n"
+				"REMOTE_HOST = [  ]\nREMOTE_IDENT = [  ]\nREMOTE_USER = [  ]\n"
+				"REQUEST_METHOD = [ GET ]\nSCRIPT_NAME = [ /env_test.cgi ]\n"
+				"SERVER_NAME = [  ]\nSERVER_PORT = [ 8080 ]\nSERVER_PROTOCOL = [ HTTP/1.1 ]\n"
+				"SERVER_SOFTWARE = [ 42Webserv ]\n" + std::string(last), method_->GetBody());
 }
 
 TEST_F(CGITest, PostTest)
@@ -173,7 +186,7 @@ TEST_F(CGITest, PostTest)
 	EXPECT_EQ("text/html", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
-	EXPECT_EQ(first + "===\nForm Variable\n===\nVALUE = [ abcd ]" + last, method_->GetBody());
+	EXPECT_EQ(std::string(first) + "===\nForm Variable\n===\nVALUE = [ abcd ]" + std::string(last), method_->GetBody());
 }
 TEST_F(CGITest, NoExistFileTest)
 {
@@ -291,7 +304,7 @@ TEST_F(CGITest, EmptyLocationTest)
 
 	EXPECT_EQ(0, method_->GetHeaders().count("Content-Type"));
 	EXPECT_EQ(1, method_->GetHeaders().count("Location"));
-	EXPECT_EQ( "", method_->GetHeaders()["Location"]);
+	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 	EXPECT_EQ(simple_body, method_->GetBody());
 }

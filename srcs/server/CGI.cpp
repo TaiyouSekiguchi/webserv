@@ -80,8 +80,6 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 	}
 
 	ParseCGI();
-	if (status_code_ == SC_INVALID)
-		status_code_ = (headers_.count("Location") > 0) ? SC_FOUND : SC_OK;
 
 	return (SEVENT_NO);
 }
@@ -138,6 +136,9 @@ void	CGI::ParseCGI(void)
 	}
 
 	body_ = data_.substr(offset);
+
+	if (status_code_ == SC_INVALID)
+		status_code_ = (headers_.count("Location") > 0) ? SC_FOUND : SC_OK;
 }
 
 void	CGI::ParseHeader(const std::string& line)
