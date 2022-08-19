@@ -10,6 +10,11 @@ WebServ::WebServ()
 
 WebServ::~WebServ()
 {
+	std::vector<ListenSocket*>::const_iterator	it = lsockets_.begin();
+	std::vector<ListenSocket*>::const_iterator	it_end = lsockets_.end();
+
+	for ( ; it != it_end; ++it)
+		delete *it;
 }
 
 void	WebServ::CreateListenSockets(const Config& config)

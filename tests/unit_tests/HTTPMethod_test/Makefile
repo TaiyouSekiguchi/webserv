@@ -1,11 +1,11 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	srcs:\
+vpath	%.cpp	../srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
-				$(SRCSDIR)/exception \
 				$(SRCSDIR)/io:\
-				$(SRCSDIR)/server \
+				$(SRCSDIR)/server: \
 				$(SRCSDIR)/utils
+
 SRCS	=	Config.cpp \
 			Tokens.cpp \
 			ServerDirective.cpp \
@@ -22,6 +22,9 @@ SRCS	=	Config.cpp \
 			URI.cpp \
 			Dir.cpp \
 			Stat.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
+			Pipe.cpp \
 			utils.cpp
 
 SRCS	+=	ClientSocket.cpp
@@ -30,15 +33,14 @@ SRCS	+=	GET_test.cpp \
 			POST_test.cpp \
 			others_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I./srcs \
+INCLUDE =	-I../srcs \
 			-I./testsrcs \
 			-I$(SRCSDIR)/config \
 			-I$(SRCSDIR)/event \
-			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
 			-I$(SRCSDIR)/utils \
@@ -46,8 +48,9 @@ INCLUDE =	-I./srcs \
 
 NAME	=	unit_test
 
-CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
+CC		=	clang++
+CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

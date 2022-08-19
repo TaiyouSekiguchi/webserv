@@ -4,6 +4,7 @@ vpath	%.cpp	srcs: \
 				srcs/config: \
 				srcs/utils: \
 				srcs/webserv: \
+				srcs/cgi: \
 				srcs/event
 SRCS	=	main.cpp \
 			WebServ.cpp \
@@ -26,7 +27,11 @@ SRCS	=	main.cpp \
 			HTTPServerEvent.cpp \
 			utils.cpp \
 			Stat.cpp \
-			Dir.cpp
+			Dir.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
+			URI.cpp \
+			Pipe.cpp
 
 OBJSDIR	=	./objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
@@ -35,7 +40,7 @@ DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 INCLUDE =	-I srcs/server \
 			-I srcs/utils \
 			-I srcs/io \
-			-I srcs/exception \
+			-I srcs/cgi \
 			-I srcs/config \
 			-I srcs/webserv \
 			-I srcs/event

@@ -1,8 +1,8 @@
 #ifndef ASOCKET_HPP
 # define ASOCKET_HPP
 
-# include "AIo.hpp"
 # include <vector>
+# include "AIo.hpp"
 # include "ServerDirective.hpp"
 
 class ASocket : public AIo

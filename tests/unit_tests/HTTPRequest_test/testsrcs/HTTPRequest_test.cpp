@@ -93,7 +93,7 @@ class RequestTest : public ::testing::Test
 		ServerSocket*						ssocket_;
 };
 
-Config						RequestTest::config_("default.conf");
+Config						RequestTest::config_("conf/default.conf");
 std::vector<ListenSocket*>	RequestTest::lsockets_;
 
 TEST_F(RequestTest, Default8080Test)

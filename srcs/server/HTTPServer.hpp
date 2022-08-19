@@ -17,10 +17,14 @@ class HTTPServer
 		~HTTPServer();
 
 		int		GetMethodTargetFileFd() const;
+		int		GetToCgiPipeFd() const;
+		int		GetFromCgiPipeFd() const;
 
 		e_HTTPServerEventType	Run();
 		e_HTTPServerEventType	RunExecHTTPMethod(const e_HTTPServerEventType event_type);
 		e_HTTPServerEventType	RunReadErrorPage();
+		e_HTTPServerEventType	RunPostToCgi();
+		e_HTTPServerEventType	RunReceiveCgiResult();
 		e_HTTPServerEventType	RunCreateResponse();
 		e_HTTPServerEventType	RunSendResponse();
 

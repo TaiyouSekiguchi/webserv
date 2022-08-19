@@ -510,7 +510,6 @@ bool	HTTPRequest::ReceiveBody(void)
 		}
 	}
 	body_ = raw_body_;
-
 	if (body_.size() < content_length_)
 		return (false);
 	else if (body_.size() == content_length_)
