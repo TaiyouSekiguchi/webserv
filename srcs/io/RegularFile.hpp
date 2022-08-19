@@ -1,8 +1,8 @@
 #ifndef REGULARFILE_HPP
 # define REGULARFILE_HPP
 
-# include <string>
 # include <fcntl.h>
+# include <string>
 # include "AIo.hpp"
 # include "Stat.hpp"
 

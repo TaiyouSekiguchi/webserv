@@ -10,15 +10,16 @@ SRCS	+=	default_test.cpp \
 			lexer_test.cpp \
 			location_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
 INCLUDE =	-I$(SRCSDIR)/config -I$(SRCSDIR)/utils -I$(SRCSDIR)/server
 NAME	=	unit_test
 
-CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
+CC		=	clang++
+CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	+=	-fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

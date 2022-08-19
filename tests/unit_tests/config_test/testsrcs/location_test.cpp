@@ -145,10 +145,10 @@ TEST(CGIEnableExtensionTest, Valid)
 	std::vector<ServerDirective>::const_iterator	sitr = config.GetServers().begin();
 	std::vector<LocationDirective>::const_iterator	litr = sitr->GetLocations().begin();
 
-	const std::string	s[1] = {"pl"};
+	const std::string	s[2] = {"cgi", "pl"};
 	std::vector<std::string> expected;
-	expected.assign(s, s + 1);	EXPECT_EQ(litr->GetCGIEnableExtension(), expected);
-	expected.assign(s, s + 1);	EXPECT_EQ((++litr)->GetCGIEnableExtension(), expected);
+	expected.assign(s, s + 2);	EXPECT_EQ(litr->GetCGIEnableExtension(), expected);
+	expected.assign(s, s + 2);	EXPECT_EQ((++litr)->GetCGIEnableExtension(), expected);
 }
 TEST(CGIEnableExtensionTest, Error)
 {

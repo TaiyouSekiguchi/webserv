@@ -1,13 +1,13 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	srcs:\
+vpath	%.cpp	../srcs:\
 				testsrcs:\
 				$(SRCSDIR)/config:\
-				$(SRCSDIR)/event \
-				$(SRCSDIR)/exception \
+				$(SRCSDIR)/event: \
 				$(SRCSDIR)/io:\
-				$(SRCSDIR)/server \
-				$(SRCSDIR)/webserv:\
+				$(SRCSDIR)/server: \
+				$(SRCSDIR)/webserv: \
 				$(SRCSDIR)/utils
+
 SRCS	=	Config.cpp \
 			Tokens.cpp \
 			ServerDirective.cpp \
@@ -29,27 +29,31 @@ SRCS	=	Config.cpp \
 			Stat.cpp \
 			utils.cpp \
 			EventQueue.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
+			Pipe.cpp \
 			WebServ.cpp
 
 SRCS	+=	virtual_server_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I./srcs \
+INCLUDE =	-I../srcs \
 			-I./testsrcs \
 			-I$(SRCSDIR)/config \
 			-I$(SRCSDIR)/event \
-			-I$(SRCSDIR)/exception \
 			-I$(SRCSDIR)/io \
 			-I$(SRCSDIR)/server \
 			-I$(SRCSDIR)/utils \
+			-I$(SRCSDIR)/cgi \
 			-I$(SRCSDIR)/webserv
 NAME	=	unit_test
 
-CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
+CC		=	clang++
+CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main

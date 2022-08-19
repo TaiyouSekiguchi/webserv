@@ -25,6 +25,8 @@ HTTPServer::~HTTPServer()
 }
 
 int		HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
+int		HTTPServer::GetToCgiPipeFd() const	  { return (method_->GetToCgiPipeFd()); }
+int		HTTPServer::GetFromCgiPipeFd() const 	  { return (method_->GetFromCgiPipeFd()); }
 
 e_HTTPServerEventType	HTTPServer::Run()
 {
@@ -61,6 +63,45 @@ e_HTTPServerEventType	HTTPServer::RunExecHTTPMethod(const e_HTTPServerEventType 
 			method_->ExecPOSTMethod();
 		else if (event_type == SEVENT_FILE_DELETE)
 			method_->ExecDELETEMethod();
+	}
+	catch (const HTTPError& e)
+	{
+		// e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunPostToCgi()
+{
+	e_HTTPServerEventType	new_event;
+
+	try
+	{
+		method_->PostToCgi();
+		return (SEVENT_CGI_READ);
+	}
+	catch (const HTTPError& e)
+	{
+		// e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunReceiveCgiResult()
+{
+	e_HTTPServerEventType	new_event;
+
+	try
+	{
+		new_event = method_->ReceiveCgiResult();
+		if (new_event != SEVENT_NO)
+			return (new_event);
 	}
 	catch (const HTTPError& e)
 	{

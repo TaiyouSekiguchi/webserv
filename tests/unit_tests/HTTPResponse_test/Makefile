@@ -1,5 +1,6 @@
 SRCSDIR	= ../../../srcs
-vpath	%.cpp	testsrcs: \
+vpath	%.cpp	../srcs: \
+				testsrcs: \
 				$(SRCSDIR)/config: \
 				$(SRCSDIR)/io: \
 				$(SRCSDIR)/server: \
@@ -19,17 +20,22 @@ SRCS	=	Config.cpp \
 			HTTPMethod.cpp \
 			Stat.cpp \
 			Dir.cpp \
+			URI.cpp \
+			CGI.cpp \
+			CGIEnv.cpp \
+			Pipe.cpp \
 			utils.cpp \
 			HTTPServer.cpp
 
 SRCS	+=	ClientSocket.cpp
 SRCS	+=	Response_test.cpp
 
-OBJSDIR	=	./objs
+OBJSDIR	=	../objs
 OBJS	=	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.o))
 DEPS    =	$(addprefix $(OBJSDIR)/, $(SRCS:.cpp=.d))
 
-INCLUDE =	-I $(SRCSDIR)/exception \
+INCLUDE =	-I ../srcs \
+			-I ./testsrcs \
 			-I $(SRCSDIR)/io \
 			-I $(SRCSDIR)/event \
 			-I $(SRCSDIR)/config \
@@ -39,8 +45,9 @@ INCLUDE =	-I $(SRCSDIR)/exception \
 
 NAME	=	unit_test
 
-CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -g -fsanitize=address
+CC		=	clang++
+CFLAGS	=	-Wall -Wextra -Werror
+CFLAGS	+=	-g -fsanitize=address
 CFLAGS	+=	-MMD -MP
 CFLAGS	+=	-std=c++11
 LINK	=	-lgtest -lgtest_main
