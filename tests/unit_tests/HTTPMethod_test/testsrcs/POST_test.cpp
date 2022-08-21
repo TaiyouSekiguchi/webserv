@@ -141,12 +141,12 @@ TEST_F(POSTTest, Upload1Test)
 {
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_CREATED);
-	EXPECT_NE(method_->GetHeaders()["Location"].find("/upload/16"), std::string::npos);
+	EXPECT_NE(method_->GetHeaders()["Location"].find("/upload/2022"), std::string::npos);
 }
 
 TEST_F(POSTTest, Upload2Test)
 {
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_CREATED);
-	EXPECT_NE(method_->GetHeaders()["Location"].find("/upload/16"), std::string::npos);
+	EXPECT_NE(method_->GetHeaders()["Location"].find("/upload/2022"), std::string::npos);
 }

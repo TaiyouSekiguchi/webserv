@@ -254,7 +254,7 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 		throw HTTPError(SC_CONFLICT, "ValidatePOSTMethod");
 
 	std::fstream		output_fstream;
-	const std::string&	timestamp = Utils::GetMicroSecondTime();
+	const std::string&	timestamp = Utils::GetTimeStampStr();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
 	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL);

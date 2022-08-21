@@ -30,18 +30,7 @@ e_HTTPServerEventType	HTTPResponse::SendResponse(const ServerSocket& ssocket)
 void HTTPResponse::AppendHeaders()
 {
 	headers_["Server"] = "Webserv";
-	headers_["Date"] = GetDate();
-}
-
-std::string HTTPResponse::GetDate() const
-{
-	time_t now = time(NULL);
-	struct tm current_time;
-	char str[50];
-
-	asctime_r(gmtime_r(&now, &current_time), str);
-	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
-	return (str);
+	headers_["Date"] = Utils::GetDateStr();
 }
 
 std::string HTTPResponse::CreateResponse()

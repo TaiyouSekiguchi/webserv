@@ -134,7 +134,7 @@ const std::string RemoveHeader(std::string res_msg)
 	std::string str = res_msg.erase(pos_date, 37);
 	std::string::size_type pos_location = res_msg.find("Location");
 	if (pos_location != std::string::npos)
-		str = res_msg.erase(pos_location, 36);
+		str = res_msg.erase(pos_location, 40);
 	return (str);
 }
 
@@ -176,13 +176,13 @@ TEST_F(ResponseTest, POSTSuccessTest)
 		"Connection: keep-alive\r\nServer: Webserv\r\n\r\n";
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), Upload);
-	EXPECT_NE(res_->GetResMsg().find("/upload/16"), std::string::npos);
+	EXPECT_NE(res_->GetResMsg().find("/upload/2022"), std::string::npos);
 }
 
 TEST_F(ResponseTest, RedirectTest)
 {
 	const std::string Redirect = "HTTP/1.1 301 Moved Permanently\r\n"
-		"Connection: keep-alive\r\nContent-Length: 164\r\n"
+		"Connection: keep-alive\r\nContent-Length: 164\r\nContent-Type: text/plain\r\n"
 		"Location: http://localhost:8080\r\nServer: Webserv\r\n\r\n"
 		+ GenerateDefaultHTML(SC_MOVED_PERMANENTLY);
 	RunCommunication("AAA /sub1/hoge HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
@@ -192,7 +192,8 @@ TEST_F(ResponseTest, RedirectTest)
 TEST_F(ResponseTest, CloseTest)
 {
     const std::string BadRequest = "HTTP/1.1 400 Bad Request\r\n"
-		"Connection: close\r\nContent-Length: 152\r\nServer: Webserv\r\n\r\n"
+		"Connection: close\r\nContent-Length: 152\r\nContent-Type: text/plain\r\n"
+		"Server: Webserv\r\n\r\n"
 		+ GenerateDefaultHTML(SC_BAD_REQUEST);
 	RunCommunication(" GET /no HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveDate(res_->GetResMsg()), BadRequest);

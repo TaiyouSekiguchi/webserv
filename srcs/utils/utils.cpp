@@ -60,11 +60,28 @@ std::string		Utils::MyTrim
 	return (result);
 }
 
-std::string		Utils::GetMicroSecondTime()
+std::string	Utils::GetTimeStampStr()
 {
-	timeval		t;
+	time_t			now = time(NULL);
+	struct tm		current_time;
+	char			str[50];
+	struct timeval	t;
+
+	gmtime_r(&now, &current_time);
+	strftime(str, sizeof(str), "%Y%m%d%H%M%S", &current_time);
 	gettimeofday(&t, NULL);
-	return (ToString(t.tv_sec * 1000000 + t.tv_usec));
+	return (str + ToString(t.tv_usec));
+}
+
+std::string	Utils::GetDateStr()
+{
+	time_t			now = time(NULL);
+	struct tm		current_time;
+	char			str[50];
+
+	gmtime_r(&now, &current_time);
+	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
+	return (str);
 }
 
 bool	Utils::IsBlank(char c)
