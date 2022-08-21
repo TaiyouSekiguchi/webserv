@@ -81,5 +81,6 @@ class TestRequest(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "close")
 		with self.subTest(): self.assertEqual(res.getheader("Location"), "../../html/40x.html")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "140")
 		with self.subTest(): self.assertIn(b"302 Found", res.read())
