@@ -444,18 +444,18 @@ bool	HTTPRequest::ParseOneChunk(void)
 				size_len = endptr - &raw_body_.c_str()[i];
 				if (errno == ERANGE || size_len == 0 || chunk_size_ < 0
 					|| (size_len >= 2 && raw_body_.substr(i, 2) == "0x"))
-					throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+					throw HTTPError(SC_BAD_REQUEST, "ParseOneChunk");
 				i += size_len;
 				break;
 			case 1:
 			case 4:
 				if (raw_body_[i++] != '\r')
-					throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+					throw HTTPError(SC_BAD_REQUEST, "ParseOneChunk");
 				break;
 			case 2:
 			case 5:
 				if (raw_body_[i++] != '\n')
-					throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+					throw HTTPError(SC_BAD_REQUEST, "ParseOneChunk");
 				break;
 			case 3:
 				i += chunk_size_;
