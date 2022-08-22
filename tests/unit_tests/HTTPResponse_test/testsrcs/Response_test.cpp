@@ -176,7 +176,7 @@ TEST_F(ResponseTest, POSTSuccessTest)
 		"Connection: keep-alive\r\nServer: Webserv\r\n\r\n";
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), Upload);
-	EXPECT_NE(res_->GetResMsg().find("/upload/2022"), std::string::npos);
+	EXPECT_NE(res_->GetResMsg().find("/upload/20"), std::string::npos);
 }
 
 TEST_F(ResponseTest, RedirectTest)
