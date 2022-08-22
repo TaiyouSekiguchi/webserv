@@ -59,6 +59,7 @@ void	HTTPMethod::ExecPOSTMethod()
 	else
 		headers_["Location"] = uri_->GetTargetPath() + "/" + file_name;
 
+	headers_["Content-Length"] = "0";
 	status_code_ = SC_CREATED;
 }
 

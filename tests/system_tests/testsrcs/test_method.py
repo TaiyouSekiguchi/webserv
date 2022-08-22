@@ -161,7 +161,9 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Created")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "0")
 		with self.subTest(): self.assertIn("/upload/20", res.getheader("Location"))
+		with self.subTest(): self.assertEqual(res.read(), b"")
 
 	def test_post_file(self):
 		self.conn.request("POST", "/upload/index.html", "Hello World", {"Content-Length": 11})
@@ -181,7 +183,9 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Created")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "0")
 		with self.subTest(): self.assertIn("/upload/20", res.getheader("Location"))
+		with self.subTest(): self.assertEqual(res.read(), b"")
 
 	def test_post_empty_chunk(self):
 		self.conn.request("POST", "/upload", "0\r\n\r\n", {"Transfer-Encoding": "chunked"})
@@ -190,7 +194,9 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Created")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "0")
 		with self.subTest(): self.assertIn("/upload/20", res.getheader("Location"))
+		with self.subTest(): self.assertEqual(res.read(), b"")
 
 	def test_post_invalid_chunk(self):
 		self.conn.request("POST", "/upload", "Hello", {"Transfer-Encoding": "chunked"})

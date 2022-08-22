@@ -173,7 +173,7 @@ TEST_F(ResponseTest, DELETESuccessTest)
 TEST_F(ResponseTest, POSTSuccessTest)
 {
 	const std::string Upload = "HTTP/1.1 201 Created\r\n"
-		"Connection: keep-alive\r\nServer: Webserv\r\n\r\n";
+		"Connection: keep-alive\r\nContent-Length: 0\r\nServer: Webserv\r\n\r\n";
 	RunCommunication("POST /upload HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(RemoveHeader(res_->GetResMsg()), Upload);
 	EXPECT_NE(res_->GetResMsg().find("/upload/20"), std::string::npos);

@@ -66,11 +66,15 @@ std::string	Utils::GetTimeStampStr()
 	struct tm		current_time;
 	char			str[50];
 	struct timeval	t;
+	std::string		usec_str;
 
 	gmtime_r(&now, &current_time);
 	strftime(str, sizeof(str), "%Y%m%d%H%M%S", &current_time);
 	gettimeofday(&t, NULL);
-	return (str + ToString(t.tv_usec));
+	usec_str = ToString(t.tv_usec);
+	for (size_t i = usec_str.size(); i < 6; i++)
+		usec_str = "0" + usec_str;
+	return (str + usec_str);
 }
 
 std::string	Utils::GetDateStr()
