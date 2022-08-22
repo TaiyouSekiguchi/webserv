@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Welcome to 42 Webserv!</title>
+		<style>
+			body {
+				width: 35em;
+				margin: 0 auto;
+				font-family: Tahoma, Verdana, Arial, sans-serif;
+				text-align:center;
+			}
+
+			.student-wrapper{
+				margin:50px 0 0 0;
+				height:250px;
+				text-align:center;
+			}
+
+			.students{
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+			}
+
+			div.student img {
+				margin: 0 30px 0 0;
+				border-radius:50%;
+			}
+
+			div.student p {
+				margin: 0 30px 0 0;
+			}
+
+		</style>
+	</head>
+	<body>
+		<h1>Welcome to 42Webserv! ;)</h1>
+		<div style="test-align: center">
+			<img src="img/saba.png">
+		</div>
+		<p>Webserv is a project of Ecole 42.<br>
+		This Webserv was submitted by the following three students.</p>
+
+		<div class="student-wrapper">
+			<div class= "container">
+				<h2>Project Member</h2>
+				<div class="students">
+					<div class="student">
+						<img src="img/kamei.jpeg" width="100">
+						<p>mkamei</p>
+					</div>
+					<div class="student">
+						<img src="img/humiya.png" width="100">
+						<p>kfumiya</p>
+					</div>
+					<div class="student">
+						<img src="img/sekiguchi.jpeg" width="100">
+						<p>tsekiguc</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<h2>And some information</h2>
+		<p>We prepared CGI sample. 
+		<a href="http://localhost:8080/cgi-bin/bbs.cgi">BBS</a>.</p>
+		<p>Our Github repository is 
+		<a href="https://github.com/Masaya-Kamei/webserv">HERE</a>.</p>
+
+		<p><em>Thank you for using Webserv.</em></p>
+	</body>
+</html>
