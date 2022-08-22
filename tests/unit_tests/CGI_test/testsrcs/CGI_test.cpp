@@ -155,7 +155,9 @@ TEST_F(CGITest, CommandArgTest)
 	EXPECT_EQ("text/html", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
-	EXPECT_EQ(std::string(first) + "===\nCommand Arguments\n===\nARGV[0] = [ aaa ]\nARGV[1] = [ bbb ]\nARGV[2] = [ ccc ]\n" + std::string(last), method_->GetBody());
+	EXPECT_EQ(std::string(first)
+		+ "===\nCommand Arguments\n===\nARGV[0] = [ aaa ]\nARGV[1] = [ bbb ]\nARGV[2] = [ ccc ]\n"
+		+ std::string(last), method_->GetBody());
 }
 
 TEST_F(CGITest, EnvironmentVariableTest)

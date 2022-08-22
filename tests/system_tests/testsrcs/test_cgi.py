@@ -54,8 +54,8 @@ class TestCgi(unittest.TestCase):
 		with self.subTest(): self.assertIn(b"SERVER_PROTOCOL = [ HTTP/1.1 ]", body)
 		with self.subTest(): self.assertIn(b"SERVER_SOFTWARE = [ 42Webserv ]", body)
 
-def test_cgi_post(self):
-		self.conn.request("POST", "/cgi-bin/tohoho.pl", "aaa=bbb\r\nccc=ddd", {})
+	def test_cgi_post(self):
+		self.conn.request("POST", "/cgi-bin/tohoho.pl", "aaa=bbb&ccc=ddd", {"Content-Type": "text/plain"})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 200)
 		with self.subTest(): self.assertEqual(res.reason, "OK")
@@ -63,12 +63,12 @@ def test_cgi_post(self):
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		body = res.read()
-		with self.subTest(): self.assertIn(b"CONTENT_LENGTH = [ 16 ]", body)
+		with self.subTest(): self.assertIn(b"CONTENT_LENGTH = [ 15 ]", body)
 		with self.subTest(): self.assertIn(b"CONTENT_TYPE = [ text/plain ]", body)
 		with self.subTest(): self.assertIn(b"aaa = [ bbb ]", body)
 		with self.subTest(): self.assertIn(b"ccc = [ ddd ]", body)
 
-def test_cgi_query(self):
+	def test_cgi_query(self):
 		self.conn.request("GET", "/cgi-bin/tohoho.pl?aaa=bbb&ccc=ddd", None, {})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 200)
@@ -77,18 +77,19 @@ def test_cgi_query(self):
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		body = res.read()
-		with self.subTest(): self.assertIn(b"QUERY_STRING = [ aaa=bbb&ccc=ddd ]", body)
+		with self.subTest(): self.assertIn(b"QUERY_STRING = [ aaa=bbb&amp;ccc=ddd ]", body)
 		with self.subTest(): self.assertIn(b"aaa = [ bbb ]", body)
 		with self.subTest(): self.assertIn(b"ccc = [ ddd ]", body)
 
-# def test_cgi_command_arg(self):
-# 		self.conn.request("GET", "/cgi-bin/tohoho.pl?aaa+bbb", None, {})
-# 		res = self.conn.getresponse()
-# 		with self.subTest(): self.assertEqual(res.status, 200)
-# 		with self.subTest(): self.assertEqual(res.reason, "OK")
-# 		with self.subTest(): self.assertEqual(res.version, 11)
-# 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-# 		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
-# 		body = res.read()
-# 		with self.subTest(): self.assertIn(b"ARGV[0] = [ aaa ]", body)
-# 		with self.subTest(): self.assertIn(b"ARGV[1] = [ bbb ]", body)
+	def test_cgi_command_arg(self):
+		self.conn.request("GET", "/cgi-bin/tohoho.pl?aaa+bbb", None, {})
+		res = self.conn.getresponse()
+		with self.subTest(): self.assertEqual(res.status, 200)
+		with self.subTest(): self.assertEqual(res.reason, "OK")
+		with self.subTest(): self.assertEqual(res.version, 11)
+		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
+		body = res.read()
+		with self.subTest(): self.assertIn(b"QUERY_STRING = [ aaa+bbb ]", body)
+		with self.subTest(): self.assertIn(b"ARGV[0] = [ aaa ]", body)
+		with self.subTest(): self.assertIn(b"ARGV[1] = [ bbb ]", body)
