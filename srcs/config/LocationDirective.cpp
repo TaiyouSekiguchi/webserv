@@ -187,15 +187,15 @@ void	LocationDirective::ParseUploadRoot(Tokens::citr begin, Tokens::citr end)
 
 void	LocationDirective::ParseCGIEnableExtension(Tokens::citr begin, Tokens::citr end)
 {
-	const std::string	valid_extensions[1] = {"pl"};
+	const std::string	valid_extensions[2] = {"pl", "py"};
 	Tokens::citr		itr;
 	const std::string*	found_ptr;
 
 	itr = begin;
 	while (itr != end)
 	{
-		found_ptr = std::find(valid_extensions, &valid_extensions[1], *itr);
-		if (found_ptr == &valid_extensions[1])
+		found_ptr = std::find(valid_extensions, &valid_extensions[2], *itr);
+		if (found_ptr == &valid_extensions[2])
 			throw std::runtime_error("conf syntax error");
 		if (Utils::IsNotFound(cgi_enable_extension_, *itr))
 			cgi_enable_extension_.push_back(*itr);
