@@ -87,7 +87,9 @@ e_HTTPServerEventType	CGI::ReceiveCgiResult(void)
 int		CGI::ExecveCGIScript(void)
 {
 	CGIEnv	env(uri_, req_);
-	char*	argv[2];
+	int		argc;
+	char**	argv;
+	//char*	argv[2];
 
 	if (to_cgi_pipe_.CloseFd(Pipe::WRITE) < 0
 		|| to_cgi_pipe_.RedirectToPipe(Pipe::READ, STDIN_FILENO) < 0
@@ -95,7 +97,19 @@ int		CGI::ExecveCGIScript(void)
 		|| from_cgi_pipe_.RedirectToPipe(Pipe::WRITE, STDOUT_FILENO) < 0)
 		return (EXIT_FAILURE);
 
+	if (uri_.GetQuery().find("=") != std::string::npos)
+	{
+		
+
+
+
+	}
+
 	argv[0] = const_cast<char *>(uri_.GetAccessPath().c_str());
+
+
+
+
 	argv[1] = NULL;
 
 	if (execve(argv[0], argv, env.GetEnv()) < 0)
