@@ -1,7 +1,7 @@
 import unittest
 import http.client
 
-class TestGET(unittest.TestCase):
+class TestMethod(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls):
@@ -58,7 +58,6 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "OK")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		# with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "443")
 		body = res.read()
 		with self.subTest(): self.assertIn(b"noindex", body)
 		with self.subTest(): self.assertIn(b"hoge", body)
