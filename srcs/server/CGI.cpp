@@ -96,7 +96,7 @@ int		CGI::ExecveCGIScript(void)
 		|| from_cgi_pipe_.RedirectToPipe(Pipe::WRITE, STDOUT_FILENO) < 0)
 		return (EXIT_FAILURE);
 
-	if (uri_.GetQuery().find("=") != std::string::npos)
+	if (uri_.GetQuery().find("=") == std::string::npos)
 		list = Utils::MySplit(uri_.GetQuery(), "+");
 
 	argv = new char*[list.size() + 2];

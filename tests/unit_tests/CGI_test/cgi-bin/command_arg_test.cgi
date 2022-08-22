@@ -31,15 +31,8 @@ print "===\n";
 print "Command Arguments\n";
 print "===\n";
 
-$query_string = $ENV{'QUERY_STRING'};
-@a = split(/\+/, $query_string);
-# それぞれの「変数名=値」について
-foreach $a (@a) {
-	# + や %8A などをデコードします
-	$a =~ tr/+/ /;
-	$a =~ s/%([0-9a-fA-F][0-9a-fA-F])/pack("C", hex($1))/eg;
-	# 変数名と値を書き出します
-	print "$a\n";
+for ($i = 0; $i <= $#ARGV; $i++) {
+	print "ARGV[$i] = [ " . html($ARGV[$i]) . " ]\n";
 }
 print "\n";
 
