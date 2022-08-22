@@ -87,8 +87,9 @@ e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
 	event_type = cgi_->ReceiveCgiResult();
 	if (event_type == SEVENT_NO)
 	{
-		headers_ = cgi_->GetHeaders();
 		body_ = cgi_->GetBody();
+		const std::map<std::string, std::string>& m = cgi_->GetHeaders();
+		headers_.insert(m.begin(), m.end());
 		headers_["Content-Length"] = Utils::ToString(body_.size());
 		status_code_ = cgi_->GetStatusCode();
 	}
