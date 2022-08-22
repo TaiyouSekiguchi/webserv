@@ -9,7 +9,7 @@ HTTPRequest::HTTPRequest(const ServerSocket& ssocket)
 	, step_(0)
 	, content_length_(0)
 	, connection_(true)
-	, parse_pos_(0)
+	, chunk_start_(0)
 {
 }
 
@@ -428,70 +428,62 @@ void	HTTPRequest::CheckHeaders(void)
 		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "CheckHeaders");
 }
 
-void	HTTPRequest::ParseChunkSize(void)
+bool	HTTPRequest::ParseOneChunk(void)
 {
-	const std::string	LINE_END = "\r\n";
-	size_t		line_end_pos;
-	std::string	line;
+	char*	endptr;
+	int		chunk_step = 0;
+	size_t	size_len;
+	size_t	i = chunk_start_;
 
-	line_end_pos = raw_body_.find(LINE_END, parse_pos_);
-	if (line_end_pos == std::string::npos)
-		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
-
-	line = raw_body_.substr(parse_pos_, line_end_pos - parse_pos_);
-	size_t c_pos = line.find(";");
-	if (c_pos != std::string::npos)
-		line = line.substr(0, c_pos);
-
-	line = Utils::MyTrim(line, " ");
-	for (size_t i = 0; i < line.size(); i++)
-		if (!isxdigit(line.at(i)))
-			throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
-
-	char *endptr;
-	chunk_size_ = strtol(line.c_str(), &endptr, 16);
-	if (errno == ERANGE || *endptr != '\0')
-		throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
-
-	parse_pos_ = line_end_pos + LINE_END.size();
-}
-
-void	HTTPRequest::ParseChunkData(void)
-{
-	const std::string	LINE_END = "\r\n";
-	std::string	line;
-
-	if (raw_body_.size() - parse_pos_ < chunk_size_ + LINE_END.size())
-		throw HTTPError(SC_BAD_REQUEST, "ParseChunkData");
-	line = raw_body_.substr(parse_pos_, chunk_size_);
-	body_ += line;
-	parse_pos_ += chunk_size_ + LINE_END.size();
+	while (i < raw_body_.size() && chunk_step != 6)
+	{
+		switch (chunk_step)
+		{
+			case 0:
+				chunk_size_ = strtol(&raw_body_.c_str()[i], &endptr, 16);
+				size_len = endptr - &raw_body_.c_str()[i];
+				if (errno == ERANGE || size_len == 0 || chunk_size_ < 0
+					|| (size_len >= 2 && raw_body_.substr(i, 2) == "0x"))
+					throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+				i += size_len;
+				break;
+			case 1:
+			case 4:
+				if (raw_body_[i++] != '\r')
+					throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+				break;
+			case 2:
+			case 5:
+				if (raw_body_[i++] != '\n')
+					throw HTTPError(SC_BAD_REQUEST, "ParseChunkSize");
+				break;
+			case 3:
+				i += chunk_size_;
+				break;
+			default: {}
+		}
+		chunk_step++;
+	}
+	if (chunk_step != 6)
+		return (false);
+	body_ += raw_body_.substr(i - 2 - chunk_size_, chunk_size_);
+	chunk_start_ = i;
+	return (true);
 }
 
 bool	HTTPRequest::ParseChunk(void)
 {
-	const std::string	FOOTER = "0\r\n\r\n";
-	const std::string	LINE_END = "\r\n";
-	size_t	remaining_byte;
-
-	if (raw_body_.size() < 5 || raw_body_.compare(raw_body_.size() - 5, 5, FOOTER))
-		return (false);
 	if (raw_body_.size() > client_max_body_size_)
 		throw HTTPError(SC_PAYLOAD_TOO_LARGE, "ParseChunk");
 
 	while (1)
 	{
-		remaining_byte = raw_body_.size() - parse_pos_;
-		if (remaining_byte <= 5)
-		{
-			if (remaining_byte == 5)
-				break;
-			else
-				throw HTTPError(SC_BAD_REQUEST, "ParseChunk");
-		}
-		ParseChunkSize();
-		ParseChunkData();
+		if (!ParseOneChunk())
+			return (false);
+		if (chunk_size_ == 0)
+			break;
 	}
+	content_length_ = body_.size();
 	return (true);
 }
 
@@ -500,15 +492,7 @@ bool	HTTPRequest::ReceiveBody(void)
 	raw_body_ += save_;
 	save_ = "";
 	if (transfer_encoding_ == "chunked")
-	{
-		if (!ParseChunk())
-			return (false);
-		else
-		{
-			content_length_ = body_.size();
-			return (true);
-		}
-	}
+		return (ParseChunk());
 	body_ = raw_body_;
 	if (body_.size() < content_length_)
 		return (false);

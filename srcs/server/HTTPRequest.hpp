@@ -81,7 +81,7 @@ class HTTPRequest
 
 		// chunk
 		std::string									raw_body_;
-		size_t										parse_pos_;
+		size_t										chunk_start_;
 		long										chunk_size_;
 
 		// func
@@ -108,8 +108,7 @@ class HTTPRequest
 		bool			ReceiveBody(void);
 		void			FindServerConf(void);
 		bool			ParseChunk(void);
-		void			ParseChunkSize(void);
-		void			ParseChunkData(void);
+		bool			ParseOneChunk(void);
 		void			ParseAccept(const std::string& content);
 		void			ParseAuthorization(const std::string& content);
 };

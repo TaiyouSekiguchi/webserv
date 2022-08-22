@@ -193,12 +193,12 @@ class TestGET(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		with self.subTest(): self.assertIn("/upload/20", res.getheader("Location"))
 
-	# def test_post_invalid_chunk(self):
-	# 	self.conn.request("POST", "/upload", "Hello", {"Transfer-Encoding": "chunked"})
-	# 	res = self.conn.getresponse()
-	# 	with self.subTest(): self.assertEqual(res.status, 400)
-	# 	with self.subTest(): self.assertEqual(res.reason, "Bad Request")
-	# 	with self.subTest(): self.assertEqual(res.version, 11)
-	# 	with self.subTest(): self.assertEqual(res.getheader("Connection"), "close")
-	# 	with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "152")
-	# 	with self.subTest(): self.assertIn(b"400 Bad Request", res.read())
+	def test_post_invalid_chunk(self):
+		self.conn.request("POST", "/upload", "Hello", {"Transfer-Encoding": "chunked"})
+		res = self.conn.getresponse()
+		with self.subTest(): self.assertEqual(res.status, 400)
+		with self.subTest(): self.assertEqual(res.reason, "Bad Request")
+		with self.subTest(): self.assertEqual(res.version, 11)
+		with self.subTest(): self.assertEqual(res.getheader("Connection"), "close")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "152")
+		with self.subTest(): self.assertIn(b"400 Bad Request", res.read())

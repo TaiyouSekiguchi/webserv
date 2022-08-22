@@ -351,6 +351,24 @@ TEST_F(RequestTest, InValidChunkTest6)
 	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
 }
 
+TEST_F(RequestTest, InValidChunkTest7)
+{
+	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2\r\n"
+		"Transfer-Encoding: chunked\r\n\r\n"
+		"Hello";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
+}
+
+TEST_F(RequestTest, InValidChunkTest8)
+{
+	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2\r\n"
+		"Transfer-Encoding: chunked\r\n\r\n"
+		"5\r\nHello\r\n0\r\n\rn";
+	RunCommunication(msg, 8080);
+	EXPECT_EQ(SC_BAD_REQUEST, status_code_);
+}
+
 TEST_F(RequestTest, InValidTransferEncodingTest1)
 {
 	const std::string msg = "POST /upload HTTP/1.1\r\nHost: webserv2\r\n"
