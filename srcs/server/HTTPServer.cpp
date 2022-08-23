@@ -14,6 +14,7 @@ HTTPServer::HTTPServer(const ServerSocket& ssocket)
 {
 	request_ = new HTTPRequest(ssocket_);
 	method_ = new HTTPMethod(*request_);
+	errno = 0;
 }
 
 HTTPServer::~HTTPServer()

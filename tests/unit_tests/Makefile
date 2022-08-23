@@ -19,7 +19,7 @@ compile	:
 			make -C CGI_test
 
 clean	:
-			rm -rf */objs
+			rm -rf objs
 
 re		:	clean test
 

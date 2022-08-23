@@ -30,18 +30,7 @@ e_HTTPServerEventType	HTTPResponse::SendResponse(const ServerSocket& ssocket)
 void HTTPResponse::AppendHeaders()
 {
 	headers_["Server"] = "Webserv";
-	headers_["Date"] = GetDate();
-}
-
-std::string HTTPResponse::GetDate() const
-{
-	time_t now = time(NULL);
-	struct tm current_time;
-	char str[50];
-
-	asctime_r(gmtime_r(&now, &current_time), str);
-	strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", &current_time);
-	return (str);
+	headers_["Date"] = Utils::GetDateStr();
 }
 
 std::string HTTPResponse::CreateResponse()
@@ -49,7 +38,13 @@ std::string HTTPResponse::CreateResponse()
 	std::stringstream 	ss;
 	const e_StatusCode	status_code = method_.GetStatusCode();
 
-	ss << "HTTP/1.1 " << status_code << " " << kStatusMsg_[status_code] << "\r\n";
+	std::string			status_msg;
+	if (status_code == SC_FOUND)
+		status_msg = "Moved Temporarily";
+	else
+		status_msg = kStatusMsg_[status_code];
+
+	ss << "HTTP/1.1 " << status_code << " " << status_msg << "\r\n";
 	ss << HeaderField();
 	ss << method_.GetBody();
 	return (ss.str());

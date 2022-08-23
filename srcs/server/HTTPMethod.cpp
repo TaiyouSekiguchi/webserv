@@ -59,6 +59,7 @@ void	HTTPMethod::ExecPOSTMethod()
 	else
 		headers_["Location"] = uri_->GetTargetPath() + "/" + file_name;
 
+	headers_["Content-Length"] = "0";
 	status_code_ = SC_CREATED;
 }
 
@@ -87,8 +88,9 @@ e_HTTPServerEventType	HTTPMethod::ReceiveCgiResult()
 	event_type = cgi_->ReceiveCgiResult();
 	if (event_type == SEVENT_NO)
 	{
-		headers_ = cgi_->GetHeaders();
 		body_ = cgi_->GetBody();
+		const std::map<std::string, std::string>& m = cgi_->GetHeaders();
+		headers_.insert(m.begin(), m.end());
 		headers_["Content-Length"] = Utils::ToString(body_.size());
 		status_code_ = cgi_->GetStatusCode();
 	}
@@ -254,7 +256,7 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 		throw HTTPError(SC_CONFLICT, "ValidatePOSTMethod");
 
 	std::fstream		output_fstream;
-	const std::string&	timestamp = Utils::GetMicroSecondTime();
+	const std::string&	timestamp = Utils::GetTimeStampStr();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
 	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL);
@@ -417,6 +419,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 	}
 	body_ = GenerateDefaultHTML();
 	headers_["Content-Length"] = Utils::ToString(body_.size());
+	headers_["Content-Type"] = "text/plain";
 	return (SEVENT_NO);
 }
 

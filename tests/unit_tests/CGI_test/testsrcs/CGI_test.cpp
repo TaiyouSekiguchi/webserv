@@ -155,7 +155,9 @@ TEST_F(CGITest, CommandArgTest)
 	EXPECT_EQ("text/html", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
-	EXPECT_EQ(std::string(first) + "===\nCommand Arguments\n===\nARGV[0] = [ aaa ]\nARGV[1] = [ bbb ]\nARGV[2] = [ ccc ]\n" + std::string(last), method_->GetBody());
+	EXPECT_EQ(std::string(first)
+		+ "===\nCommand Arguments\n===\nARGV[0] = [ aaa ]\nARGV[1] = [ bbb ]\nARGV[2] = [ ccc ]\n"
+		+ std::string(last), method_->GetBody());
 }
 
 TEST_F(CGITest, EnvironmentVariableTest)
@@ -192,7 +194,7 @@ TEST_F(CGITest, NoExistFileTest)
 {
 	RunCommunication("GET /noexist.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_NOT_FOUND, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>404 Not Found</title>"));
@@ -236,7 +238,7 @@ TEST_F(CGITest, BodyStartFileTest)
 {
 	RunCommunication("GET /body_start.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>502 Bad Gateway</title>"));
@@ -246,7 +248,7 @@ TEST_F(CGITest, NoNewLineFileTest)
 {
 	RunCommunication("GET /no_nl.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>502 Bad Gateway</title>"));
@@ -286,7 +288,7 @@ TEST_F(CGITest, EmptyContentTypeTest)
 {
 	RunCommunication("GET /empty_content_type.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ(0, method_->GetHeaders().count("content-type"));
+	EXPECT_EQ((unsigned long)0, method_->GetHeaders().count("content-type"));
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 	EXPECT_EQ(simple_body, method_->GetBody());
@@ -306,8 +308,8 @@ TEST_F(CGITest, EmptyLocationTest)
 {
 	RunCommunication("GET /empty_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ(0, method_->GetHeaders().count("Content-Type"));
-	EXPECT_EQ(1, method_->GetHeaders().count("Location"));
+	EXPECT_EQ((unsigned long)0, method_->GetHeaders().count("Content-Type"));
+	EXPECT_EQ((unsigned long)1, method_->GetHeaders().count("Location"));
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_OK, method_->GetStatusCode());
 	EXPECT_EQ(simple_body, method_->GetBody());
@@ -327,7 +329,7 @@ TEST_F(CGITest, MultipleLocationTest)
 {
 	RunCommunication("GET /multiple_location.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>502 Bad Gateway</title>"));
@@ -367,7 +369,7 @@ TEST_F(CGITest, EmptyStatusTest)
 {
 	RunCommunication("GET /empty_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>502 Bad Gateway</title>"));
@@ -377,7 +379,7 @@ TEST_F(CGITest, SpaceStatusTest)
 {
 	RunCommunication("GET /space_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>502 Bad Gateway</title>"));
@@ -387,7 +389,7 @@ TEST_F(CGITest, StringStatusTest)
 {
 	RunCommunication("GET /string_status.cgi HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 
-	EXPECT_EQ("", method_->GetHeaders()["Content-Type"]);
+	EXPECT_EQ("text/plain", method_->GetHeaders()["Content-Type"]);
 	EXPECT_EQ("", method_->GetHeaders()["Location"]);
 	EXPECT_EQ(SC_BAD_GATEWAY, method_->GetStatusCode());
 	EXPECT_NE(std::string::npos, method_->GetBody().find("<title>502 Bad Gateway</title>"));

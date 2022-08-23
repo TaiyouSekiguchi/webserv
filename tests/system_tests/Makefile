@@ -4,7 +4,7 @@ WEBSERV		=	$(WEBSERVDIR)/webserv
 all			:	$(WEBSERV)
 
 test		:	$(WEBSERV)
-				./$(WEBSERV) $(WEBSERVDIR)/conf/default.conf > /dev/null &
+				./$(WEBSERV) default.conf > /dev/null &
 				@echo
 				@python -m unittest discover testsrcs || :
 				@pkill $(notdir $(WEBSERV))
