@@ -3,8 +3,8 @@
 #include "RegularFile.hpp"
 #include "Stat.hpp"
 
-RegularFile::RegularFile(const std::string& path, const int open_mode)
-	: AIo(open(path.c_str(), open_mode)), path_(path), failed_(false)
+RegularFile::RegularFile(const std::string& path, const int open_mode, const int create_mode)
+	: AIo(open(path.c_str(), open_mode, create_mode)), path_(path), failed_(false)
 {
 	if (fd_ == -1)
 	{

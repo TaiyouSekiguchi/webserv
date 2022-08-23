@@ -261,7 +261,7 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	const std::string&	timestamp = Utils::GetTimeStampStr();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
-	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL);
+	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
