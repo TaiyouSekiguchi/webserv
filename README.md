@@ -17,15 +17,15 @@ make
 Server Directive, Location Directiveにおいて、
 以下の項目が設定可能です。
 ### Server Directive
-**listen: *port*;**  
-**server_name: *server_name* ...;**  
-**error_page: *status_code error_page_path*;**  
-**client_max_body_size: *byte*;**  
+listen: *port*;  
+server_name: *server_name;*  
+error_page: *status_code error_page_path*;  
+client_max_body_size: *byte*;  
 
 ### Location Directive
-**root *path*;**  
-**index *file_name*;**  
-**autoindex *on*;**  
-**allowed_methods *method*;**  
-**upload_root *path*;**  
-**cgi_enable_extension *extension*;**  
+root *path*;  
+index *file_name*;  
+autoindex *on*;  
+allowed_methods *method*;  
+upload_root *path*;  
+cgi_enable_extension *extension*;
