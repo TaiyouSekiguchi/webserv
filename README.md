@@ -1,74 +1,31 @@
 # Webserv
+Ecole 42の課題で、HTTP/1.1に準拠したHTTPサーバーをc++98で実装しました。  
+kqueueシステムコールを採用したイベント駆動サーバーです。  
+GET, POST, DELETEメソッドを使うことが出来ます。  
+チャンク化転送符号法でのリクエストに対応しています。  
+また、CGIを使用することが出来ます。  
 
-Ecole 42の課題で、C++98でHTTPサーバーを実装しました。
-HTTP/1.1に準拠していて、イベント駆動するサーバーです。
-また、CGIを使用することが出来ます。
-
-
-# Usage
-## ダウンロード＆ビルド
+## ダウンロード＆ビルド＆実行
 ```sh
-https://github.com/Masaya-Kamei/webserv.git
+git clone https://github.com/Masaya-Kamei/webserv.git
 cd webserv
 make
-```
-## 実行
-```sh
-./webserv [config_file]
+./webserv conf/default.conf
 ```
 
-# 設定ファイル
+## 設定ファイル
+Server Directive, Location Directiveにおいて、
+以下の項目が設定可能です。
+### Server Directive
+**listen: *port*;**  
+**server_name: *server_name* ...;**  
+**error_page: *status_code error_page_path*;**  
+**client_max_body_size: *byte*;**  
 
-## Server Directive
-
-**listen: port;**<br>
-サーバーのlisten port を指定することが出来ます。
-
-**server_name: server_name ...;**<br>
-サーバー名を指定することがきます。
-
-**error_page: status_code error_page_path;**<br>
-エラーステータスに応じたエラーページを指定できます。
-
-**client_max_body_size: byte;**<br>
-リクエストされたボディの最大バイト数を指定できます。
-
-## Sample Config File
-```
-server {
-    listen  8080;
-    listen  8081;
-    server_name webserv1 default;
-    error_page 403 /html/40x.html;
-    client_max_body_size 30;
-
-    location / {
-    root html/;
-    index index.html;
-    }
-
-    location /hoge {
-    root html/sub1;
-    }
-
-    location /sub1 {
-    autoindex on;
-    index   no.html;
-    }
-
-    location /sub2 {
-    allowed_methods DELETE;
-    index no.html sub2.html;
-    }
-
-    location /cgi-bin {
-    allowed_methods POST;
-    cgi_enable_extension pl py;
-    }
-
-    location /upload {
-    allowed_methods POST;
-    upload_root html;
-    }
-}
-```
+### Location Directive
+**root *path*;**  
+**index *file_name*;**  
+**autoindex *on*;**  
+**allowed_methods *method*;**  
+**upload_root *path*;**  
+**cgi_enable_extension *extension*;**  
