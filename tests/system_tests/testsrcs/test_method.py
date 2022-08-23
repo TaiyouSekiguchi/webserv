@@ -59,7 +59,6 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		body = res.read()
-		with self.subTest(): self.assertIn(b"noindex", body)
 		with self.subTest(): self.assertIn(b"hoge", body)
 		with self.subTest(): self.assertIn(b"index.html", body)
 		with self.subTest(): self.assertIn(b"sub1.html", body)
@@ -88,7 +87,7 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertIn(b"301 Moved Permanently", res.read())
 
 	def test_dir_forbidden(self):
-		self.conn.request("GET", "/sub1/noindex/", None, {"Host": "webserv2"})
+		self.conn.request("GET", "/noindex/", None, {})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 403)
 		with self.subTest(): self.assertEqual(res.reason, "Forbidden")
