@@ -104,10 +104,12 @@ const LocationDirective*	HTTPMethod::SelectLocation
 	std::vector<LocationDirective>::const_iterator	end = locations.end();
 	std::vector<LocationDirective>::const_iterator 	longest = itr++;
 	const std::string& 								target = req_.GetTarget();
+	std::string::size_type							found_pos;
 
 	while (itr != end)
 	{
-		if (target.find(itr->GetPath()) != std::string::npos)
+		found_pos = target.find(itr->GetPath());
+		if (found_pos == 0)
 		{
 			if (longest->GetPath().size() < itr->GetPath().size())
 				longest = itr;
