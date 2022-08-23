@@ -109,7 +109,7 @@ const LocationDirective*	HTTPMethod::SelectLocation
 	while (itr != end)
 	{
 		found_pos = target.find(itr->GetPath());
-		if (found_pos == 0)
+		if (found_pos == 0 || found_pos == 1)
 		{
 			if (longest->GetPath().size() < itr->GetPath().size())
 				longest = itr;
