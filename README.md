@@ -21,16 +21,16 @@ make
 
 ## Server Directive
 
-**listen: port;**
+**listen: port;**<br>
 サーバーのlisten port を指定することが出来ます。
 
-**server_name: server_name ...;**
+**server_name: server_name ...;**<br>
 サーバー名を指定することがきます。
 
-**error_page: status_code error_page_path;**
+**error_page: status_code error_page_path;**<br>
 エラーステータスに応じたエラーページを指定できます。
 
-**client_max_body_size: byte;**
+**client_max_body_size: byte;**<br>
 リクエストされたボディの最大バイト数を指定できます。
 
 ## Sample Config File
