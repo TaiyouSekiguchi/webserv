@@ -136,7 +136,7 @@ TEST_F(OthersTest, ReturnErrorPageTest)
 
 TEST_F(OthersTest, ReturnLocationTest)
 {
-	RunCommunication("AAA /sub1/noindex HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
+	RunCommunication("AAA /noindex HTTP/1.1\r\nHost: localhost:8080\r\n\r\n");
 	EXPECT_EQ(method_->GetStatusCode(), SC_BAD_REQUEST);
 	EXPECT_EQ(method_->GetHeaders()["Location"], "");
 	EXPECT_EQ(method_->GetBody(), "http://localhost:8080");
@@ -163,7 +163,6 @@ TEST_F(OthersTest, AutoIndexTest)
 	EXPECT_NE(body.find("<head><title>Index of /sub1/</title></head>"), std::string::npos);
 	EXPECT_NE(body.find("<a href=\"hoge/\">hoge/</a>\t\t"), std::string::npos);
 	EXPECT_NE(body.find("<a href=\"index.html\">index.html</a>\t\t"), std::string::npos);
-	EXPECT_NE(body.find("<a href=\"noindex/\">noindex/</a>\t\t"), std::string::npos);
 	EXPECT_NE(body.find("<a href=\"sub1.html\">sub1.html</a>\t\t"), std::string::npos);
 }
 

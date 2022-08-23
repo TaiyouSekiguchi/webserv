@@ -35,7 +35,6 @@ void	ListenSocket::ListenConnection(const int backlog) const
 {
 	if (listen(fd_, backlog) == -1)
 		throw std::runtime_error("listen error");
-	// std::cout << "fd : " << fd_ << " Listen!!" << std::endl;
 }
 
 int		ListenSocket::AcceptConnection() const

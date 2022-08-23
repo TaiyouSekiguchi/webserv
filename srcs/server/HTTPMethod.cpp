@@ -104,10 +104,12 @@ const LocationDirective*	HTTPMethod::SelectLocation
 	std::vector<LocationDirective>::const_iterator	end = locations.end();
 	std::vector<LocationDirective>::const_iterator 	longest = itr++;
 	const std::string& 								target = req_.GetTarget();
+	std::string::size_type							found_pos;
 
 	while (itr != end)
 	{
-		if (target.find(itr->GetPath()) != std::string::npos)
+		found_pos = target.find(itr->GetPath());
+		if (found_pos == 0 || found_pos == 1)
 		{
 			if (longest->GetPath().size() < itr->GetPath().size())
 				longest = itr;
@@ -259,7 +261,7 @@ e_HTTPServerEventType	HTTPMethod::ValidatePOSTMethod(const Stat& st)
 	const std::string&	timestamp = Utils::GetTimeStampStr();
 	const std::string	file_path = st.GetPath() + "/" + timestamp;
 
-	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL);
+	target_rfile_ = new RegularFile(file_path, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
 	if (target_rfile_->Fail())
 	{
 		delete target_rfile_;
@@ -419,7 +421,7 @@ e_HTTPServerEventType	HTTPMethod::ValidateErrorPage(const e_StatusCode status_co
 	}
 	body_ = GenerateDefaultHTML();
 	headers_["Content-Length"] = Utils::ToString(body_.size());
-	headers_["Content-Type"] = "text/plain";
+	headers_["Content-Type"] = "text/html";
 	return (SEVENT_NO);
 }
 

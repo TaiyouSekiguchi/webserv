@@ -9,7 +9,7 @@
 class RegularFile : public AIo
 {
 	public:
-		RegularFile(const std::string& path, const int open_mode);
+		RegularFile(const std::string& path, const int open_mode, const int create_mode = 0);
 		~RegularFile();
 
 		bool				Fail() const;

@@ -36,7 +36,7 @@ EOF
 # コマンド引数を書き出します
 #
 print "=================================\n";
-print "コマンド引数\n";
+print "Command Arguments\n";
 print "=================================\n";
 for ($i = 0; $i <= $#ARGV; $i++) {
 	print "ARGV[$i] = [ " . html($ARGV[$i]) . " ]\n";
@@ -47,7 +47,7 @@ print "\n";
 # CGIスクリプトが参照可能な環境変数を書き出します。
 #
 print "=================================\n";
-print "環境変数\n";
+print "Environment Variables\n";
 print "=================================\n";
 print "AUTH_TYPE = [ " . html($ENV{'AUTH_TYPE'}) . " ]\n";
 print "CONTENT_LENGTH = [ " . html($ENV{'CONTENT_LENGTH'}) . " ]\n";
@@ -77,7 +77,7 @@ print "\n";
 # フォームに指定した値を書き出します
 #
 print "=================================\n";
-print "フォーム変数\n";
+print "Form Variables\n";
 print "=================================\n";
 if ($ENV{'REQUEST_METHOD'} eq "POST") {
 	# POSTであれば標準入力から読込みます

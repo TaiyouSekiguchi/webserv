@@ -59,7 +59,6 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		body = res.read()
-		with self.subTest(): self.assertIn(b"noindex", body)
 		with self.subTest(): self.assertIn(b"hoge", body)
 		with self.subTest(): self.assertIn(b"index.html", body)
 		with self.subTest(): self.assertIn(b"sub1.html", body)
@@ -71,7 +70,7 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Not Found")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "148")
 		with self.subTest(): self.assertIn(b"404 Not Found", res.read())
 
@@ -83,18 +82,18 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		with self.subTest(): self.assertEqual(res.getheader("Location"), "http://localhost:8080/hoge/")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "164")
 		with self.subTest(): self.assertIn(b"301 Moved Permanently", res.read())
 
 	def test_dir_forbidden(self):
-		self.conn.request("GET", "/sub1/noindex/", None, {"Host": "webserv2"})
+		self.conn.request("GET", "/noindex/", None, {})
 		res = self.conn.getresponse()
 		with self.subTest(): self.assertEqual(res.status, 403)
 		with self.subTest(): self.assertEqual(res.reason, "Forbidden")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "148")
 		with self.subTest(): self.assertIn(b"403 Forbidden", res.read())
 
@@ -106,7 +105,7 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
 		with self.subTest(): self.assertEqual(res.getheader("Location"), "http://localhost:8080")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "164")
 		with self.subTest(): self.assertIn(b"301 Moved Permanently", res.read())
 
@@ -128,7 +127,7 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Method Not Allowed")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "166")
 		with self.subTest(): self.assertIn(b"405 Method Not Allowed", res.read())
 
@@ -150,7 +149,7 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Forbidden")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "148")
 		with self.subTest(): self.assertIn(b"403 Forbidden", res.read())
 
@@ -172,7 +171,7 @@ class TestMethod(unittest.TestCase):
 		with self.subTest(): self.assertEqual(res.reason, "Conflict")
 		with self.subTest(): self.assertEqual(res.version, 11)
 		with self.subTest(): self.assertEqual(res.getheader("Connection"), "keep-alive")
-		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/plain")
+		with self.subTest(): self.assertEqual(res.getheader("Content-Type"), "text/html")
 		with self.subTest(): self.assertEqual(res.getheader("Content-Length"), "146")
 		with self.subTest(): self.assertIn(b"409 Conflict", res.read())
 
