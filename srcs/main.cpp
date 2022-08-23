@@ -1,16 +1,22 @@
 #include <iostream>
-#include "HTTPServer.hpp"
+#include "WebServ.hpp"
 
-int	main()
+int		main(int argc, char **argv)
 {
-	try
+	if (argc >= 3)
 	{
-		HTTPServer hserver;
-		hserver.Start();
+		std::cerr << "Usage: ./webserv <config file>" << std::endl;
+		return (1);
 	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
+
+	std::string		conf_path;
+	if (argc == 2)
+		conf_path = argv[1];
+	else
+		conf_path = "conf/default.conf";
+
+	WebServ	webserv;
+	webserv.Start(conf_path);
+
 	return (0);
 }

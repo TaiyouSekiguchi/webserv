@@ -1,4 +1,4 @@
-webserv
+/webserv
 objs
 *.o
 *.d
@@ -6,3 +6,5 @@ objs
 .vscode
 tags
 .tags
+html/upload/20*
+!bbs.txt

@@ -1,68 +1,142 @@
 #include <string>
 #include "HTTPServer.hpp"
+#include "HTTPRequest.hpp"
 #include "ListenSocket.hpp"
-#include "debug.hpp"
+#include "Config.hpp"
+#include "HTTPError.hpp"
+#include "HTTPMethod.hpp"
+#include "HTTPResponse.hpp"
+#include "utils.hpp"
+#include "RegularFile.hpp"
 
-HTTPServer::HTTPServer()
+HTTPServer::HTTPServer(const ServerSocket& ssocket)
+	:	ssocket_(ssocket), request_(NULL), method_(NULL), response_(NULL)
 {
+	request_ = new HTTPRequest(ssocket_);
+	method_ = new HTTPMethod(*request_);
+	errno = 0;
 }
 
 HTTPServer::~HTTPServer()
 {
+	delete request_;
+	delete method_;
+	if (response_)
+		delete response_;
 }
 
-void	HTTPServer::Start() const
+int		HTTPServer::GetMethodTargetFileFd() const { return (method_->GetTargetFileFd()); }
+int		HTTPServer::GetToCgiPipeFd() const	  { return (method_->GetToCgiPipeFd()); }
+int		HTTPServer::GetFromCgiPipeFd() const 	  { return (method_->GetFromCgiPipeFd()); }
+
+e_HTTPServerEventType	HTTPServer::Run()
 {
-	ListenSocket	*lsocket = new ListenSocket();
-	EventQueue		equeue;
+	e_HTTPServerEventType	new_event;
 
-	lsocket->ListenConnection();
-	equeue.RegisterEvent(lsocket->GetFd(), lsocket);
-	MainLoop(equeue);
-	delete lsocket;
-}
-
-void	HTTPServer::MainLoop(EventQueue const & equeue) const
-{
-	void			*udata;
-	ASocket			*asocket;
-	ListenSocket	*lsocket;
-	ServerSocket	*ssocket;
-	ServerSocket 	*new_ssocket;
-
-	while (1)
+	try
 	{
-		udata = equeue.WaitEvent();
-		asocket = static_cast<ASocket*>(udata);
-		lsocket = dynamic_cast<ListenSocket*>(asocket);
-		ssocket = dynamic_cast<ServerSocket*>(asocket);
-		if (lsocket)
-		{
-			std::cout << "Accept!!" << std::endl;
-			new_ssocket = new ServerSocket(lsocket->AcceptConnection());
-			equeue.RegisterEvent(new_ssocket->GetFd(), new_ssocket);
-		}
-		else
-			Communication(ssocket);
+		new_event = request_->ParseRequest();
+		if (new_event != SEVENT_NO)
+			return (new_event);
+		new_event = method_->ValidateHTTPMethod();
+		if (new_event != SEVENT_NO)
+			return (new_event);
 	}
+	catch (const HTTPError& e)
+	{
+		// e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
 }
 
-void	HTTPServer::Communication(ServerSocket *ssocket) const
+e_HTTPServerEventType	HTTPServer::RunExecHTTPMethod(const e_HTTPServerEventType event_type)
 {
-	std::string		recv_msg;
-	// std::string		send_msg;
-	// HTTPRequest		req;
-	// HTTPResponse		res;
+	e_HTTPServerEventType	new_event;
 
-	recv_msg = ssocket->RecvRequest();
-	if (recv_msg.size() == 0)
-		delete ssocket;
-	else
+	try
 	{
-		std::cout << "[recv_msg]\n" << recv_msg << std::endl;
-		// req.ParseRequest();
-		// send_msg = res.CreateResponse(req);
-		// ssocket->SendResponse(send_msg);
-		ssocket->SendResponse(recv_msg);
+		if (event_type == SEVENT_FILE_READ)
+			method_->ExecGETMethod();
+		else if (event_type == SEVENT_FILE_WRITE)
+			method_->ExecPOSTMethod();
+		else if (event_type == SEVENT_FILE_DELETE)
+			method_->ExecDELETEMethod();
 	}
+	catch (const HTTPError& e)
+	{
+		// e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunPostToCgi()
+{
+	e_HTTPServerEventType	new_event;
+
+	try
+	{
+		method_->PostToCgi();
+		return (SEVENT_CGI_READ);
+	}
+	catch (const HTTPError& e)
+	{
+		// e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunReceiveCgiResult()
+{
+	e_HTTPServerEventType	new_event;
+
+	try
+	{
+		new_event = method_->ReceiveCgiResult();
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	catch (const HTTPError& e)
+	{
+		// e.PutMsg();
+		new_event = method_->ValidateErrorPage(e.GetStatusCode());
+		if (new_event != SEVENT_NO)
+			return (new_event);
+	}
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunReadErrorPage()
+{
+	method_->ReadErrorPage();
+	return (RunCreateResponse());
+}
+
+e_HTTPServerEventType	HTTPServer::RunCreateResponse()
+{
+	response_ = new HTTPResponse(*method_);
+	// request_->RequestDisplay();
+	// method_->MethodDisplay();
+	// std::cout << response_->GetResMsg() << std::endl;
+	return (SEVENT_SOCKET_SEND);
+}
+
+e_HTTPServerEventType	HTTPServer::RunSendResponse()
+{
+	e_HTTPServerEventType	new_event;
+
+	new_event = response_->SendResponse(ssocket_);
+	if (new_event != SEVENT_NO)
+		return (SEVENT_END);
+	else if (response_->GetConnection() == false)
+		return (SEVENT_END);
+	return (SEVENT_SOCKET_RECV);
 }
