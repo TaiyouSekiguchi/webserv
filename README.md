@@ -17,9 +17,7 @@ make
 
 webserv実行後、以下のリンクでデモサイトにアクセス出来ます。
 
-```text
-http://localhoset:8080/welcome.html
-```
+[WelcomeWebserv!! ;)](http://localhoset:8080/welcome.html)
 
 ## 設定ファイル
 
