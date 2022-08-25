@@ -15,7 +15,7 @@ make
 ./webserv conf/default.conf
 ```
 
-webserv実行後、以下のリンクでデモサイトにアクセス出来ます。
+webserv実行後、以下のリンクでデモサイトにアクセス出来ます。  
 [http://localhoset:8080/welcome.html](http://localhoset:8080/welcome.html)
 
 ## 設定ファイル
