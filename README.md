@@ -16,8 +16,7 @@ make
 ```
 
 webserv実行後、以下のリンクでデモサイトにアクセス出来ます。
-
-[WelcomeWebserv!! ;)](http://localhoset:8080/welcome.html)
+[http://localhoset:8080/welcome.html](http://localhoset:8080/welcome.html)
 
 ## 設定ファイル
 
@@ -28,18 +27,19 @@ Server Directive, Location Directiveにおいて、以下のDirectiveが設定�
 | Directive                      | 説明                                       |
 | ------------------------------ | ------------------------------------------ |
 | listen [address=*][:][port=80] | IPとポートを指定                           |
-| server_name ...                | サーバ名を指定                             |
-| error_page *code* *uri*        | ステータスコードに応じてエラーページを指定 |
-| client_max_body_size *size*    | リクエストの最大ボディサイズを指定         |
+| server_name name...            | サーバ名を指定                             |
+| error_page code uri            | ステータスコードに応じてエラーページを指定 |
+| client_max_body_size size      | リクエストの最大ボディサイズを指定         |
+| location uri {}                | location directiveを設定                   |
 
 ### Location Directive
 
-| Directive                           | 説明                         |
-| ----------------------------------- | ---------------------------- |
-| root *path*                         | rootパスを指定               |
-| index *file*                        | indexファイルの指定          |
-| return [code=302] [URL=""]          | リダイレクト先の指定         |
-| autoindex *on/off*                  | autoindex のon off           |
-| allow_method *method...*            | 使用できるメソッドの指定     |
-| upload_path *path*                  | ファイルアップロード先の指定 |
-| cgi_enable_extension *extension...* | CGIで使用できる拡張子の指定  |
+| Directive                         | 説明                         |
+| --------------------------------- | ---------------------------- |
+| root path                         | rootパスを指定               |
+| index file...                     | indexファイルの指定          |
+| return [code=302] [URL=""]        | リダイレクト先の指定         |
+| autoindex on/off                  | autoindex のon off           |
+| allow_method method...            | 使用できるメソッドの指定     |
+| upload_root path                  | ファイルアップロード先の指定 |
+| cgi_enable_extension extension... | CGIで使用できる拡張子の指定  |
