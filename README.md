@@ -17,36 +17,23 @@ webserv実行後、以下のリンクでデモサイトにアクセス出来ま�
 ```
 http://localhoset:8080/welcome.html
 ```
-
-
 ## 設定ファイル
-
-| test                           | description                                |
+Server Directive, Location Directiveにおいて、
+以下のDirectiveが設定可能です。
+### Server Directive
+| Directive                      | 説明                                       |
 | ------------------------------ | ------------------------------------------ |
 | listen [address=*][:][port=80] | IPとポートを指定                           |
 | server_name ...                | サーバ名を指定                             |
-| error_page uri                 | エラーステータスに応じてエラーページを指定 |
+| error_page *code* *uri*        | ステータスコードに応じてエラーページを指定 |
 | client_max_body_size *size*    | リクエストの最大ボディサイズを指定         |
-
-
-
-
-
-Server Directive, Location Directiveにおいて、
-以下の項目が設定可能です。
-### Server Directive
-
-
-
-listen: *port*;
-server_name: *server_name;*
-error_page: *status_code error_page_path*;
-client_max_body_size: *byte*;
-
 ### Location Directive
-root *path*;
-index *file_name*;
-autoindex *on*;
-allowed_methods *method*;
-upload_root *path*;
-cgi_enable_extension *extension*;
+| Directive                           | 説明                         |
+| ----------------------------------- | ---------------------------- |
+| root *path*                         | rootパスを指定               |
+| index *file*                        | indexファイルの指定          |
+| return [code=302] [URL=""]          | リダイレクト先の指定         |
+| autoindex *on/off*                  | autoindex のon off           |
+| allow_method *method...*            | 使用できるメソッドの指定     |
+| upload_path *path*                  | ファイルアップロード先の指定 |
+| cgi_enable_extension *extension...* | CGIで使用できる拡張子の指定  |
