@@ -18,6 +18,26 @@ make
 webserv実行後、以下のリンクでデモサイトにアクセス出来ます。  
 [http://localhoset:8080/welcome.html](http://localhoset:8080/welcome.html)
 
+## 実行例
+
+### GET
+
+```sh
+curl -v -X GET  http://localhost:8080
+```
+
+### POST
+
+```sh
+curl -v -X POST -d "Hello, Webserv\!\!" http://localhost:8080/upload/
+```
+
+### DELETE
+
+```sh
+curl -v -X DELETE http://localhost:8080/sub2/sub2.html
+```
+
 ## 設定ファイル
 
 Server Directive, Location Directiveにおいて、以下のDirectiveが設定可能です。
@@ -43,23 +63,3 @@ Server Directive, Location Directiveにおいて、以下のDirectiveが設定�
 | allow_methods method ...          | 使用できるメソッドの指定             |
 | upload_root path                  | ファイルアップロードのrootパスを指定 |
 | cgi_enable_extension extension... | CGIで使用できる拡張子の指定          |
-
-## 実行例
-
-### GET
-
-```sh
-curl -v -X GET  http://localhost:8080
-```
-
-### POST
-
-```sh
-curl -v -X POST -d "Hello, Webserv\!\!" http://localhost:8080/upload/
-```
-
-### DELETE
-
-```sh
-curl -v -X DELETE http://localhost:8080/sub2/sub2.html
-```
