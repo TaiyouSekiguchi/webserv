@@ -11,7 +11,7 @@ ListenSocket::ListenSocket
 	(const ServerDirective::Listen& listen, const ServerDirective& server_conf)
 	: ASocket(socket(AF_INET, SOCK_STREAM, 0), listen, server_conf)
 {
-	if (fd_ == -1)
+	if (failed_)
 		throw std::runtime_error("socket error");
 
 	int		sock_optval = 1;
@@ -39,8 +39,5 @@ void	ListenSocket::ListenConnection(const int backlog) const
 
 int		ListenSocket::AcceptConnection() const
 {
-	int sockfd = accept(fd_, NULL, NULL);
-	if (sockfd == -1)
-		throw std::runtime_error("accept error");
-	return (sockfd);
+	return (accept(fd_, NULL, NULL));
 }

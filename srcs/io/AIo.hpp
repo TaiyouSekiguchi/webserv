@@ -8,9 +8,11 @@ class AIo
 		virtual		~AIo();
 
 		int			GetFd() const;
+		bool		Fail() const;
 
 	protected:
 		int			fd_;
+		bool		failed_;
 };
 
 #endif

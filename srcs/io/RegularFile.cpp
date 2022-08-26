@@ -4,13 +4,11 @@
 #include "Stat.hpp"
 
 RegularFile::RegularFile(const std::string& path, const int open_mode, const int create_mode)
-	: AIo(open(path.c_str(), open_mode, create_mode)), path_(path), failed_(false)
+	: AIo(open(path.c_str(), open_mode, create_mode)), path_(path)
 {
-	if (fd_ == -1)
-	{
-		failed_ = true;
+	if (failed_)
 		return;
-	}
+
 	std::string::size_type	slash_pos = path.find_last_of("/");
 	if (slash_pos == std::string::npos)
 		name_ = path_;
@@ -28,11 +26,6 @@ RegularFile::RegularFile(const std::string& path, const int open_mode, const int
 
 RegularFile::~RegularFile()
 {
-}
-
-bool	RegularFile::Fail() const
-{
-	return (failed_);
 }
 
 const std::string&	RegularFile::GetName() const { return (name_); }
