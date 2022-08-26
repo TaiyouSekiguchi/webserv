@@ -40,8 +40,6 @@ curl -v -X DELETE http://localhost:8080/sub2/sub2.html
 
 ## 設定ファイル
 
-Server Directive, Location Directiveにおいて、以下のDirectiveが設定可能です。
-
 ### Server Directive
 
 | Directive                      | 説明                                       |
