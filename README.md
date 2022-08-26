@@ -23,7 +23,7 @@ webserv実行後、以下のリンクでデモサイトにアクセス出来ま�
 ### GET
 
 ```sh
-curl -v -X GET  http://localhost:8080
+curl -v -X GET http://localhost:8080
 ```
 
 ### POST
@@ -42,22 +42,22 @@ curl -v -X DELETE http://localhost:8080/sub2/sub2.html
 
 ### Server Directive
 
-| Directive                      | 説明                                       |
-| ------------------------------ | ------------------------------------------ |
-| listen [address=*][:][port=80] | IPとポートを指定                           |
-| server_name name ...           | サーバ名を指定                             |
-| error_page code uri            | ステータスコードに応じてエラーページを指定 |
-| client_max_body_size size      | リクエストの最大ボディサイズを指定         |
-| location uri {}                | location directiveを設定                   |
+| Directive                      | デフォルト | 説明                                       |
+| ------------------------------ | ---------- | ------------------------------------------ |
+| listen [address=*][:][port=80] | *:8000     | IPとポートを指定                           |
+| server_name name ...           | ""         | サーバ名を指定                             |
+| error_page code uri            | -          | ステータスコードに応じてエラーページを指定 |
+| client_max_body_size size      | 1m         | リクエストの最大ボディサイズを指定         |
+| location uri {}                | -          | location directiveを設定                   |
 
 ### Location Directive
 
-| Directive                         | 説明                                 |
-| --------------------------------- | ------------------------------------ |
-| root path                         | rootパスを指定                       |
-| index file ...                    | indexファイルの指定                  |
-| return [code=302] [URL=""]        | リダイレクト先の指定                 |
-| autoindex on/off                  | autoindex のon off                   |
-| allow_methods method ...          | 使用できるメソッドの指定             |
-| upload_root path                  | ファイルアップロードのrootパスを指定 |
-| cgi_enable_extension extension... | CGIで使用できる拡張子の指定          |
+| Directive                          | デフォルト | 説明                                 |
+| ---------------------------------- | ---------- | ------------------------------------ |
+| root path                          | html       | rootパスを指定                       |
+| index file ...                     | index.html | indexファイルの指定                  |
+| return [code=302] [URL=""]         | -          | リダイレクト先の指定                 |
+| autoindex on/off                   | off        | autoindex のon off                   |
+| allowed_methods method ...         | GET        | 使用できるメソッドの指定             |
+| upload_root path                   | html       | ファイルアップロードのrootパスを指定 |
+| cgi_enable_extension extension ... | cgi        | CGIで使用できる拡張子の指定          |
