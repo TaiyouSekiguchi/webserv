@@ -55,7 +55,7 @@ curl -v -X GET  http://localhost:8080
 ### POST
 
 ```sh
-curl -v -X POST -d "Hello, Webserv!!" http://localhost:8080/upload/
+curl -v -X POST -d "Hello, Webserv\!\!" http://localhost:8080/upload/
 ```
 
 ### DELETE
