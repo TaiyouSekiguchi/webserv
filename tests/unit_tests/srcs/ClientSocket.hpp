@@ -1,6 +1,8 @@
 #ifndef CLIENTSOCKET_HPP
 # define CLIENTSOCKET_HPP
 
+# include <string>
+
 class ClientSocket
 {
 	public:
