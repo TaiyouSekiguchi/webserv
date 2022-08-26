@@ -11,8 +11,8 @@ class AIo
 		int			GetFd() const;
 
 	protected:
-		bool		failed_;
 		int			fd_;
+		bool		failed_;
 };
 
 #endif
