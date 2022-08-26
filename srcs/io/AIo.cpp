@@ -20,5 +20,5 @@ AIo::~AIo()
 		close(fd_);
 }
 
-int		AIo::GetFd() const { return (fd_); }
 bool	AIo::Fail() const { return (failed_); }
+int		AIo::GetFd() const { return (fd_); }

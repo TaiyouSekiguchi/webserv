@@ -7,12 +7,12 @@ class AIo
 		explicit	AIo(const int fd);
 		virtual		~AIo();
 
-		int			GetFd() const;
 		bool		Fail() const;
+		int			GetFd() const;
 
 	protected:
-		int			fd_;
 		bool		failed_;
+		int			fd_;
 };
 
 #endif

@@ -34,4 +34,3 @@ ssize_t	ServerSocket::SendData(const std::string& data) const
 	ssize_t send_size = send(fd_, data.c_str(), data.size(), 0);
 	return (send_size);
 }
-
