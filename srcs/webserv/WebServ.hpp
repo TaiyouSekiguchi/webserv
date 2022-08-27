@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
+# include <string>
 # include <vector>
 # include "ListenSocket.hpp"
 # include "EventQueue.hpp"

@@ -1,9 +1,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <cstring>
 #include <stdexcept>
-#include <unistd.h>
 #include <string>
 #include "ClientSocket.hpp"
 
