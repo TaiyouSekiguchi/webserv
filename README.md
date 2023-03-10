@@ -1,10 +1,14 @@
-# Webserv
+# 42 webserv
 
-Ecole 42の課題で、HTTP/1.1に準拠したHTTPサーバーをc++98で実装しました。  
-kqueueシステムコールを採用したイベント駆動サーバーです。  
-GET, POST, DELETEメソッドを使うことが出来ます。  
-チャンク化転送符号法でのリクエストに対応しています。  
-また、CGIを使用することが出来ます。
+HTTP/1.1に準拠したNginxライクなHTTPサーバー
+
+- シングルスレッドで、I/O(`socket`,`file`) が入出力可能になると発火するイベント駆動型
+- HTTPリクエストを解析して、HTTPメソッドを実行し、HTTPレスポンスを作成して送る
+- 対応メソッド: `GET`,`POST`,`DELETE`
+- CGI 使用可能
+- チャンク化転送符号法でのリクエストに対応
+- 設定ファイルを読み込み可能
+- 3人チーム
 
 ## ダウンロード＆ビルド＆実行
 
@@ -61,3 +65,7 @@ curl -v -X DELETE http://localhost:8080/sub2/sub2.html
 | allowed_methods method ...         | GET        | 使用できるメソッドの指定             |
 | upload_root path                   | html       | ファイルアップロードのrootパスを指定 |
 | cgi_enable_extension extension ... | cgi        | CGIで使用できる拡張子の指定          |
+
+## キーワード
+
+`C++`,`nginx`,`HTTPリクエスト`,`HTTPメソッド`,`HTTPレスポンス`,`I/O多重化`,`CGI`,`socket通信`,`Google Test`
