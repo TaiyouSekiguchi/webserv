@@ -1,6 +1,6 @@
 # 42 Webserv
 
-このプロジェクトでは、HTTP/1.1に準拠したNginxライクなHTTPサーバーをC++で実装しました。
+このプロジェクトでは、HTTP/1.1に準拠したNginxライクなHTTPサーバーをC++で実装しました。  
 42東京の[mkamei](https://github.com/Masaya-Kamei), kfumiya, [tsekiguc](https://github.com/TaiyouSekiguchi)による共同開発です。
 
 ## 概要
