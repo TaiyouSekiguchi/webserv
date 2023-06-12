@@ -19,7 +19,7 @@ HTTP/1.1に準拠したNginxライクなHTTPサーバー
 
 ```sh
 # クローン
-git clone https://github.com/Masaya-Kamei/webserv.git
+git clone https://github.com/TaiyouSekiguchi/webserv.git
 
 cd webserv
 
